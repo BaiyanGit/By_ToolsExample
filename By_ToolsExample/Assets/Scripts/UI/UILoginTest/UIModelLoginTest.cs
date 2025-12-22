@@ -1,0 +1,15 @@
+﻿namespace UI.UILoginTest
+{
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using MetaFramework.UI;
+    
+    /// <summary>
+    /// 处理数据和业务逻辑（通常与游戏对象或其他数据存储机制）
+    /// </summary>
+    public class UIModelLoginTest : IUIModel
+    {
+        
+    }
+}

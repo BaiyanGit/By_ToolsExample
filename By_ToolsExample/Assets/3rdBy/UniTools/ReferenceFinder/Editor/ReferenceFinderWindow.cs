@@ -36,15 +36,16 @@
 
         private AssetTreeView _mAssetTreeView;
 
-        [FormerlySerializedAs("mTreeViewState")] [SerializeField] private TreeViewState _mTreeViewState;
+        [FormerlySerializedAs("mTreeViewState")] [SerializeField]
+        private TreeViewState _mTreeViewState;
 
         //查找资源引用信息
-        [MenuItem("Assets/Find References In Project %#&f", false, 25)]
+        [MenuItem("Assets/在Project中查找引用 %#&f", false, 25)]
         private static void FindRef()
         {
             InitDataIfNeeded();
             OpenWindow();
-            ReferenceFinderWindow window = GetWindow<ReferenceFinderWindow>();
+            var window = GetWindow<ReferenceFinderWindow>();
             window.UpdateSelectedAssets();
         }
 
@@ -52,7 +53,7 @@
         [MenuItem("ByTools/🧩 对象的引用资源查找器", false, 1000)]
         private static void OpenWindow()
         {
-            ReferenceFinderWindow window = GetWindow<ReferenceFinderWindow>();
+            var window = GetWindow<ReferenceFinderWindow>();
             window.wantsMouseMove = false;
             window.titleContent   = new GUIContent("Ref Finder");
             window.Show();
@@ -151,12 +152,9 @@
             InitGUIStyleIfNeeded();
             DrawOptionBar();
             UpdateAssetTree();
-            if (_mAssetTreeView != null)
-            {
-                //绘制Treeview
-                _mAssetTreeView.OnGUI(new Rect(0, _toolbarGUIStyle.fixedHeight, position.width,
-                    position.height - _toolbarGUIStyle.fixedHeight));
-            }
+            //绘制Treeview
+            _mAssetTreeView?.OnGUI(new Rect(0, _toolbarGUIStyle.fixedHeight, position.width,
+                position.height - _toolbarGUIStyle.fixedHeight));
         }
 
         //绘制上条
@@ -164,7 +162,7 @@
         {
             EditorGUILayout.BeginHorizontal(_toolbarGUIStyle);
             //刷新数据
-            if (GUILayout.Button("Refresh Data", _toolbarButtonGUIStyle))
+            if (GUILayout.Button("刷新数据", _toolbarButtonGUIStyle))
             {
                 data.CollectDependenciesInfo();
                 _needUpdateAssetTree = true;
@@ -173,7 +171,7 @@
 
             //修改模式
             var preIsDepend = _isDepend;
-            _isDepend = GUILayout.Toggle(_isDepend, _isDepend ? "Model(Depend)" : "Model(Reference)",
+            _isDepend = GUILayout.Toggle(_isDepend, _isDepend ? "Model(依赖)" : "Model(引用)",
                 _toolbarButtonGUIStyle, GUILayout.Width(100));
             if (preIsDepend != _isDepend)
             {
@@ -182,7 +180,7 @@
 
             //是否需要更新状态
             bool preNeedUpdateState = _needUpdateState;
-            _needUpdateState = GUILayout.Toggle(_needUpdateState, "Need Update State", _toolbarButtonGUIStyle);
+            _needUpdateState = GUILayout.Toggle(_needUpdateState, "需要更新状态", _toolbarButtonGUIStyle);
             if (preNeedUpdateState != _needUpdateState)
             {
                 PlayerPrefs.SetInt(NeedUpdateStatePrefKey, _needUpdateState ? 1 : 0);
@@ -191,13 +189,13 @@
             GUILayout.FlexibleSpace();
 
             //扩展
-            if (GUILayout.Button("Expand", _toolbarButtonGUIStyle))
+            if (GUILayout.Button("展开", _toolbarButtonGUIStyle))
             {
                 if (_mAssetTreeView != null) _mAssetTreeView.ExpandAll();
             }
 
             //折叠
-            if (GUILayout.Button("Collapse", _toolbarButtonGUIStyle))
+            if (GUILayout.Button("折叠", _toolbarButtonGUIStyle))
             {
                 if (_mAssetTreeView != null) _mAssetTreeView.CollapseAll();
             }

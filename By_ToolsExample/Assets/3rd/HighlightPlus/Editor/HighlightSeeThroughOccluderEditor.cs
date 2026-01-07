@@ -1,8 +1,7 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿namespace _3rd.HighlightPlus.Editor {
+	using global::HighlightPlus;
+	using UnityEditor;
 
-namespace HighlightPlus {
-	
 	[CustomEditor (typeof(HighlightSeeThroughOccluder))]
 	public class HighlightSeeThroughOccluderEditor : Editor {
 		public override void OnInspectorGUI () {

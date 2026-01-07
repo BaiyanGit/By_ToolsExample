@@ -1,40 +1,45 @@
 using UnityEditor;
 
-[CustomEditor(typeof(ButtonSound)), CanEditMultipleObjects]
-public class ButtonSoundEditor : Editor
+namespace _3rdBy.SoundManager.Editor
 {
-    private SerializedProperty audioName;
-    private SerializedProperty audioIndex;
-    private SerializedProperty audioClip;
-    private SerializedProperty buttonSoundType;
+    using Editor = UnityEditor.Editor;
 
-    private void OnEnable()
+    [CustomEditor(typeof(ButtonSound)), CanEditMultipleObjects]
+    public class ButtonSoundEditor : Editor
     {
-        audioName = serializedObject.FindProperty("audioName");
-        audioIndex = serializedObject.FindProperty("audioIndex");
-        audioClip = serializedObject.FindProperty("audioClip");
-        buttonSoundType = serializedObject.FindProperty("buttonSoundType");
-    }
+        private SerializedProperty audioName;
+        private SerializedProperty audioIndex;
+        private SerializedProperty audioClip;
+        private SerializedProperty buttonSoundType;
 
-    public override void OnInspectorGUI()
-    {
-        serializedObject.Update();
-
-        EditorGUILayout.PropertyField(buttonSoundType);
-
-        switch (buttonSoundType.enumValueIndex)
+        private void OnEnable()
         {
-            case (int)ButtonSoundType.AudioClipIndex:
-                EditorGUILayout.PropertyField(audioIndex);
-                break;
-            case (int)ButtonSoundType.AudioClipMount:
-                EditorGUILayout.PropertyField(audioClip);
-                break;
-            case (int)ButtonSoundType.AudioClipName:
-                EditorGUILayout.PropertyField(audioName);
-                break;
+            audioName       = serializedObject.FindProperty("audioName");
+            audioIndex      = serializedObject.FindProperty("audioIndex");
+            audioClip       = serializedObject.FindProperty("audioClip");
+            buttonSoundType = serializedObject.FindProperty("buttonSoundType");
         }
 
-        serializedObject.ApplyModifiedProperties();
+        public override void OnInspectorGUI()
+        {
+            serializedObject.Update();
+
+            EditorGUILayout.PropertyField(buttonSoundType);
+
+            switch (buttonSoundType.enumValueIndex)
+            {
+                case (int)ButtonSoundType.AudioClipIndex:
+                    EditorGUILayout.PropertyField(audioIndex);
+                    break;
+                case (int)ButtonSoundType.AudioClipMount:
+                    EditorGUILayout.PropertyField(audioClip);
+                    break;
+                case (int)ButtonSoundType.AudioClipName:
+                    EditorGUILayout.PropertyField(audioName);
+                    break;
+            }
+
+            serializedObject.ApplyModifiedProperties();
+        }
     }
 }

@@ -1,9 +1,9 @@
-using UnityEngine;
-using UnityEditor;
-using System.IO;
-
-namespace XFramework.UI.Editor
+namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
 {
+    using System.IO;
+    using UnityEditor;
+    using UnityEngine;
+
     public class UIScriptAutoCreateEditorWindow : EditorWindow
     {
         private string _newUIName;

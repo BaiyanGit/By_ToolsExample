@@ -1,8 +1,8 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
-
-namespace UnityEngine.UI
+﻿namespace _3rdBy.LoopScrollRect.Editor
 {
+    using UnityEngine;
+    using UnityEngine.UI;
+
     public static class SGDefaultControls
     {
         #region code from DefaultControls.cs

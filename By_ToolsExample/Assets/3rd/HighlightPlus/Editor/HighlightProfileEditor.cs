@@ -1,9 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine;
-
-namespace HighlightPlus {
+namespace _3rd.HighlightPlus.Editor {
+    using global::HighlightPlus;
+    using UnityEditor;
+    using UnityEngine;
+    using QualityLevel = global::HighlightPlus.QualityLevel;
 
     [CustomEditor(typeof(HighlightProfile))]
     [CanEditMultipleObjects]

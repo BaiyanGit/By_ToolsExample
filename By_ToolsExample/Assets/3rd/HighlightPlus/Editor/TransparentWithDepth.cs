@@ -1,12 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEditor;
+namespace _3rd.HighlightPlus.Editor {
+    using System.Collections.Generic;
+    using UnityEditor;
+    using UnityEngine;
 
-namespace HighlightPlus {
-				
-	public class TransparentWithDepth {
+    public class TransparentWithDepth {
 
 		static Material bmDepthOnly;
         static Material bmDepthClipping;

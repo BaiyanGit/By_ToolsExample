@@ -1,0 +1,172 @@
+﻿{
+    "sceneDataList": [
+        {
+            "index": 0,
+            "name": "Demo1_HighlightExample",
+            "path": "Assets/3rd/HighlightPlus/Demo/Demo1_HighlightExample.unity",
+            "show": true
+        },
+        {
+            "index": 1,
+            "name": "Demo2_SelectionExample",
+            "path": "Assets/3rd/HighlightPlus/Demo/Demo2_SelectionExample.unity",
+            "show": true
+        },
+        {
+            "index": 2,
+            "name": "Demo3_HitFXExample",
+            "path": "Assets/3rd/HighlightPlus/Demo/Demo3_HitFXExample.unity",
+            "show": true
+        },
+        {
+            "index": 3,
+            "name": "Color",
+            "path": "Assets/3rdBy/ColorSelected/Color.unity",
+            "show": true
+        },
+        {
+            "index": 4,
+            "name": "DemoScene",
+            "path": "Assets/3rdBy/LoopScrollRect/Demo/DemoScene.unity",
+            "show": true
+        },
+        {
+            "index": 5,
+            "name": "SampleVoiceScene",
+            "path": "Assets/3rdBy/SoundRecord/Scenes/SampleVoiceScene.unity",
+            "show": true
+        },
+        {
+            "index": 6,
+            "name": "血氧仪示例",
+            "path": "Assets/3rdBy/血氧仪示例/血氧仪示例.unity",
+            "show": true
+        },
+        {
+            "index": 7,
+            "name": "Terrain不同分辨率体积守恒",
+            "path": "Assets/Demos/示例-Terrain不同分辨率体积守恒/Terrain不同分辨率体积守恒.unity",
+            "show": true
+        },
+        {
+            "index": 8,
+            "name": "示例-挖土效果",
+            "path": "Assets/Demos/示例-Terrain挖土效果/示例-挖土效果.unity",
+            "show": true
+        },
+        {
+            "index": 9,
+            "name": "地形改变贴图",
+            "path": "Assets/Demos/示例-Terrain改变贴图/地形改变贴图.unity",
+            "show": true
+        },
+        {
+            "index": 10,
+            "name": "铲斗内石头",
+            "path": "Assets/Demos/示例-Terrain铲斗掉落石头改变地形/铲斗内石头.unity",
+            "show": true
+        },
+        {
+            "index": 11,
+            "name": "Toggle测试",
+            "path": "Assets/Demos/示例-Toggle测试/Toggle测试.unity",
+            "show": false
+        },
+        {
+            "index": 12,
+            "name": "刚体崩飞",
+            "path": "Assets/Demos/示例-刚体崩飞/刚体崩飞.unity",
+            "show": true
+        },
+        {
+            "index": 13,
+            "name": "卷轴",
+            "path": "Assets/Demos/示例-卷帘门/ChatGPT/卷轴.unity",
+            "show": true
+        },
+        {
+            "index": 14,
+            "name": "铰链测试(有问题)",
+            "path": "Assets/Demos/示例-卷帘门/很早之前/铰链测试(有问题).unity",
+            "show": true
+        },
+        {
+            "index": 15,
+            "name": "RecodeScreen",
+            "path": "Assets/Demos/示例-回放功能/RecodeScreen.unity",
+            "show": false
+        },
+        {
+            "index": 16,
+            "name": "多用工程车",
+            "path": "Assets/Demos/示例-多用工程车/多用工程车.unity",
+            "show": true
+        },
+        {
+            "index": 17,
+            "name": "快捷键切换应用显示",
+            "path": "Assets/Demos/示例-快捷键切换应用/快捷键切换应用显示.unity",
+            "show": true
+        },
+        {
+            "index": 18,
+            "name": "油门进度条",
+            "path": "Assets/Demos/示例-油门进度条/油门进度条.unity",
+            "show": true
+        },
+        {
+            "index": 19,
+            "name": "滚轮测试",
+            "path": "Assets/Demos/示例-滚轮测试/滚轮测试.unity",
+            "show": false
+        },
+        {
+            "index": 20,
+            "name": "齿轮测试",
+            "path": "Assets/Demos/示例-物理齿轮/齿轮测试.unity",
+            "show": true
+        },
+        {
+            "index": 21,
+            "name": "自复位方向盘",
+            "path": "Assets/Demos/示例-自复位方向盘/自复位方向盘.unity",
+            "show": false
+        },
+        {
+            "index": 22,
+            "name": "触发器",
+            "path": "Assets/Demos/示例-触发器/触发器.unity",
+            "show": true
+        },
+        {
+            "index": 23,
+            "name": "计算对象的中心点",
+            "path": "Assets/Demos/示例-计算对象的中心点/计算对象的中心点.unity",
+            "show": true
+        },
+        {
+            "index": 24,
+            "name": "记录编辑场景对象",
+            "path": "Assets/Demos/示例-记录编辑场景对象/记录编辑场景对象.unity",
+            "show": true
+        },
+        {
+            "index": 25,
+            "name": "SampleScene",
+            "path": "Assets/Scenes/SampleScene.unity",
+            "show": true
+        },
+        {
+            "index": 26,
+            "name": "net",
+            "path": "Assets/Scripts/Net/Scene/net.unity",
+            "show": true
+        },
+        {
+            "index": 27,
+            "name": "Socket",
+            "path": "Assets/Scripts/Network/Socket.unity",
+            "show": true
+        }
+    ]
+}

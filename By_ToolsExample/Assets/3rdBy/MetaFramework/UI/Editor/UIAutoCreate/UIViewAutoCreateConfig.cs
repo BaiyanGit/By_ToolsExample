@@ -1,10 +1,9 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace XFramework.UI.Editor
+namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
 {
+    using System;
+    using System.Collections.Generic;
+    using UnityEngine;
+
     [Serializable]
     public class UIViewAutoCreateInfo
     {

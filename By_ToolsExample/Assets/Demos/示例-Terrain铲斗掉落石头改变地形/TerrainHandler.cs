@@ -102,10 +102,8 @@ namespace Demos.示例_铲斗掉落石头改变地形
 
                     var index = y * resolution + x;
 
-                    if (deltaMap.ContainsKey(index))
+                    if (!deltaMap.TryAdd(index, delta01))
                         deltaMap[index] += delta01;
-                    else
-                        deltaMap[index] = delta01;
 
                     minX = Mathf.Min(minX, x);
                     minY = Mathf.Min(minY, y);

@@ -1,9 +1,8 @@
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
-using UnityEngine.XR;
+namespace _3rd.HighlightPlus.Editor {
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.XR;
 
-namespace HighlightPlus {
     public static class VRCheck {
 
 #if UNITY_2019_3_OR_NEWER

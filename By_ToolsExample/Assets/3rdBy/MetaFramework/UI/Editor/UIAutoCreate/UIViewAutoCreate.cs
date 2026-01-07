@@ -1,13 +1,12 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using UnityEditor;
-using UnityEngine;
-
-namespace XFramework.UI.Editor
+namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text;
+    using UnityEditor;
+    using UnityEngine;
+
     public class UIViewAutoCreate
     {
         private class ViewPropAndCom

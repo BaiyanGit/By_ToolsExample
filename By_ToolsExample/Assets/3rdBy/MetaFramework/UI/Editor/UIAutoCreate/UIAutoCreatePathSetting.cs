@@ -1,9 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace XFramework.UI.Editor
+namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
 {
+    using UnityEngine;
+
     public static class UIAutoCreatePathSetting
     {
         /// <summary>

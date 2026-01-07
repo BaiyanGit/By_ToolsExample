@@ -1,12 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using UnityEditor;
-using UnityEngine;
-
-namespace XFramework.UI.Editor
+namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
 {
+    using System.IO;
+    using System.Text;
+    using UnityEditor;
+    using UnityEngine;
+
     public class UIControlAutoCreate
     {
         public void Create(string uiName, string templatePath, string targetPath)

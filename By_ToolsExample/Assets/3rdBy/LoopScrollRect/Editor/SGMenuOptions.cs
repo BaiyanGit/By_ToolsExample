@@ -1,9 +1,9 @@
-﻿using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-
-namespace UnityEditor.UI
+﻿namespace _3rdBy.LoopScrollRect.Editor
 {
+    using UnityEditor;
+    using UnityEngine;
+    using UnityEngine.UI;
+
     static internal class SGMenuOptions
     {
         #region code from MenuOptions.cs

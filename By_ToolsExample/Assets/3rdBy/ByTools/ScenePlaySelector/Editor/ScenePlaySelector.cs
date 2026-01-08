@@ -13,7 +13,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
     /// <summary>
     /// 快速切换场景
     /// </summary>
-    // [InitializeOnLoad]
+    [InitializeOnLoad]
     public static class ScenePlaySelector
     {
         private const string PrefKeyFoldPath = "ScenePlaySelector_FoldPath";

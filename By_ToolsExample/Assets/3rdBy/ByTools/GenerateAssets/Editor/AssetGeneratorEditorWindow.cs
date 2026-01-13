@@ -1,9 +1,3 @@
-/*
- * Scriptable Object 批量生成工具
- * Author: 王柏雁
- * Date: 2025-12-17
- */
-
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -11,7 +5,10 @@ using UnityEngine;
 
 namespace _3rdBy.ByTools.GenerateAssets.Editor
 {
-    public class ScriptableObjectAssetGeneratorWindow : EditorWindow
+    /// <summary>
+    /// Assets资源脚本生成器
+    /// </summary>
+    public class AssetGeneratorEditorWindow : EditorWindow
     {
         private class ScriptEntry
         {
@@ -29,7 +26,7 @@ namespace _3rdBy.ByTools.GenerateAssets.Editor
         [MenuItem("ByTools/🧩 .asset生成工具")]
         public static void Open()
         {
-            GetWindow<ScriptableObjectAssetGeneratorWindow>("SO资产生成器");
+            GetWindow<AssetGeneratorEditorWindow>("SO资产生成器");
         }
 
         private void OnEnable()

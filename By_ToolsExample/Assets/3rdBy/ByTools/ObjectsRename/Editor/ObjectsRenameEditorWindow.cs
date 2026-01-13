@@ -10,14 +10,14 @@ namespace _3rdBy.ByTools.ObjectsRename.Editor
     /// <summary>
     /// 场景对象批量重命名
     /// </summary>
-    public class UIEditorObjectsRename : EditorWindow
+    public class ObjectsRenameEditorWindow : EditorWindow
     {
         [MenuItem("ByTools/🧩 对象批量重命名")]
         public static void ShowWindow()
         {
             var screenRes = new Vector2(Screen.currentResolution.width, Screen.currentResolution.height); // 获取当前屏幕的分辨率
             var pos       = new Vector2(screenRes.x / 2 - 300, screenRes.y / 2 - 300);                    // 计算窗口的中心位置
-            var window    = GetWindow<UIEditorObjectsRename>("对象批量重命名");
+            var window    = GetWindow<ObjectsRenameEditorWindow>("对象批量重命名");
             window.minSize  = Vector2.one * 600;
             window.maxSize  = Vector2.one * 600;
             window.position = new Rect(pos.x, pos.y, 600, 600);

@@ -1,10 +1,3 @@
-/*
- * TextPurificationMaster.cs
- * 文本净化大师
- * 作用：去除文本中的重复字符
- * 作者：王柏雁
- */
-
 namespace _3rdBy.ByTools.TextPurificationMaster.Editor
 {
     using System.Collections.Generic;
@@ -13,7 +6,10 @@ namespace _3rdBy.ByTools.TextPurificationMaster.Editor
     using UnityEditor;
     using UnityEngine;
 
-    public class TextPurificationMaster : EditorWindow
+    /// <summary>
+    /// 去除文本中的重复字符
+    /// </summary>
+    public class TextPurificationMasterEditorWindow : EditorWindow
     {
         private static readonly Vector2 windowSize = new(550, 200);
         private string _filePath;
@@ -24,9 +20,9 @@ namespace _3rdBy.ByTools.TextPurificationMaster.Editor
         [MenuItem("ByTools/🧩 文本净化大师")]
         private static void ShowEditor()
         {
-            var window = GetWindow<TextPurificationMaster>();
-            window.minSize = windowSize;
-            window.maxSize = windowSize;
+            var window = GetWindow<TextPurificationMasterEditorWindow>();
+            window.minSize           = windowSize;
+            window.maxSize           = windowSize;
             window.titleContent.text = "文本净化大师(针对TextMeshPro字库清除相同文字)";
         }
 
@@ -35,8 +31,8 @@ namespace _3rdBy.ByTools.TextPurificationMaster.Editor
             var tipsGUILayout = new GUIStyle
             {
                 fontStyle = FontStyle.Italic,
-                fontSize = 12,
-                normal = { textColor = Color.green }
+                fontSize  = 12,
+                normal    = { textColor = Color.green }
             };
             return tipsGUILayout;
         }
@@ -64,16 +60,16 @@ namespace _3rdBy.ByTools.TextPurificationMaster.Editor
 
             if (GUILayout.Button("选择", GUILayout.Width(60)))
             {
-                _successTips = "";
-                _filePath ??= Application.dataPath;
-                _filePath = EditorUtility.OpenFilePanel("选择文件.txt", $"{_filePath}", "txt");
-                _fileName = Path.GetFileName(_filePath);
+                _successTips =   "";
+                _filePath    ??= Application.dataPath;
+                _filePath    =   EditorUtility.OpenFilePanel("选择文件.txt", $"{_filePath}", "txt");
+                _fileName    =   Path.GetFileName(_filePath);
             }
 
             if (GUILayout.Button("清除选择", GUILayout.Width(60)))
             {
-                _filePath = "";
-                _fileName = "";
+                _filePath    = "";
+                _fileName    = "";
                 _successTips = "";
             }
 
@@ -115,9 +111,9 @@ namespace _3rdBy.ByTools.TextPurificationMaster.Editor
             }
 
             var filePath = isReplaceFile
-                ? _filePath
-                : _filePath.Replace($"{_fileName}", $"{_fileName.Replace(".txt", "")}_temp.txt");
-            var txt = File.ReadAllText(_filePath);
+                               ? _filePath
+                               : _filePath.Replace($"{_fileName}", $"{_fileName.Replace(".txt", "")}_temp.txt");
+            var txt     = File.ReadAllText(_filePath);
             var hashSet = new HashSet<char>();
             foreach (var charStr in txt.Where(charStr => !hashSet.Add(charStr)))
             {

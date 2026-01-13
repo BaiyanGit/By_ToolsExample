@@ -7,7 +7,10 @@
     using UnityEngine;
     using UnityEngine.Serialization;
 
-    public class ReferenceFinderWindow : EditorWindow
+    /// <summary>
+    /// 资源引用查找器
+    /// </summary>
+    public class ReferenceFinderEditorWindow : EditorWindow
     {
         //依赖模式的key
         private const string IsDependPrefKey = "ReferenceFinderData_IsDepend";
@@ -45,7 +48,7 @@
         {
             InitDataIfNeeded();
             OpenWindow();
-            var window = GetWindow<ReferenceFinderWindow>();
+            var window = GetWindow<ReferenceFinderEditorWindow>();
             window.UpdateSelectedAssets();
         }
 
@@ -53,7 +56,7 @@
         [MenuItem("ByTools/🧩 对象的引用资源查找器", false, 1000)]
         private static void OpenWindow()
         {
-            var window = GetWindow<ReferenceFinderWindow>();
+            var window = GetWindow<ReferenceFinderEditorWindow>();
             window.wantsMouseMove = false;
             window.titleContent   = new GUIContent("Ref Finder");
             window.Show();

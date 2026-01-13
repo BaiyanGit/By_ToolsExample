@@ -4,6 +4,7 @@ namespace Helper
     using System.Text;
     using System.IO;
     using System;
+    using UnityEngine;
 
     /// <summary>
     /// 加密帮助类

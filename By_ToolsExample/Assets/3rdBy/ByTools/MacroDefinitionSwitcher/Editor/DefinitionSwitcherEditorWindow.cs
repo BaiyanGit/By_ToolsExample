@@ -8,12 +8,15 @@
     using UnityEditor.Build;
     using UnityEngine;
 
-    public class MacroDefinitionSwitcher : EditorWindow
+    /// <summary>
+    /// 宏定义切换工具的编辑器窗口
+    /// </summary>
+    public class DefinitionSwitcherEditorWindow : EditorWindow
     {
-        [MenuItem("ByTools/宏定义切换工具")]
+        [MenuItem("ByTools/🧩 宏定义切换工具")]
         public static void ShowWindow()
         {
-            GetWindow<MacroDefinitionSwitcher>("宏定义切换工具");
+            GetWindow<DefinitionSwitcherEditorWindow>("宏定义切换工具");
         }
 
         // 预定义的宏定义配置
@@ -519,9 +522,9 @@
         private string _configName = "";
         private string _configMacros = "";
         private string _configDescription = "";
-        private MacroDefinitionSwitcher _parentWindow;
+        private DefinitionSwitcherEditorWindow _parentWindow;
 
-        public void Initialize(string macros, MacroDefinitionSwitcher parent)
+        public void Initialize(string macros, DefinitionSwitcherEditorWindow parent)
         {
             _configMacros = macros;
             _parentWindow = parent;

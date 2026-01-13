@@ -9,7 +9,7 @@
     /// <summary>
     /// 对打开的场景，根据标签查找使用对象
     /// </summary>
-    public class FindHierarchyTag : EditorWindow
+    public class FindHierarchyTagEditorWindow : EditorWindow
     {
         private enum ViewType
         {
@@ -30,7 +30,7 @@
         [MenuItem("ByTools/🧩 标签Tag查找对象")]
         public static void ShowWindow()
         {
-            var window = GetWindow<FindHierarchyTag>("Find With Tag");
+            var window = GetWindow<FindHierarchyTagEditorWindow>("Find With Tag");
             window.minSize = Vector2.one * 400;
             window.maxSize = Vector2.one * 400;
         }

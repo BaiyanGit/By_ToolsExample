@@ -12,7 +12,7 @@ namespace _3rdBy.ByTools.CompileProto.Editor
     using UnityEngine;
     using Debug = UnityEngine.Debug;
 
-    public class CompileProtoEditor : EditorWindow
+    public class CompileProtoEditorWindow : EditorWindow
     {
         private Dictionary<string, string> _protoFileDic; //key:名字，value:路径
         private string _exePath;
@@ -21,7 +21,7 @@ namespace _3rdBy.ByTools.CompileProto.Editor
         [MenuItem("ByTools/🧩 编译.Proto文件")]
         public static void ShowWindow()
         {
-            var window = GetWindow<CompileProtoEditor>("编译.Proto文件");
+            var window = GetWindow<CompileProtoEditorWindow>("编译.Proto文件");
             window.minSize = Vector2.one * 600;
             window.maxSize = Vector2.one * 900;
         }

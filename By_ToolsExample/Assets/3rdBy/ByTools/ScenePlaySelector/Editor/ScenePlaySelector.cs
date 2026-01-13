@@ -162,7 +162,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
                 }
             });
 
-            var button = VisualElementFactory.CreateToolbarButton("⚙", SceneSelectorWindow.ShowWindow);
+            var button = VisualElementFactory.CreateToolbarButton("⚙", SceneSelectorEditorWindow.ShowWindow);
             container.Add(button);
             leftZone.Add(container);
         }

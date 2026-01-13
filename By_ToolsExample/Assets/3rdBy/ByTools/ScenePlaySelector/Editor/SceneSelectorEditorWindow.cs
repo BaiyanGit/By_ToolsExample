@@ -28,7 +28,7 @@
     /// <summary>
     /// ToolBar中选择场景配置窗口
     /// </summary>
-    public class SceneSelectorWindow : EditorWindow
+    public class SceneSelectorEditorWindow : EditorWindow
     {
         private class SceneData
         {
@@ -118,7 +118,7 @@
         [MenuItem("ByTools/🧩 场景显示配置器")]
         public static void ShowWindow()
         {
-            var window = GetWindow<SceneSelectorWindow>("场景显示配置器");
+            var window = GetWindow<SceneSelectorEditorWindow>("场景显示配置器");
             window.minSize = new Vector2(360, 90);
             window.Show();
         }

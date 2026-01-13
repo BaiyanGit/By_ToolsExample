@@ -7,7 +7,12 @@ namespace _3rdBy.ByTools.ReplaceWithPrefabByMesh.Editor
     using UnityEngine;
     using UnityEngine.SceneManagement;
 
-    public class ReplaceWithPrefabByMesh : EditorWindow
+    /// <summary>
+    /// 选择一个预制件，扫描场景中所有与该预制件匹配的对象（根据用户选择的匹配模式），并预览这些匹配对象。
+    /// 行替换操作，将匹配的对象替换为预制件实例，同时可自由选择是否保留原对象的名称、层级、静态标记等属性，并可选择是否在替换后解体预制件实例。
+    /// 批量移动场景中的对象，根据对象名称或用户选择的目标父节点移动对象，并可以选择在移动后删除空的父节点。
+    /// </summary>
+    public class ReplaceWithPrefabByMeshEditorWindow : EditorWindow
     {
         private GameObject _prefab;
         private GameObject _parent;
@@ -35,7 +40,7 @@ namespace _3rdBy.ByTools.ReplaceWithPrefabByMesh.Editor
         [MenuItem("ByTools/🧩 Prefab替换场景对象 | 场景对象批量移动 &%4", false, 1001)]
         private static void OpenWindow()
         {
-            var w = GetWindow<ReplaceWithPrefabByMesh>("Replace By Prefab Mesh");
+            var w = GetWindow<ReplaceWithPrefabByMeshEditorWindow>("Replace By Prefab Mesh");
             w.minSize = new Vector2(460, 500);
         }
 

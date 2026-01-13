@@ -8,7 +8,10 @@
     using UnityEngine;
     using UnityEngine.UI;
 
-    public class Text2TextMeshProUtil : EditorWindow
+    /// <summary>
+    /// Text组件批量或单个替换为TextMeshProUGUI组件
+    /// </summary>
+    public class Text2TextMeshProUtilEditorWindow : EditorWindow
     {
         private static List<string> _scriptsFolders;
 
@@ -72,7 +75,7 @@
         [MenuItem("ByTools/🧩 替换Text为TextMeshPro")]
         private static void Init()
         {
-            _myWindow         = GetWindow(typeof(Text2TextMeshProUtil));
+            _myWindow         = GetWindow(typeof(Text2TextMeshProUtilEditorWindow));
             _directoryPrefabs = new List<string>();
             _allAssetPaths    = new List<string>();
             _scriptsFolders   = new List<string> { "Assets/Scripts/UI" };

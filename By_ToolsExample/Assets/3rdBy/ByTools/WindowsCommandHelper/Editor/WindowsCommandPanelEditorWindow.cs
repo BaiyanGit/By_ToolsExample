@@ -8,10 +8,13 @@
     using Scripts;
     using Debug = UnityEngine.Debug;
 
-    public class WindowsCommandPanelEditor : EditorWindow
+    /// <summary>
+    /// Windows 命令面板编辑器窗口
+    /// </summary>
+    public class WindowsCommandPanelEditorWindow : EditorWindow
     {
         private        WindowsCommandPanelCore   _panelCore;
-        private static WindowsCommandPanelEditor _window;
+        private static WindowsCommandPanelEditorWindow _window;
         private static float                     _windowHeight;
 
         private void OnEnable()
@@ -20,10 +23,10 @@
             _panelCore.BuildCategoryMap();
         }
 
-        [MenuItem("ByTools/Windows 命令面板")]
+        [MenuItem("ByTools/🧩 Windows 命令面板")]
         public static void ShowWindow()
         {
-            _window         = GetWindow<WindowsCommandPanelEditor>("Windows 命令面板");
+            _window         = GetWindow<WindowsCommandPanelEditorWindow>("Windows 命令面板");
             _window.minSize = new Vector2(700, 500);
             _windowHeight   = _window.position.height;
         }
@@ -36,7 +39,7 @@
             }
             else
             {
-                _window = GetWindow<WindowsCommandPanelEditor>("Windows 命令面板");
+                _window = GetWindow<WindowsCommandPanelEditorWindow>("Windows 命令面板");
             }
 
             EditorGUILayout.HelpBox("全部命令输出可在各命令折叠查看", MessageType.Info);
@@ -220,7 +223,7 @@
                                         else
                                         {
 #if UNITY_EDITOR
-                                            GetWindow<WindowsCommandPanelEditor>().OpenNotification("请输入命令....");
+                                            GetWindow<WindowsCommandPanelEditorWindow>().OpenNotification("请输入命令....");
 #endif
                                         }
                                     }
@@ -305,7 +308,7 @@
                 EditorGUIUtility.systemCopyBuffer = command;
                 AppendOutputForCommand("复制命令", false, command);
 #if UNITY_EDITOR
-                GetWindow<WindowsCommandPanelEditor>().OpenNotification($"已复制 [ {command} ] 到剪贴板");
+                GetWindow<WindowsCommandPanelEditorWindow>().OpenNotification($"已复制 [ {command} ] 到剪贴板");
 #endif
             }
 

@@ -57,11 +57,12 @@
         private readonly string[] _sourceNames = { "BuildSettings", "ProjectAssets" };
         private Vector2 _sceneListScrollPos;
         private readonly List<SceneData> _sceneDataLists = new();
+        private static string fileFullPath;
 
         private double _lastRefreshTime;
         private const double RefreshInterval = 1;
-        private const string SourceIndexKey = "Sourceindexkey";
-        private const string FoldPathKey = "FoldPathKey";
+        private const string PrefSourceIndexKey = "SourceIndexKey";
+        private const string PrefKeyFoldPath = "ScenePlaySelector_FoldPath";
 
         private const string HelpBoxMessage = "场景显示配置器说明\n" +
                                               "1. 场景来源：BuildSettings：编译设置中的所有场景  |  ProjectAssets：项目中的所有场景  \n" +
@@ -72,7 +73,7 @@
 
         private void OnEnable()
         {
-            _sourceIndex = EditorPrefs.GetInt(SourceIndexKey, 0);
+            _sourceIndex = EditorPrefs.GetInt(PrefSourceIndexKey, 0);
             GetScenesWay();
             EditorApplication.update += OnEditorUpdate;
         }
@@ -125,10 +126,36 @@
         private void OnGUI()
         {
             EditorGUILayout.HelpBox(HelpBoxMessage, MessageType.Info);
-
+            DeleteJsonFile();
             CreateGUIStyle();
             OnSelectionSource();
+
             DrawScenesList();
+        }
+
+        private void DeleteJsonFile()
+        {
+            if (!string.IsNullOrEmpty(fileFullPath))
+            {
+                var configFile = Path.GetFileNameWithoutExtension(fileFullPath);
+                if (File.Exists(fileFullPath))
+                {
+                    if (GUILayout.Button($"删除当前配置文件 [ {configFile}.json ]"))
+                    {
+                        if (File.Exists(fileFullPath))
+                        {
+                            File.Delete(fileFullPath);
+                            AssetDatabase.Refresh();
+                        }
+                        else
+                        {
+                            Debug.LogError("文件不存在");
+                        }
+
+                        ScenePlaySelector.RefreshToolbar();
+                    }
+                }
+            }
         }
 
         private void OnSelectionSource()
@@ -141,7 +168,7 @@
             {
                 _sourceIndex = sourceIndex;
                 // Debug.Log("刷新");
-                EditorPrefs.SetInt(SourceIndexKey, _sourceIndex);
+                EditorPrefs.SetInt(PrefSourceIndexKey, _sourceIndex);
                 GetScenesWay();
             }
 
@@ -177,7 +204,25 @@
 
                 string jsonString = JsonUtility.ToJson(wrapper, true); // true表示格式化输出
                 SaveJsonFile(jsonString);
-                ReadJsonFile();
+                ScenePlaySelector.RefreshToolbar();
+            }
+
+            if (GUILayout.Button("全选"))
+            {
+                foreach (var sceneData in _sceneDataLists)
+                {
+                    if (sceneData.asset == null) continue;
+                    sceneData.show = true;
+                }
+            }
+
+            if (GUILayout.Button("反选"))
+            {
+                foreach (var sceneData in _sceneDataLists)
+                {
+                    if (sceneData.asset == null) continue;
+                    sceneData.show = !sceneData.show;
+                }
             }
 
             EditorGUILayout.EndHorizontal();
@@ -210,7 +255,7 @@
 
         private void GetScenesWay()
         {
-            var fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
+            fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
             if (File.Exists(fileFullPath))
                 ReadJsonFile();
             else
@@ -267,7 +312,7 @@
         {
             try
             {
-                var fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
+                fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
 
                 if (File.Exists(fileFullPath)) File.Delete(fileFullPath);
                 File.WriteAllText(fileFullPath, jsonContent, Encoding.UTF8);
@@ -283,7 +328,7 @@
 
         private void ReadJsonFile()
         {
-            var fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
+            fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
 
             if (!File.Exists(fileFullPath))
             {
@@ -312,7 +357,7 @@
             var scriptFullPath = AssetDatabase.GetAssetPath(monoScript);
             var folderPath     = GetUpperDirectory(scriptFullPath, 2, "ScenePlaySelectorFiles");
             if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
-            EditorPrefs.SetString(FoldPathKey, folderPath);
+            EditorPrefs.SetString(PrefKeyFoldPath, folderPath);
             return folderPath;
         }
 

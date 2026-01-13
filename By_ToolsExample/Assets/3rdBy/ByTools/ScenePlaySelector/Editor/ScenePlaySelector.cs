@@ -17,9 +17,9 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
     public static class ScenePlaySelector
     {
         private const string PrefKeyFoldPath = "ScenePlaySelector_FoldPath";
-        private const string PrefKeySource = "ScenePlaySelector_SelectedSource";
-        private const string PrefKeyBuildScene = "ScenePlaySelector_BuildScene";
-        private const string PrefKeyProjectScene = "ScenePlaySelector_ProjectScene";
+        private const string PrefKeySelectedIndexSource = "ScenePlaySelector_SelectedIndexSource";
+        private const string PrefKeySelectedBuildScene = "ScenePlaySelector_BuildScene";
+        private const string PrefKeySelectedProjectScene = "ScenePlaySelector_ProjectScene";
         private static readonly string[] sourceNames = { "BuildSettings", "ProjectAssets" };
 
         private enum SceneSource
@@ -31,6 +31,11 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
         static ScenePlaySelector()
         {
             EditorApplication.delayCall += InitToolbar;
+        }
+
+        public static void RefreshToolbar()
+        {
+            InitToolbar();
         }
 
         private static void InitToolbar()
@@ -60,11 +65,8 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
                 return;
             }
 
-            if (leftZone.Q("ScenePlaySelector") != null)
-            {
-                Debug.LogError("ScenePlaySelector: 已存在工具栏 (ScenePlaySelector)");
-                return;
-            }
+            var existingContainer = leftZone.Q("ScenePlaySelector");
+            if (existingContainer != null) leftZone.Remove(existingContainer);
 
             var container = new VisualElement
             {
@@ -81,7 +83,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             container.Add(label);
 
             // --- 场景来源选项 ---
-            var selectedSource = (SceneSource)EditorPrefs.GetInt(PrefKeySource, 0);
+            var selectedSource = (SceneSource)EditorPrefs.GetInt(PrefKeySelectedIndexSource, 0);
             var sourcePopup    = VisualElementFactory.CreateToolbarPopup(sourceNames.ToList(), (int)selectedSource);
             container.Add(sourcePopup);
 
@@ -92,25 +94,23 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             // --- 选择场景弹出框 ---
             string[] scenePaths = GetScenePaths(selectedSource);
             var      sceneNames = scenePaths.Select(Path.GetFileNameWithoutExtension).ToList();
-            // var sceneNames = activeScenesPathData.Select(s => s.name).ToList();
 
             int lastSelectedSceneIndex = selectedSource switch
             {
-                SceneSource.BuildSettings => EditorPrefs.GetInt(PrefKeyBuildScene, 0),
-                SceneSource.Project       => EditorPrefs.GetInt(PrefKeyProjectScene, 0),
+                SceneSource.BuildSettings => EditorPrefs.GetInt(PrefKeySelectedBuildScene, 0),
+                SceneSource.Project       => EditorPrefs.GetInt(PrefKeySelectedProjectScene, 0),
                 _                         => throw new ArgumentOutOfRangeException()
             };
 
             int selectedSceneIndex = Mathf.Clamp(value: lastSelectedSceneIndex, 0, sceneNames.Count - 1);
             var scenePopup         = VisualElementFactory.CreateToolbarPopup(sceneNames, selectedSceneIndex);
-
             container.Add(scenePopup);
 
             // --- Source 切换回调 ---
             sourcePopup.RegisterValueChangedCallback(evt =>
             {
                 selectedSource = (SceneSource)sourcePopup.index;
-                EditorPrefs.SetInt(PrefKeySource, (int)selectedSource);
+                EditorPrefs.SetInt(PrefKeySelectedIndexSource, (int)selectedSource);
 
                 // 刷新 Scene 列表
                 scenePaths         = GetScenePaths(selectedSource);
@@ -122,8 +122,8 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
                 {
                     int lastSelectedIndex = selectedSource switch
                     {
-                        SceneSource.BuildSettings => EditorPrefs.GetInt(PrefKeyBuildScene, 0),
-                        SceneSource.Project       => EditorPrefs.GetInt(PrefKeyProjectScene, 0),
+                        SceneSource.BuildSettings => EditorPrefs.GetInt(PrefKeySelectedBuildScene, 0),
+                        SceneSource.Project       => EditorPrefs.GetInt(PrefKeySelectedProjectScene, 0),
                         _                         => throw new ArgumentOutOfRangeException()
                     };
 
@@ -140,10 +140,10 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
                 switch (selectedSource)
                 {
                     case SceneSource.BuildSettings:
-                        EditorPrefs.SetInt(PrefKeyBuildScene, index);
+                        EditorPrefs.SetInt(PrefKeySelectedBuildScene, index);
                         break;
                     case SceneSource.Project:
-                        EditorPrefs.SetInt(PrefKeyProjectScene, index);
+                        EditorPrefs.SetInt(PrefKeySelectedProjectScene, index);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -162,24 +162,23 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
                 }
             });
 
-            var button = VisualElementFactory.CreateToolbarButton("⚙", EditorPrefs.DeleteAll);
+            var button = VisualElementFactory.CreateToolbarButton("⚙", SceneSelectorWindow.ShowWindow);
             container.Add(button);
             leftZone.Add(container);
         }
 
         private static readonly List<string> activeScenesPath = new();
-        private static readonly List<SceneDataJson> activeScenesPathData = new();
 
         private static string[] GetScenePaths(SceneSource source)
         {
             var foldPath     = EditorPrefs.GetString(PrefKeyFoldPath, string.Empty);
             var fileFullPath = Path.Combine(foldPath, $"{sourceNames[(int)source]}.json");
             var hasFile      = File.Exists(fileFullPath);
-
+            activeScenesPath.Clear();
             // 未设置配置文件，使用默认查找场景
             if (string.IsNullOrEmpty(foldPath) || !hasFile)
             {
-                // Debug.Log("ScenePlaySelector: 未找到配置文件，使用默认查找场景");
+                // Debug.Log($"未找到配置文件，使用默认查找场景\n{PrefKeyFoldPath}");
                 switch (source)
                 {
                     case SceneSource.BuildSettings:
@@ -192,8 +191,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
                 }
             }
 
-            Debug.Log("使用配置文件数据");
-            activeScenesPath.Clear();
+            // Debug.Log($"使用配置文件数据:{fileFullPath}");
             // 使用配置文件数据
             var jsonContent     = File.ReadAllText(fileFullPath);
             var dataListWrapper = JsonUtility.FromJson<SceneDataListWrapper>(jsonContent);
@@ -202,7 +200,6 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             {
                 if (!sceneData.show) continue;
                 activeScenesPath.Add(sceneData.path);
-                activeScenesPathData.Add(sceneData);
             }
 
             return activeScenesPath.ToArray();

@@ -7,7 +7,7 @@
 
     public class ChangeTMPParameter : EditorWindow
     {
-        [MenuItem("ByTools/🧩 TMP参数修改 %#2", false, 1006)]
+        [MenuItem("ByTools/🛠️ TMP参数修改 %#2", false, 1006)]
         public static void ShowWindow()
         {
             GetWindow<ChangeTMPParameter>("TMP添加组件");

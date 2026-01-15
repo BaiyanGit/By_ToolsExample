@@ -52,7 +52,7 @@
             //在ProjectWindow中高亮双击资源
             if (item != null)
             {
-                var assetObject = AssetDatabase.LoadAssetAtPath(item.data.path, typeof(UnityEngine.Object));
+                var assetObject = AssetDatabase.LoadAssetAtPath(item.data.path, typeof(Object));
                 EditorUtility.FocusProjectWindow();
                 Selection.activeObject = assetObject;
                 EditorGUIUtility.PingObject(assetObject);

@@ -1,8 +1,7 @@
-using UnityEngine;
+namespace _3rd.HighlightPlus.Scripts {
+	using UnityEngine;
 
-namespace HighlightPlus {
-
-    [CreateAssetMenu(menuName = "Highlight Plus Profile", fileName = "Highlight Plus Profile", order = 100)]
+	[CreateAssetMenu(menuName = "Highlight Plus Profile", fileName = "Highlight Plus Profile", order = 100)]
     [HelpURL("https://www.dropbox.com/s/v9qgn68ydblqz8x/Documentation.pdf?dl=0")]
     public class HighlightProfile : ScriptableObject {
 

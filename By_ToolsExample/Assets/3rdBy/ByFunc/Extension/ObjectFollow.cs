@@ -1,8 +1,7 @@
-﻿using System;
-using UnityEngine;
-
-namespace ZCustom
+﻿namespace _3rdBy.ByFunc.Extension
 {
+    using UnityEngine;
+
     //
     public class ObjectFollow : MonoBehaviour
     {

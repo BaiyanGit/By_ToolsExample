@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-
-namespace MetaFramework.Helper
+﻿namespace _3rdBy.MetaFramework.UI.Helper.List
 {
+    using UnityEngine;
+
     public class ListItemHelper : MonoBehaviour
     {
         protected ListItemData data;

@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-
-namespace 滚轮测试.Scripts
+﻿namespace Demos.示例_滚轮测试.Scripts
 {
+    using UnityEngine;
+
     public class RollTest : MonoBehaviour
     {
         [Range(1, 10)] public int speed = 1;

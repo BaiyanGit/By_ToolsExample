@@ -1,7 +1,7 @@
-using UnityEngine;
-
-namespace Demos.示例_挖土效果
+namespace Demos.示例_Terrain挖土效果
 {
+    using UnityEngine;
+
     public class TerrainDeformation1 : MonoBehaviour
     {
         public float deformationRadius = 1f; // 坑的半径

@@ -1,9 +1,9 @@
 namespace _3rd.HighlightPlus.Editor {
     using System.Collections.Generic;
-    using global::HighlightPlus;
+    using Scripts;
     using UnityEditor;
     using UnityEngine;
-    using QualityLevel = global::HighlightPlus.QualityLevel;
+    using QualityLevel = global::_3rd.HighlightPlus.Scripts.QualityLevel;
 
     [CustomEditor(typeof(HighlightEffect))]
     [CanEditMultipleObjects]

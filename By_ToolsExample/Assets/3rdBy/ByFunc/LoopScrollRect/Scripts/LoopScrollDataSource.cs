@@ -1,8 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
-
-namespace UnityEngine.UI
+﻿namespace _3rdBy.ByFunc.LoopScrollRect.Scripts
 {
+    using UnityEngine;
+
     public abstract class LoopScrollDataSource
     {
         public abstract void ProvideData(Transform transform, int idx);

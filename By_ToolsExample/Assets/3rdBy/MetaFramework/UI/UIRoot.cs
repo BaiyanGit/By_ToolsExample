@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
-
-namespace MetaFramework.UI
+﻿namespace _3rdBy.MetaFramework.UI
 {
+    using System;
+    using System.Collections.Generic;
     using _3rdBy.MetaFramework.Singleton;
+    using UnityEngine;
+    using UnityEngine.EventSystems;
+    using UnityEngine.UI;
 
     public enum UILayer
     {

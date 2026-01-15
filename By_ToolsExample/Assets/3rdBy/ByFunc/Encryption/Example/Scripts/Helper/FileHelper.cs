@@ -1,4 +1,4 @@
-namespace Helper
+namespace _3rdBy.ByFunc.Encryption.Example.Scripts.Helper
 {
     using System;
     using System.ComponentModel;

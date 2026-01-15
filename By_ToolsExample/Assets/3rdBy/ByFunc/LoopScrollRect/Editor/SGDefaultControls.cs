@@ -1,5 +1,6 @@
 ﻿namespace _3rdBy.ByFunc.LoopScrollRect.Editor
 {
+    using Scripts;
     using UnityEngine;
     using UnityEngine.UI;
 

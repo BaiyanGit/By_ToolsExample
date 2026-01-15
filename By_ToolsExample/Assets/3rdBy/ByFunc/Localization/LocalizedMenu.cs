@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-
-namespace ZCustom
+﻿namespace _3rdBy.ByFunc.Localization
 {
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.UI;
+
     [RequireComponent(typeof(Dropdown))]
     public class LocalizedMenu : MonoBehaviour
     {

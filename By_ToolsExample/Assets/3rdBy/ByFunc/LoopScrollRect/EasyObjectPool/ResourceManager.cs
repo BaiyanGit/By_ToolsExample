@@ -1,10 +1,8 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
-using System.Linq;
-
-
-namespace SG
+﻿namespace _3rdBy.ByFunc.LoopScrollRect.EasyObjectPool
 {
+    using System.Collections.Generic;
+    using UnityEngine;
+
     [DisallowMultipleComponent]
     [AddComponentMenu("")]
     public class ResourceManager : MonoBehaviour

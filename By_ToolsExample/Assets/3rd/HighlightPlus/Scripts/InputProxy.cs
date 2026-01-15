@@ -1,11 +1,7 @@
-﻿using UnityEngine;
-
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
-#endif
-
-namespace HighlightPlus {
+﻿namespace _3rd.HighlightPlus.Scripts {
+    using UnityEngine;
+    using UnityEngine.InputSystem;
+    using UnityEngine.InputSystem.Controls;
 
     public static class InputProxy {
 

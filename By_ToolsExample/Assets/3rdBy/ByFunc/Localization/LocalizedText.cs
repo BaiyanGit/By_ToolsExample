@@ -1,11 +1,8 @@
-﻿using System;
-using Cysharp.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
-
-namespace ZCustom
+﻿namespace _3rdBy.ByFunc.Localization
 {
+    using UnityEngine;
+    using UnityEngine.UI;
+
     [RequireComponent(typeof(Text))]
     public class LocalizedText : MonoBehaviour
     {

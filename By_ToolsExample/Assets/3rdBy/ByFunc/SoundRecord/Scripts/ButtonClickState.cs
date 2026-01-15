@@ -1,10 +1,10 @@
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-
-namespace _3rdBy.SoundRecord.Scripts
+namespace _3rdBy.ByFunc.SoundRecord.Scripts
 {
+    using UnityEngine;
+    using UnityEngine.Events;
+    using UnityEngine.EventSystems;
+    using UnityEngine.UI;
+
     public class ButtonClickState : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         public Sprite pressState;

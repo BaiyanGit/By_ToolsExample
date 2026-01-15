@@ -4,11 +4,12 @@
  * contact@marchingbytes.com
  */
 // modified version by Kanglai Qian
-using UnityEngine;
-using System.Collections.Generic;
 
-namespace SG
+namespace _3rdBy.ByFunc.LoopScrollRect.EasyObjectPool
 {
+    using System.Collections.Generic;
+    using UnityEngine;
+
     [DisallowMultipleComponent]
     [AddComponentMenu("")]
     public class PoolObject : MonoBehaviour

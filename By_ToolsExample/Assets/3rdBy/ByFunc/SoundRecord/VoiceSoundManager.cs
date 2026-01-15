@@ -1,4 +1,4 @@
-﻿namespace DefaultNamespace
+﻿namespace _3rdBy.ByFunc.SoundRecord
 {
     using System.Collections.Generic;
     using UnityEngine;

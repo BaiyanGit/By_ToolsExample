@@ -1,9 +1,9 @@
-using System.Collections;
-using UnityEngine;
-using UnityEngine.UI;
-
-namespace MetaFramework.UI
+namespace _3rdBy.MetaFramework.UI
 {
+    using Interface;
+    using UnityEngine;
+    using UnityEngine.UI;
+
     /// <summary>
     /// UI,UIBase,Model,View
     /// </summary>

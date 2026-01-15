@@ -1,9 +1,7 @@
-﻿namespace Program.HttpData
+﻿namespace _3rdBy.ByFunc.SoundRecord.Scripts
 {
     using System;
-    using System.Collections.Generic;
-    using MetaFramework.Helper;
-    using ZCustom;
+    using MetaFramework.HttpNetwork;
 
     /// <summary>
     /// 语音 请求数据（加入房间、获取聊天消息）

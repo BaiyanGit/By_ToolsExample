@@ -395,7 +395,7 @@
                 for (var i = 0; i < _directoryPrefabs.Count; i++)
                 {
                     var index       = i;
-                    var scriptsName = System.IO.Path.GetFileNameWithoutExtension(_directoryPrefabs[index]);
+                    var scriptsName = Path.GetFileNameWithoutExtension(_directoryPrefabs[index]);
                     var tmp         = AssetDatabase.FindAssets($"{scriptsName} t:Script", _scriptsFolders.ToArray());
                     if (tmp != null && tmp.Length > 0) _allAssetPaths.AddRange(tmp);
                 }

@@ -144,7 +144,7 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
                 }
                 catch (Exception e)
                 {
-                    throw new System.Exception("组件命名错误！ " + child.name + "\n" + e.Message);
+                    throw new Exception("组件命名错误！ " + child.name + "\n" + e.Message);
                 }
 
                 // string[] childNames = child.name.Split('_');
@@ -167,7 +167,7 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
 
             if (_allPropsDic.TryGetValue(finalPropName, out var view))
             {
-                throw new System.Exception("组件重名！ " + path);
+                throw new Exception("组件重名！ " + path);
             }
 
             var viewPropAndCom = new ViewPropAndCom()

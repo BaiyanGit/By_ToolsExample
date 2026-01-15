@@ -1,13 +1,13 @@
-namespace Helper
+namespace _3rdBy.ByFunc.Encryption.Example.Scripts.Helper
 {
     /*
      * Windows卸载检测助手
      * API 切换 .Net Framework
      */
-
     using System;
     using Microsoft.Win32;
     using UnityEngine;
+
     /// <summary>
     /// 卸载检测助手
     /// </summary>

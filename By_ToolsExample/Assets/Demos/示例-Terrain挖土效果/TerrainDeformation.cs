@@ -1,10 +1,10 @@
 // 脚本名称：TerrainDeformation.cs
 // 脚本功能：实现地形挖土效果
 
-using UnityEngine;
-
-namespace Demos.示例_挖土效果
+namespace Demos.示例_Terrain挖土效果
 {
+    using UnityEngine;
+
     public class TerrainDeformation : MonoBehaviour
     {
         [Header("变形地形")] public Terrain terrain;

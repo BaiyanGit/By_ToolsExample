@@ -1,9 +1,8 @@
-using UnityEngine;
-
-namespace KeyPad
+namespace Demos.示例_快捷键切换应用.Scripts.KeyPadAPI
 {
     using System;
     using System.Runtime.InteropServices;
+    using UnityEngine;
 
     /// <summary>
     /// 键盘API

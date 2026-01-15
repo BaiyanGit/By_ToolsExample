@@ -1,10 +1,9 @@
-﻿using UnityEngine;
-using System.Collections;
-using UnityEngine.UI;
-
-namespace SG
+﻿namespace _3rdBy.ByFunc.LoopScrollRect.Demo.Scripts
 {
-    [RequireComponent(typeof(UnityEngine.UI.LoopScrollRect))]
+    using LoopScrollRect.Scripts;
+    using UnityEngine;
+
+    [RequireComponent(typeof(LoopScrollRect))]
     [DisallowMultipleComponent]
     public class InitOnStart : MonoBehaviour
     {

@@ -1,13 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
-using DG.Tweening;
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-
-namespace ZCustom
+namespace _3rdBy.MetaFramework.UI.FoldPanel
 {
+    using UnityEngine;
+    using UnityEngine.Events;
+    using UnityEngine.EventSystems;
+    using UnityEngine.UI;
+
     public class TitleItem : MonoBehaviour, IPointerClickHandler
     {
         [SerializeField] private Text _title;

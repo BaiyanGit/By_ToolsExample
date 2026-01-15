@@ -1,4 +1,4 @@
-namespace Example.ColorPanel
+namespace _3rdBy.ByFunc.ColorSelected.Scripts
 {
     using UnityEngine;
     using UnityEngine.Events;

@@ -1,6 +1,5 @@
-﻿using UnityEngine;
-
-namespace HighlightPlus {
+﻿namespace _3rd.HighlightPlus.Scripts {
+    using UnityEngine;
 
     public enum HitFxMode {
         Overlay = 0,

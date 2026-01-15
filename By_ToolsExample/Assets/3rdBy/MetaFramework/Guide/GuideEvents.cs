@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.EventSystems;
-
-namespace ZCustom
+﻿namespace _3rdBy.MetaFramework.Guide
 {
+    using System;
+    using UnityEngine;
+    using UnityEngine.EventSystems;
+
     public class GuideEvents : MonoBehaviour, IPointerClickHandler
     {
         public event Action SingleClick;

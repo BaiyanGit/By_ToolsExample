@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using global::ByTools.WindowsCommandHelper.Scripts;
+    using Scripts;
     using UnityEditor;
     using UnityEngine;
     using Debug = UnityEngine.Debug;

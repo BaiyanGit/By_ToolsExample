@@ -2,18 +2,18 @@
 // Created: 2018/07/13
 
 #if true // MODULE_MARKER
-using System;
-using DG.Tweening.Core;
-using DG.Tweening.Core.Enums;
-using DG.Tweening.Plugins;
-using DG.Tweening.Plugins.Core.PathCore;
-using DG.Tweening.Plugins.Options;
-using UnityEngine;
-
 #pragma warning disable 1591
-namespace DG.Tweening
+namespace _3rdBy.MetaFramework.Plugins.DOTween.Modules
 {
-	public static class DOTweenModulePhysics
+    using DG.Tweening;
+    using DG.Tweening.Core;
+    using DG.Tweening.Core.Enums;
+    using DG.Tweening.Plugins;
+    using DG.Tweening.Plugins.Core.PathCore;
+    using DG.Tweening.Plugins.Options;
+    using UnityEngine;
+
+    public static class DOTweenModulePhysics
     {
         #region Shortcuts
 

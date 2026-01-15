@@ -9,14 +9,13 @@
 #endregion
 
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-
-
-namespace LitJson
+namespace _3rdBy.MetaFramework.Plugins.LitJson
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.IO;
+
     public enum JsonToken
     {
         None,

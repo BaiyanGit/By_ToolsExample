@@ -1,9 +1,7 @@
-namespace SoundRecord.Scripts
+namespace _3rdBy.ByFunc.SoundRecord.Scripts
 {
-    using System.IO;
-    using _3rdBy.MetaFramework.Extension.ExtendComponent;
-    using _3rdBy.SoundRecord.Scripts;
     using Cysharp.Threading.Tasks;
+    using Extension.ExtendComponent;
     using UnityEngine;
     using UnityEngine.UI;
 

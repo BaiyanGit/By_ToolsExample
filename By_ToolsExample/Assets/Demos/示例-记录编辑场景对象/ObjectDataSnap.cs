@@ -1,4 +1,4 @@
-﻿namespace BySceneSnap_v1._0._0
+﻿namespace Demos.示例_记录编辑场景对象
 {
     using UnityEngine;
 

@@ -1,10 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-
-namespace ZCustom
+﻿namespace _3rdBy.MetaFramework.Guide
 {
+    using UnityEngine;
+
     /// <summary>
     /// UI事件渗透
     /// </summary>

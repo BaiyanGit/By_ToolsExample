@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace ZCustom
+﻿namespace _3rdBy.MetaFramework.HttpNetwork
 {
+    using System;
+
     [Serializable]
     public class RequestDataStruct
     {

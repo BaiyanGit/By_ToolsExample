@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace FSM
+﻿namespace _3rdBy.MetaFramework.FSM
 {
+    using System;
+
     /// <summary>
     /// 抽象状态类
     /// </summary>

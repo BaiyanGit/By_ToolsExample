@@ -1,13 +1,10 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
-
-namespace ZCustom
+namespace _3rdBy.MetaFramework.UI.FoldPanel
 {
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.Events;
+    using UnityEngine.UI;
+
     /// <summary>
     /// UGUI 折叠框
     /// </summary>

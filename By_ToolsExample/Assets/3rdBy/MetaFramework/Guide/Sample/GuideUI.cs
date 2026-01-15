@@ -1,11 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.UI;
-
-namespace ZCustom
+namespace _3rdBy.MetaFramework.Guide.Sample
 {
+    using System.Collections;
+    using UnityEngine;
+    using UnityEngine.UI;
+
     /// <summary>
     /// UI引导
     /// </summary>

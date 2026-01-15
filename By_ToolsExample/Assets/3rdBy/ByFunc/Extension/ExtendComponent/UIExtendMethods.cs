@@ -1,11 +1,10 @@
-﻿namespace _3rdBy.MetaFramework.Extension.ExtendComponent
+﻿namespace _3rdBy.ByFunc.Extension.ExtendComponent
 {
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
     using UnityEngine.Events;
     using UnityEngine.UI;
-    using ZCustom;
 
     /// <summary>
     /// UGUI组件扩展方法

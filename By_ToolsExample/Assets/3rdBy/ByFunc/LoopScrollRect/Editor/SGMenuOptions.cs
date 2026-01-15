@@ -130,7 +130,7 @@
                 return canvas.gameObject;
 
             // No canvas in the scene at all? Then create a new one.
-            return SGMenuOptions.CreateNewUI();
+            return CreateNewUI();
         }
         #endregion
         

@@ -1,11 +1,12 @@
-﻿using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
-using System;
-using System.Collections;
-
-namespace UnityEngine.UI
+﻿namespace _3rdBy.ByFunc.LoopScrollRect.Scripts
 {
+    using System;
+    using System.Collections;
+    using UnityEngine;
+    using UnityEngine.Events;
+    using UnityEngine.EventSystems;
+    using UnityEngine.UI;
+
     [AddComponentMenu("")]
     [DisallowMultipleComponent]
     [RequireComponent(typeof(RectTransform))]

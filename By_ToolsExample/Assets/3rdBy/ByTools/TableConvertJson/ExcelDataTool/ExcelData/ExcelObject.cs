@@ -1,4 +1,4 @@
-﻿namespace XFramework.ExcelData
+﻿namespace _3rdBy.ByTools.TableConvertJson.ExcelDataTool.ExcelData
 {
     public abstract class ExcelObject
     {

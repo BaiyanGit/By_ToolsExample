@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace ZCustom
+﻿namespace _3rdBy.MetaFramework.Guide
 {
+    using UnityEngine;
+
     public class PlayerController : MonoBehaviour
     {
         public float _speed = 30f;

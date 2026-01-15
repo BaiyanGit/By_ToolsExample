@@ -1,9 +1,11 @@
 using System;
 using UnityEngine;
 
-
-[Serializable]
-public class BaseAsset : ScriptableObject
+namespace _3rdBy.ByTools.GenerateAssets.AssetClass
 {
-    public string desc;
+    [Serializable]
+    public class BaseAsset : ScriptableObject
+    {
+        public string desc;
+    }
 }

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace MetaFramework.UI
+﻿namespace _3rdBy.MetaFramework.UI.RedPoint
 {
+    using System;
+    using UnityEngine;
+
     public class RedPointSystems
     {
         /// <summary>

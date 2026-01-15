@@ -1,4 +1,4 @@
-namespace MetaFramework.UI
+namespace _3rdBy.MetaFramework.UI
 {
     public class BindingData<T>
     {

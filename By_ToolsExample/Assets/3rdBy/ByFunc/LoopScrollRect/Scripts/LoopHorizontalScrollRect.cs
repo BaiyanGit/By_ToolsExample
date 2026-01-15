@@ -1,8 +1,8 @@
-using UnityEngine;
-using System.Collections;
-
-namespace UnityEngine.UI
+namespace _3rdBy.ByFunc.LoopScrollRect.Scripts
 {
+    using UnityEngine;
+    using UnityEngine.UI;
+
     [AddComponentMenu("UI/Loop Horizontal Scroll Rect", 50)]
     [DisallowMultipleComponent]
     public class LoopHorizontalScrollRect : LoopScrollRect

@@ -1,46 +1,48 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.UI;
-
-
-[Serializable]
-public struct ToggleControlAttribute
+namespace Demos.ç¤ºä¾‹_Toggleæµ‹è¯•
 {
-    [Header("¸´Ñ¡¿ò")] public Toggle toggle;
-    [Header("¹ØÁª¶ÔÏó")] public GameObject objGo;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEngine;
+    using UnityEngine.UI;
 
-    public ToggleControlAttribute(Toggle tog, GameObject go)
+    [Serializable]
+    public struct ToggleControlAttribute
     {
-        toggle = tog;
-        objGo = go;
-    }
-}
+        [Header("å¤é€‰æ¡†")] public Toggle toggle;
+        [Header("å…³è”å¯¹è±¡")] public GameObject objGo;
 
-/// <summary>
-/// Í¨ÓÃUIÃæ°åÇĞ»»¿ØÖÆÆ÷
-/// </summary>
-public class UIPanelToggleController
-{
-    private List<ToggleControlAttribute> _togglePanelMap;
-
-    public void Initialize(List<ToggleControlAttribute> togglePanelMap)
-    {
-        _togglePanelMap = togglePanelMap;
-        foreach (var entry in _togglePanelMap)
+        public ToggleControlAttribute(Toggle tog, GameObject go)
         {
-            entry.objGo.SetActive(false);
-            entry.toggle.onValueChanged.AddListener(isOn => OnToggleSwitch(entry.toggle, isOn));
+            toggle = tog;
+            objGo  = go;
+        }
+    }
+
+    /// <summary>
+    /// é€šç”¨UIé¢æ¿åˆ‡æ¢æ§åˆ¶å™¨
+    /// </summary>
+    public class UIPanelToggleController
+    {
+        private List<ToggleControlAttribute> _togglePanelMap;
+
+        public void Initialize(List<ToggleControlAttribute> togglePanelMap)
+        {
+            _togglePanelMap = togglePanelMap;
+            foreach (var entry in _togglePanelMap)
+            {
+                entry.objGo.SetActive(false);
+                entry.toggle.onValueChanged.AddListener(isOn => OnToggleSwitch(entry.toggle, isOn));
+            }
+
+            if (_togglePanelMap.Count == 0) return;
+            _togglePanelMap.First().toggle.isOn = true; // é»˜è®¤æ‰“å¼€ç¬¬ä¸€ä¸ª
         }
 
-        if (_togglePanelMap.Count == 0) return;
-        _togglePanelMap.First().toggle.isOn = true; // Ä¬ÈÏ´ò¿ªµÚÒ»¸ö
-    }
-
-    private void OnToggleSwitch(Toggle toggle, bool isOn)
-    {
-        var togStruct = _togglePanelMap.Find(t => t.toggle == toggle);
-        togStruct.objGo.SetActive(isOn);
+        private void OnToggleSwitch(Toggle toggle, bool isOn)
+        {
+            var togStruct = _togglePanelMap.Find(t => t.toggle == toggle);
+            togStruct.objGo.SetActive(isOn);
+        }
     }
 }

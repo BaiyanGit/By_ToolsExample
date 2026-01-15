@@ -1,39 +1,39 @@
-using UnityEngine;
-using ZCustom;
-//使用示例：在启动程序时，注入AEvent<结构体>，在使用时调用Publish进行通知。
-namespace ExampleType
+namespace _3rdBy.MetaFramework.EventNotice
 {
+    using UnityEngine;
+
+    //使用示例：在启动程序时，注入AEvent<结构体>，在使用时调用Publish进行通知。
     public struct StructExample
     {
         public float testValue;
     }
-}
 
 //挂载到物体上即可
-public class EventCallExample : MonoBehaviour
-{
-    private ExampleType.StructExample _structExample;
-    private void Start()
+    public class EventCallExample : MonoBehaviour
     {
-        _structExample.testValue = 100;
+        private StructExample _structExample;
+        private void Start()
+        {
+            _structExample.testValue = 100;
 
-        //调用通知
-        EventManager.Instance.Publish(_structExample);
+            //调用通知
+            EventManager.Instance.Publish(_structExample);
+        }
     }
-}
 
-public class EventUseExample1 : AEvent<ExampleType.StructExample>
-{
-    protected override void Run(ExampleType.StructExample a)
+    public class EventUseExample1 : AEvent<StructExample>
     {
-        Debug.Log(a.testValue);
+        protected override void Run(StructExample a)
+        {
+            Debug.Log(a.testValue);
+        }
     }
-}
 
-public class EventUseExample2 : AEvent<ExampleType.StructExample>
-{
-    protected override void Run(ExampleType.StructExample a)
+    public class EventUseExample2 : AEvent<StructExample>
     {
-        Debug.Log(a.testValue);
+        protected override void Run(StructExample a)
+        {
+            Debug.Log(a.testValue);
+        }
     }
 }

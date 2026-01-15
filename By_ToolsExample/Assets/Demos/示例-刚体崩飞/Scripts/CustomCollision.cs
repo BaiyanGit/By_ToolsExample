@@ -1,9 +1,7 @@
-using UnityEngine;
-using UnityEngine.Assertions;
-
-namespace 崩飞现象.Scripts
+namespace Demos.示例_刚体崩飞.Scripts
 {
-    using System;
+    using UnityEngine;
+    using UnityEngine.Assertions;
 
     /// <summary>
     /// 碰撞暂停物体

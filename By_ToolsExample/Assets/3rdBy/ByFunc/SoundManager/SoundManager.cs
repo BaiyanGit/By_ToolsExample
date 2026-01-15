@@ -1,10 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using _3rdBy.MetaFramework.Singleton;
-using UnityEngine;
-
-namespace _3rdBy.SoundManager
+﻿namespace _3rdBy.ByFunc.SoundManager
 {
+    using System.Collections;
+    using System.Collections.Generic;
+    using _3rdBy.MetaFramework.Singleton;
+    using UnityEngine;
+
     public class SoundManager : MonoObjSingletonTemplate<SoundManager>
     {
         private AudioSource _mBackgroundAudio;

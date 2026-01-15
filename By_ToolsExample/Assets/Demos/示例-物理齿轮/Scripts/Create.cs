@@ -1,9 +1,6 @@
-using UnityEngine;
-
-namespace 齿轮测试
+namespace Demos.示例_物理齿轮.Scripts
 {
-    using System;
-    using UnityEngine.Serialization;
+    using UnityEngine;
 
     public class Create : MonoBehaviour
     {

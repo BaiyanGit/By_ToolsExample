@@ -1,4 +1,4 @@
-﻿namespace ByTools.WindowsCommandHelper.Scripts
+﻿namespace _3rdBy.ByTools.WindowsCommandHelper.Scripts
 {
     using System;
     using System.Diagnostics;

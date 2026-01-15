@@ -1,6 +1,5 @@
 namespace Demos.示例_记录编辑场景对象.Editor
 {
-    using BySceneSnap_v1._0._0;
     using UnityEditor;
     using UnityEngine;
 

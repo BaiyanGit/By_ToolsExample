@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Rendering;
-
-namespace HighlightPlus {
+﻿namespace _3rd.HighlightPlus.Scripts {
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.Rendering;
 
 
     public partial class HighlightEffect : MonoBehaviour {

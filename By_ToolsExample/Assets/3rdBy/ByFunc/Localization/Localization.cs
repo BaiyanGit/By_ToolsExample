@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using Cysharp.Threading.Tasks;
-using LitJson;
-using UnityEngine;
-using UnityEngine.Networking;
-using XFramework.ExcelData;
-
-namespace ZCustom
+﻿namespace _3rdBy.ByFunc.Localization
 {
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    using UnityEngine;
+
     public class Localization
     {
         private const string Path = "Localization";

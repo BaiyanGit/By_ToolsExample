@@ -1,12 +1,10 @@
-﻿using System;
-using UnityEngine;
-using System.Linq;
-using System.Threading;
-using System.Collections;
-using System.Collections.Generic;
-
-namespace JEngine.Core
+﻿namespace _3rdBy.ByFunc.Extension
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading;
+    using UnityEngine;
+
     /// <summary>
     /// 子线程用在主线程上
     /// </summary>

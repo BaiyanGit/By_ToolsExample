@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Cysharp.Threading.Tasks;
-using UnityEngine;
-
-namespace ZCustom
+﻿namespace _3rdBy.MetaFramework.EventNotice
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using Cysharp.Threading.Tasks;
+    using UnityEngine;
+
     public class EventManager : MonoBehaviour
     {
         public static EventManager Instance { get; private set; }

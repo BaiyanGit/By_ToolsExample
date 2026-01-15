@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.MetaFramework.Extension.ExtendComponent
+﻿namespace _3rdBy.ByFunc.Extension.ExtendComponent
 {
     using System.Linq;
     using UnityEngine;

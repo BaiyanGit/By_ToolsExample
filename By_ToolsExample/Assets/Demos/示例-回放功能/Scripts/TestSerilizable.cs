@@ -1,30 +1,32 @@
-using System;
-using UnityEngine;
-
-public class User
+namespace Demos.示例_回放功能.Scripts
 {
-    public string userName;
-    public int age;
-}
+    using UnityEngine;
 
-public interface IUserService
-{
-    void RegisterUser(User user);
-}
-
-
-public class TestSerilizable : MonoBehaviour,IUserService
-{
-    private void Start()
+    public class User
     {
-        User user = new User();
-        user.userName = "张三";
-        user.age = 18;
-        RegisterUser(user);
+        public string userName;
+        public int age;
     }
 
-    public void RegisterUser(User user)
+    public interface IUserService
     {
-        Debug.Log(user.userName + "注册成功");
+        void RegisterUser(User user);
+    }
+
+
+    public class TestSerilizable : MonoBehaviour,IUserService
+    {
+        private void Start()
+        {
+            User user = new User();
+            user.userName = "张三";
+            user.age      = 18;
+            RegisterUser(user);
+        }
+
+        public void RegisterUser(User user)
+        {
+            Debug.Log(user.userName + "注册成功");
+        }
     }
 }

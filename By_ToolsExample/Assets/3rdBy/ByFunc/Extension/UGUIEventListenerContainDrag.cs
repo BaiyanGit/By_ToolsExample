@@ -4,14 +4,12 @@
 // E-Mail: kevin@kylin.app
 // ----------------------------------------------------------------------------------------------------
 
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-
-namespace ZCustom
+namespace _3rdBy.ByFunc.Extension
 {
+    using UnityEngine;
+    using UnityEngine.EventSystems;
+    using UnityEngine.UI;
+
     /// <summary>
     ///  UGUI 事件 监听 并且包含拖拽
     /// </summary>

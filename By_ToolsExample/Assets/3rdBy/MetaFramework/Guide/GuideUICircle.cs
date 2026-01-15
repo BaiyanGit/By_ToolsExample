@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-
-namespace ZCustom
+﻿namespace _3rdBy.MetaFramework.Guide
 {
+    using UnityEngine;
+    using UnityEngine.UI;
+
     /// <summary>
     /// 圆形遮罩镂空引导
     /// </summary>

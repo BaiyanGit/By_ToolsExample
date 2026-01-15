@@ -1,10 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
-
-namespace ZCustom
+namespace _3rdBy.MetaFramework.Guide.Sample
 {
+    using UnityEngine;
+
     /// <summary>
     /// 键盘按键引导
     /// </summary>

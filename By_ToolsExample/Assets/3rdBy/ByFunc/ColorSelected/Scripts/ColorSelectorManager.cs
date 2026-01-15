@@ -1,8 +1,7 @@
-namespace Example.ColorPanel
+namespace _3rdBy.ByFunc.ColorSelected.Scripts
 {
-    using System;
-    using UnityEngine;
     using System.Collections.Generic;
+    using UnityEngine;
     using UnityEngine.UI;
 
     public class ColorSelectorManager : MonoBehaviour

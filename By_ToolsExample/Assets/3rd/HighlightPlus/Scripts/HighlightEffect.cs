@@ -2,12 +2,11 @@
 /// Highlight Plus - (c) 2018-2021 Kronnect Technologies SL
 /// </summary>
 
-using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Rendering;
-
-namespace HighlightPlus {
+namespace _3rd.HighlightPlus.Scripts {
+    using System;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.Rendering;
 
     public delegate bool OnObjectHighlightEvent(GameObject obj);
     public delegate bool OnRendererHighlightEvent(Renderer renderer);

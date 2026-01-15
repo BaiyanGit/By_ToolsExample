@@ -1,10 +1,8 @@
-﻿using UnityEngine;
-
-namespace BySceneSnap_v1._0._0
+﻿namespace Demos.示例_记录编辑场景对象
 {
     using System.Collections.Generic;
     using System.Linq;
-    using LitJson;
+    using _3rdBy.MetaFramework.Plugins.LitJson;
     using UnityEngine;
 
     public class SceneSnap : MonoBehaviour
@@ -72,7 +70,7 @@ namespace BySceneSnap_v1._0._0
                           $"位置：({string.Join(",", snap.position)})\n" +
                           $"旋转：({string.Join(",", snap.rotation)})\n" +
                           $"缩放：({string.Join(",", snap.localScale)})");
-                id = _objectDataSnaps.Count;
+                id      = _objectDataSnaps.Count;
                 snap.id = id;
                 _objectDataSnaps.Add(go, snap);
             }
@@ -203,7 +201,7 @@ namespace BySceneSnap_v1._0._0
         /// <param name="arr"></param>
         public static void Vector3ToFloatArray(Vector3 vct, ref float[] arr)
         {
-            arr = new float[3];
+            arr    = new float[3];
             arr[0] = vct.x;
             arr[1] = vct.y;
             arr[2] = vct.z;
@@ -217,23 +215,23 @@ namespace BySceneSnap_v1._0._0
         [InspectorName("场景2.json")] Scene2,
         [InspectorName("场景3.json")] Scene3,
     }
-}
 
 
-public static class ExtensionMethods
-{
-    public static Vector3 ToFloatArray(this float[] arr)
+    public static class ExtensionMethods
     {
-        if (arr == null || arr.Length < 3)
+        public static Vector3 ToFloatArray(this float[] arr)
         {
-            return Vector3.zero;
+            if (arr == null || arr.Length < 3)
+            {
+                return Vector3.zero;
+            }
+
+            return new Vector3(arr[0], arr[1], arr[2]);
         }
 
-        return new Vector3(arr[0], arr[1], arr[2]);
-    }
-
-    public static float[] ToVector3(this Vector3 vct)
-    {
-        return new[] { vct.x, vct.y, vct.z };
+        public static float[] ToVector3(this Vector3 vct)
+        {
+            return new[] { vct.x, vct.y, vct.z };
+        }
     }
 }

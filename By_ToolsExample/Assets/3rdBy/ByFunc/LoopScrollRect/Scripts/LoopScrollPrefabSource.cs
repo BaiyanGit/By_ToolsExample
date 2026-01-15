@@ -1,8 +1,8 @@
-﻿using UnityEngine;
-using System.Collections;
-
-namespace UnityEngine.UI
+﻿namespace _3rdBy.ByFunc.LoopScrollRect.Scripts
 {
+    using EasyObjectPool;
+    using UnityEngine;
+
     [System.Serializable]
     public class LoopScrollPrefabSource 
     {
@@ -14,16 +14,16 @@ namespace UnityEngine.UI
         {
             if(!inited)
             {
-                SG.ResourceManager.Instance.InitPool(prefabName, poolSize);
+                ResourceManager.Instance.InitPool(prefabName, poolSize);
                 inited = true;
             }
-            return SG.ResourceManager.Instance.GetObjectFromPool(prefabName);
+            return ResourceManager.Instance.GetObjectFromPool(prefabName);
         }
 
         public virtual void ReturnObject(Transform go)
         {
             go.SendMessage("ScrollCellReturn", SendMessageOptions.DontRequireReceiver);
-            SG.ResourceManager.Instance.ReturnObjectToPool(go.gameObject);
+            ResourceManager.Instance.ReturnObjectToPool(go.gameObject);
         }
     }
 }

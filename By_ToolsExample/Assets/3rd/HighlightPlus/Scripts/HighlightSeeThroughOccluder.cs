@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace HighlightPlus {
+﻿namespace _3rd.HighlightPlus.Scripts {
+    using System;
+    using System.Collections.Generic;
+    using UnityEngine;
 
     public struct MeshData {
         public Renderer renderer;

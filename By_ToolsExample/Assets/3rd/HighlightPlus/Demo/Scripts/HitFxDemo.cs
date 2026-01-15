@@ -1,6 +1,6 @@
-﻿using UnityEngine;
-
-namespace HighlightPlus.Demos {
+﻿namespace _3rd.HighlightPlus.Demo.Scripts {
+    using HighlightPlus.Scripts;
+    using UnityEngine;
 
     public class HitFxDemo : MonoBehaviour {
 

@@ -1,58 +1,59 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class FollowPosRot : MonoBehaviour
+namespace Demos.示例_自复位方向盘
 {
-    public static FollowPosRot Instance;
+    public class FollowPosRot : MonoBehaviour
+    {
+        public static FollowPosRot Instance;
 
-    public Transform parent;
+        public Transform parent;
 
-    public Transform target;
+        public Transform target;
 
-    public Transform targetFollow;
+        public Transform targetFollow;
 
   
-    public float _accelerationX;
-    public float _accelerationY;
-    public float _accelerationZ;
+        public float _accelerationX;
+        public float _accelerationY;
+        public float _accelerationZ;
 
-    private Vector3 offset;
+        private Vector3 offset;
 
-    public float offsetY;
+        public float offsetY;
 
-    private void Awake()
-    {
-        Instance = this;
+        private void Awake()
+        {
+            Instance = this;
 
 
-    }
+        }
 
   
 
-    private void LateUpdate()
-    {
-        target.SetParent(parent);
+        private void LateUpdate()
+        {
+            target.SetParent(parent);
 
-        offset = targetFollow.localPosition - target.localPosition;
+            offset = targetFollow.localPosition - target.localPosition;
 
-        _accelerationX = offset.x;
+            _accelerationX = offset.x;
 
-        _accelerationY = offset.y;
+            _accelerationY = offset.y;
 
-        _accelerationZ = offset.z;
+            _accelerationZ = offset.z;
 
 
-        offsetY = targetFollow.localEulerAngles.y - target.localEulerAngles.y;
+            offsetY = targetFollow.localEulerAngles.y - target.localEulerAngles.y;
 
-        target.SetParent(null);
-    }
+            target.SetParent(null);
+        }
 
     
 
-    private void OnDestroy()
-    {
-        Instance = null;
-    }
+        private void OnDestroy()
+        {
+            Instance = null;
+        }
 
+    }
 }

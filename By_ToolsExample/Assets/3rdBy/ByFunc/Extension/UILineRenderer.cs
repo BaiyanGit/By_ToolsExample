@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
- 
-namespace ExtraFoundation.Components
+﻿namespace _3rdBy.ByFunc.Extension
 {
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.UI;
+
     //===============================================================================
     [DisallowMultipleComponent]
     [RequireComponent(typeof(CanvasRenderer))]

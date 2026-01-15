@@ -1,4 +1,4 @@
-namespace _3rd.ProgressWindow
+namespace _3rdBy.ByFunc.ProgressWindow
 {
     using System;
     using System.Collections.Generic;

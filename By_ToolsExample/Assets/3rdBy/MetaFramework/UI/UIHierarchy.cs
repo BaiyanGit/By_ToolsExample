@@ -1,11 +1,12 @@
-﻿using System;
-using System.Threading;
-using Cysharp.Threading.Tasks;
-// using Unity.VisualScripting;
-using UnityEngine;
+﻿// using Unity.VisualScripting;
 
-namespace MetaFramework.UI
+namespace _3rdBy.MetaFramework.UI
 {
+    using System;
+    using System.Threading;
+    using Cysharp.Threading.Tasks;
+    using UnityEngine;
+
     /// <summary>
     /// 此脚本用于实现UI视觉效果
     /// </summary>

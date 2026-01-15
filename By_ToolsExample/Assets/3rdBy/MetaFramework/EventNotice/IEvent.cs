@@ -1,10 +1,9 @@
-﻿using System;
-using System.Diagnostics.Tracing;
-using Cysharp.Threading.Tasks;
-using UnityEngine;
-
-namespace ZCustom
+﻿namespace _3rdBy.MetaFramework.EventNotice
 {
+    using System;
+    using Cysharp.Threading.Tasks;
+    using UnityEngine;
+
     public interface IEvent
     {
         Type GetEventType();

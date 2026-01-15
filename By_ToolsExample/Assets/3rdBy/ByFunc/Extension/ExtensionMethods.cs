@@ -1,11 +1,9 @@
-namespace _3rdBy.MetaFramework.Extension
+namespace _3rdBy.ByFunc.Extension
 {
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Globalization;
-    using System.Linq;
-    using System.Reflection;
     using UnityEngine;
 
     /// <summary>

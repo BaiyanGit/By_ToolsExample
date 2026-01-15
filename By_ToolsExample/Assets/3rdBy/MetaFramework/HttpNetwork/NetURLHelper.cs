@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace ZCustom
+﻿namespace _3rdBy.MetaFramework.HttpNetwork
 {
+    using System.Collections.Generic;
+    using UnityEngine;
+
     public static class NetURLHelper
     {
         private static readonly Dictionary<string, string> ParamDic = new Dictionary<string, string>();

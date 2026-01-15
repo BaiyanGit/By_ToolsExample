@@ -3,11 +3,11 @@
  * 对pb.protobuf生成的CS文件进行调用测试
  */
 
-using UnityEngine;
-
-namespace Proto
+namespace Demos.示例_Proto.Proto
 {
+    using global::Proto;
     using Google.Protobuf;
+    using UnityEngine;
 
     public class TestProto : MonoBehaviour
     {

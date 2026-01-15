@@ -1,11 +1,8 @@
-﻿using System;
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
-
-namespace MetaFramework.Helper
+﻿namespace _3rdBy.MetaFramework.UI.Helper.Tab
 {
+    using UnityEngine;
+    using UnityEngine.UI;
+
     public class TabItemHelper : MonoBehaviour
     {
         [SerializeField] private Toggle toggle;

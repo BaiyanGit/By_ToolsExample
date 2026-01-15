@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.ByTools.Extension
+﻿namespace _3rdBy.ByFunc.Extension
 {
     using System;
     using System.Collections.Generic;

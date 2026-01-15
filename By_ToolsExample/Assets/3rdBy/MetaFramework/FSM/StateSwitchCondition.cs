@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace FSM
+﻿namespace _3rdBy.MetaFramework.FSM
 {
+    using System;
+
     public class StateSwitchCondition
     {
         public readonly Func<bool> predicate;

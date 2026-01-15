@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.Encryption
+﻿namespace _3rdBy.ByFunc.Encryption.Scripts
 {
     using System;
     using System.Linq;

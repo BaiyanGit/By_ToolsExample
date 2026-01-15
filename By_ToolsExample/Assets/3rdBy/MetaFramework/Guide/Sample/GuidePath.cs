@@ -1,11 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.Serialization;
-
-namespace ZCustom
+namespace _3rdBy.MetaFramework.Guide.Sample
 {
+    using UnityEngine;
+
     /// <summary>
     /// 路径引导
     /// </summary>

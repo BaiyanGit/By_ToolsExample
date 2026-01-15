@@ -1,7 +1,6 @@
-﻿using UnityEngine;
-using HighlightPlus;
-
-namespace HighlightPlus.Demos {
+﻿namespace _3rd.HighlightPlus.Demo.Scripts {
+    using HighlightPlus.Scripts;
+    using UnityEngine;
 
     public class ManualSelectionDemo : MonoBehaviour {
 

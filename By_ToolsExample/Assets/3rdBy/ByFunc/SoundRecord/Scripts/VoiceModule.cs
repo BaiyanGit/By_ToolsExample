@@ -1,14 +1,8 @@
-using System;
-using System.IO;
-
-namespace _3rdBy.SoundRecord.Scripts
+namespace _3rdBy.ByFunc.SoundRecord.Scripts
 {
-    using UnityEditor;
+    using _3rdBy.MetaFramework.Singleton;
     using UnityEngine;
     using UnityEngine.Events;
-    using Cysharp.Threading.Tasks;
-    using MetaFramework.Extension.ExtendComponent;
-    using MetaFramework.Singleton;
 
     /// <summary>
     /// 声音录制模块

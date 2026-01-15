@@ -1,10 +1,9 @@
-namespace Helper
+namespace _3rdBy.ByFunc.Encryption.Example.Scripts.Helper
 {
+    using System;
+    using System.IO;
     using System.Security.Cryptography;
     using System.Text;
-    using System.IO;
-    using System;
-    using UnityEngine;
 
     /// <summary>
     /// 加密帮助类

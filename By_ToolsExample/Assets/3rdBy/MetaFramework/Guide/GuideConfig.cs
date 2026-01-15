@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections;
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.UI;
-
-namespace ZCustom
+﻿namespace _3rdBy.MetaFramework.Guide
 {
+    using UnityEngine;
+    using UnityEngine.Events;
+
     /// <summary>
     /// 事件引导类型
     /// </summary>

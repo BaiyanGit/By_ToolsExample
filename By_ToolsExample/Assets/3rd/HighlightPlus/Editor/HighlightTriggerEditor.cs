@@ -1,5 +1,5 @@
 ﻿namespace _3rd.HighlightPlus.Editor {
-    using global::HighlightPlus;
+    using Scripts;
     using UnityEditor;
     using UnityEngine;
 

@@ -1,16 +1,17 @@
 ﻿// Author: Daniele Giardini - http://www.demigiant.com
 // Created: 2018/07/13
 
-using System;
-using System.Reflection;
-using UnityEngine;
-using DG.Tweening.Core;
-using DG.Tweening.Plugins.Core.PathCore;
-using DG.Tweening.Plugins.Options;
-
 #pragma warning disable 1591
-namespace DG.Tweening
+namespace _3rdBy.MetaFramework.Plugins.DOTween.Modules
 {
+    using System;
+    using System.Reflection;
+    using DG.Tweening;
+    using DG.Tweening.Core;
+    using DG.Tweening.Plugins.Core.PathCore;
+    using DG.Tweening.Plugins.Options;
+    using UnityEngine;
+
     /// <summary>
     /// Utility functions that deal with available Modules.
     /// Modules defines:

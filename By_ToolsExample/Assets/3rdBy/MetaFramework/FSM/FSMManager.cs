@@ -1,9 +1,9 @@
-using System;
-using UnityEngine;
-using System.Collections.Generic;
-
-namespace FSM
+namespace _3rdBy.MetaFramework.FSM
 {
+    using System;
+    using System.Collections.Generic;
+    using UnityEngine;
+
     public class FSMManager : MonoBehaviour
     {
         public static FSMManager Instance { get; private set; }

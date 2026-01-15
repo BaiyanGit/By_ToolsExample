@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections;
-using UnityEngine;
-
-namespace HighlightPlus {
+﻿namespace _3rd.HighlightPlus.Scripts {
+    using System;
+    using System.Collections;
+    using UnityEngine;
 
     public enum TriggerMode {
         ColliderEventsOnlyOnThisObject = 0,

@@ -1,18 +1,13 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using ZCustom;
-using Cysharp.Threading.Tasks;
-using Object = UnityEngine.Object;
-
-namespace MetaFramework.UI
+namespace _3rdBy.MetaFramework.UI
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using _3rdBy.MetaFramework.Singleton;
+    using Cysharp.Threading.Tasks;
+    using Interface;
+    using UnityEngine;
+    using Object = UnityEngine.Object;
 
     /// <summary>
     /// UI

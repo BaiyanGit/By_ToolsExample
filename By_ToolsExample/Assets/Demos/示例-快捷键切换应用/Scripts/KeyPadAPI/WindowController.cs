@@ -1,12 +1,13 @@
-using System;
-using System.Diagnostics;
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
-using Debug = UnityEngine.Debug;
-
-namespace KeyPad
+namespace Demos.示例_快捷键切换应用.Scripts.KeyPadAPI
 {
+    using System;
+    using System.Diagnostics;
+    using KeyPad;
+    using TMPro;
+    using UnityEngine;
+    using UnityEngine.UI;
+    using Debug = UnityEngine.Debug;
+
     public class WindowController : MonoBehaviour
     {
         [SerializeField] private Transform itemParent;

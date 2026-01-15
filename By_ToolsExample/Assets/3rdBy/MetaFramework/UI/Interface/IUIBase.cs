@@ -1,9 +1,7 @@
-using System.Collections;
-using UnityEngine;
-using UnityEngine.UI;
-
-namespace MetaFramework.UI
+namespace _3rdBy.MetaFramework.UI.Interface
 {
+    using UnityEngine;
+
     public interface IUIBase
     {
         string UIName { get; set; }

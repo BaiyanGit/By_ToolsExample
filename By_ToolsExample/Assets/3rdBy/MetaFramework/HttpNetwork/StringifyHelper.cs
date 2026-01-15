@@ -3,7 +3,7 @@
     using System;
     using System.IO;
     using System.Text.RegularExpressions;
-    using LitJson;
+    using Plugins.LitJson;
     using UnityEngine;
 
     public abstract class StringifyHelper

@@ -1,6 +1,5 @@
-namespace Demos.示例_地形改变贴图
+namespace Demos.示例_Terrain改变贴图
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;

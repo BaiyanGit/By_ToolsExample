@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace FSM
+﻿namespace _3rdBy.MetaFramework.FSM
 {
+    using System;
+    using System.Collections.Generic;
+
     /// <summary>
     /// 状态机
     /// </summary>

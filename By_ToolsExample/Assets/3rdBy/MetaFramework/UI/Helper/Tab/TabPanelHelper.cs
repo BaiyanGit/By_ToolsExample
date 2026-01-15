@@ -1,8 +1,7 @@
-﻿using System;
-using UnityEngine;
-
-namespace MetaFramework.Helper
+﻿namespace _3rdBy.MetaFramework.UI.Helper.Tab
 {
+    using UnityEngine;
+
     [RequireComponent(typeof(CanvasGroup))]
     public class TabPanelHelper : MonoBehaviour
     {

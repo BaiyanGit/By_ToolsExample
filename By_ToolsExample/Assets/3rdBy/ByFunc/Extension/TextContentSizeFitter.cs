@@ -1,8 +1,7 @@
-﻿using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
+﻿namespace _3rdBy.ByFunc.Extension {
+    using UnityEngine;
+    using UnityEngine.UI;
 
-namespace ZCustom {
     /// <summary>
     /// 根据文本内容决定背景图大小适配
     /// </summary>

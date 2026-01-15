@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace ZCustom
+﻿namespace _3rdBy.MetaFramework.EventNotice
 {
+    using System;
+    using System.Collections.Generic;
+
     public class ListComponent<T> : List<T>, IDisposable
     {
         public static ListComponent<T> Create()

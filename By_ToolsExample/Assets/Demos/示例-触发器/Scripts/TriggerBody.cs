@@ -1,7 +1,7 @@
-using UnityEngine;
-
-namespace 触发器
+namespace Demos.示例_触发器.Scripts
 {
+    using UnityEngine;
+
     public class TriggerBody : MonoBehaviour
     {
         private void OnTriggerEnter(Collider other)

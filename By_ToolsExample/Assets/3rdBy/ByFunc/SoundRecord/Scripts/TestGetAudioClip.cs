@@ -1,9 +1,10 @@
-namespace _3rdBy.SoundRecord.Scripts
+namespace _3rdBy.ByFunc.SoundRecord.Scripts
 {
     using System.IO;
-    using MetaFramework.HttpNetwork;
     using Cysharp.Threading.Tasks;
+    using MetaFramework.HttpNetwork;
     using UnityEngine;
+
     public class TestGetAudioClip : MonoBehaviour
     {
         public string inputName = "";

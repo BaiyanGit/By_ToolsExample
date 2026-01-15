@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace ZCustom
+﻿namespace _3rdBy.MetaFramework.EventNotice
 {
+    using System;
+    using System.Collections.Generic;
+
     public class TypePool : IDisposable
     {
         private readonly Dictionary<Type, Queue<object>> _pool = new Dictionary<Type, Queue<object>>();

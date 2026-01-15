@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace HighlightPlus {
+﻿namespace _3rd.HighlightPlus.Scripts {
+    using System.Collections.Generic;
+    using UnityEngine;
 
     public delegate bool OnObjectSelectionEvent(GameObject obj);
 

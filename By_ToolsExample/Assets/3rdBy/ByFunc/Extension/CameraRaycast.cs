@@ -1,11 +1,9 @@
-﻿using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
-
-namespace ZCustom
+﻿namespace _3rdBy.ByFunc.Extension
 {
-    using _3rdBy.MetaFramework.Extension;
-    using _3rdBy.MetaFramework.Extension.ExtendComponent;
+    using ExtendComponent;
+    using UnityEngine;
+    using UnityEngine.Events;
+    using UnityEngine.EventSystems;
 
     /// <summary>
     /// 触发器无法使用

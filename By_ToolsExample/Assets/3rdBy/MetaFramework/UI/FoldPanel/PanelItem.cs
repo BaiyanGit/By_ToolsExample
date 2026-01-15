@@ -1,11 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using DG.Tweening;
-using UnityEngine;
-
-namespace ZCustom
+namespace _3rdBy.MetaFramework.UI.FoldPanel
 {
+    using DG.Tweening;
+    using UnityEngine;
+
     public class PanelItem : MonoBehaviour
     {
         public void Open()

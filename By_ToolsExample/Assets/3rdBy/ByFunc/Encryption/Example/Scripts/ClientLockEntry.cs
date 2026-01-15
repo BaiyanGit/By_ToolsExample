@@ -1,61 +1,66 @@
 using System;
-using Helper;
 using UnityEngine;
 
-/// <summary>
-/// 软件锁入口
-/// </summary>
-public class ClientLockEntry : MonoBehaviour
+namespace _3rdBy.ByFunc.Encryption.Example.Scripts
 {
-    // [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    private static void Init()
-    {
-        InitEvent();
-        CheckActivation();
-    }
-
-    private static void InitEvent()
-    {
-        VerifyCore.OnVerifyCallback += OnVerifyCallback;
-    }
-
-    private static void OnVerifyCallback(int code, string msg)
-    {
-        Debug.Log($"验证结果:{code} {msg}");
-    }
+    using Core;
+    using Helper;
 
     /// <summary>
-    /// 检查激活状态
+    /// 软件锁入口
     /// </summary>
-    public static void CheckActivation()
+    public class ClientLockEntry : MonoBehaviour
     {
-        if (VerifyCore.GetStorageData() == null)
+        // [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void Init()
         {
-            try
+            InitEvent();
+            CheckActivation();
+        }
+
+        private static void InitEvent()
+        {
+            VerifyCore.OnVerifyCallback += OnVerifyCallback;
+        }
+
+        private static void OnVerifyCallback(int code, string msg)
+        {
+            Debug.Log($"验证结果:{code} {msg}");
+        }
+
+        /// <summary>
+        /// 检查激活状态
+        /// </summary>
+        public static void CheckActivation()
+        {
+            if (VerifyCore.GetStorageData() == null)
             {
-                var isSelf = VerifyCore.VerifyDevice(GetActivationKey(), out var computerInfo);
-                if (!isSelf)
+                try
                 {
-                    Debug.Log("激活码与您的机器不一致!");
+                    var isSelf = VerifyCore.VerifyDevice(GetActivationKey(), out var computerInfo);
+                    if (!isSelf)
+                    {
+                        Debug.Log("激活码与您的机器不一致!");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"激活码文件不存在或激活码错误!\n{e.Message}");
                 }
             }
-            catch (Exception e)
+            else
             {
-                Debug.LogError($"激活码文件不存在或激活码错误!\n{e.Message}");
+                VerifyCore.VerifyData();
             }
         }
-        else
-        {
-            VerifyCore.VerifyData();
-        }
-    }
 
-    /// <summary>
-    /// 读取激活码文件
-    /// </summary>
-    /// <returns></returns>
-    private static string GetActivationKey()
-    {
-        return FileHelper.ReadFile("SecretKey", FileHelper.PathType.Desktop);
+        /// <summary>
+        /// 读取激活码文件
+        /// </summary>
+        /// <returns></returns>
+        private static string GetActivationKey()
+        {
+            return FileHelper.ReadFile("SecretKey", FileHelper.PathType.Desktop);
+        }
     }
 }

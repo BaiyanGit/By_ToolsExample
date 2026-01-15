@@ -1,6 +1,5 @@
 ﻿namespace _3rdBy.ByFunc.Extension.Editor
 {
-    using ExtraFoundation.Components;
     using UnityEditor;
     using UnityEditorInternal;
     using UnityEngine;

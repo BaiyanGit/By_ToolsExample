@@ -1,9 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
-
-namespace ZCustom
+namespace _3rdBy.MetaFramework.Guide.Sample
 {
     /// <summary>
     /// 事件引导

@@ -1,13 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ToggleTest : MonoBehaviour
+namespace Demos.示例_Toggle测试
 {
-    [SerializeField] private List<ToggleControlAttribute> togglePanelMap;
-
-    private void Start()
+    public class ToggleTest : MonoBehaviour
     {
-        var uiPanelToggleController = new UIPanelToggleController();
-        uiPanelToggleController.Initialize(togglePanelMap);
+        [SerializeField] private List<ToggleControlAttribute> togglePanelMap;
+
+        private void Start()
+        {
+            var uiPanelToggleController = new UIPanelToggleController();
+            uiPanelToggleController.Initialize(togglePanelMap);
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.UniTools.XMLDataTool.XmlData
+﻿namespace _3rdBy.ByTools.TableConvertJson.XmlDataTool.XmlData
 {
     [XmlBy]
     public abstract class XmlTable : XmlObject

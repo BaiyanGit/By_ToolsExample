@@ -1,50 +1,52 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class RaycastTriggerHelper
+namespace _3rdBy.ByFunc.Extension
 {
-    public static bool IsInCollider(MeshCollider other, Vector3 point)
+    public class RaycastTriggerHelper
     {
-        Vector3 from = (Vector3.up * 5000f);
-        Vector3 dir = (point - from).normalized;
-        float dist = Vector3.Distance(from, point);
-//fwd 
-        int hit_count = Cast_Till(from, point, other);
-//back
-        dir = (from - point).normalized;
-        hit_count += Cast_Till(point, point + (dir * dist), other);
-
-        if (hit_count % 2 == 1)
+        public static bool IsInCollider(MeshCollider other, Vector3 point)
         {
-            return (true);
+            Vector3 from = (Vector3.up * 5000f);
+            Vector3 dir  = (point - from).normalized;
+            float   dist = Vector3.Distance(from, point);
+//fwd 
+            int hit_count = Cast_Till(from, point, other);
+//back
+            dir       =  (from - point).normalized;
+            hit_count += Cast_Till(point, point + (dir * dist), other);
+
+            if (hit_count % 2 == 1)
+            {
+                return (true);
+            }
+
+            return (false);
         }
 
-        return (false);
-    }
-
-    private static int Cast_Till(Vector3 from, Vector3 to, MeshCollider other)
-    {
-        int counter = 0;
-        Vector3 dir = (to - from).normalized;
-        float dist = Vector3.Distance(from, to);
-        bool isBreak = false;
-        while (!isBreak)
+        private static int Cast_Till(Vector3 from, Vector3 to, MeshCollider other)
         {
-            isBreak = true;
-            var hits = Physics.RaycastAll(from, dir, dist);
-            for (int tt = 0; tt < hits.Length; tt++)
+            int     counter = 0;
+            Vector3 dir     = (to - from).normalized;
+            float   dist    = Vector3.Distance(from, to);
+            bool    isBreak = false;
+            while (!isBreak)
             {
-                if (hits[tt].collider == other)
+                isBreak = true;
+                var hits = Physics.RaycastAll(from, dir, dist);
+                for (int tt = 0; tt < hits.Length; tt++)
                 {
-                    counter++;
-                    from = hits[tt].point + dir.normalized * .001f;
-                    dist = Vector3.Distance(from, to);
-                    isBreak = false;
-                    break;
+                    if (hits[tt].collider == other)
+                    {
+                        counter++;
+                        from    = hits[tt].point + dir.normalized * .001f;
+                        dist    = Vector3.Distance(from, to);
+                        isBreak = false;
+                        break;
+                    }
                 }
             }
-        }
 
-        return (counter);
+            return (counter);
+        }
     }
 }

@@ -1,9 +1,9 @@
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-
-namespace UI
+namespace _3rdBy.ByFunc.SoundManager
 {
+    using UnityEngine;
+    using UnityEngine.EventSystems;
+    using UnityEngine.UI;
+
     public class ButtonColor : MonoBehaviour, IPointerDownHandler,
         IPointerEnterHandler, IPointerExitHandler
     {

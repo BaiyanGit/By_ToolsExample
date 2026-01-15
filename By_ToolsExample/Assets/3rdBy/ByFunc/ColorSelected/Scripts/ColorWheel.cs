@@ -1,8 +1,7 @@
-namespace Example.ColorPanel
+namespace _3rdBy.ByFunc.ColorSelected.Scripts
 {
     using UnityEngine;
     using UnityEngine.EventSystems;
-    using UnityEngine.Serialization;
     using UnityEngine.UI;
 
     /// <summary>

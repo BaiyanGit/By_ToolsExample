@@ -1,28 +1,31 @@
 using UnityEngine;
 
-/// <summary>
-/// 调用血氧仪入口
-/// </summary>
-public class NailSensorEntry : MonoBehaviour
+namespace _3rdBy.ByFunc.血氧仪示例.Scripts
 {
-    private SerialDevice _serialDevice;
-
-    private void OnEnable()
+    /// <summary>
+    /// 调用血氧仪入口
+    /// </summary>
+    public class NailSensorEntry : MonoBehaviour
     {
-        //连接指甲血氧仪
-        _serialDevice = new SerialDevice();
-        _serialDevice.ConnectCom("COM4");
-    }
+        private SerialDevice _serialDevice;
 
-    private void OnDisable()
-    {
-        //停止指甲血氧仪
-        _serialDevice.StopConnect();
-    }
+        private void OnEnable()
+        {
+            //连接指甲血氧仪
+            _serialDevice = new SerialDevice();
+            _serialDevice.ConnectCom("COM4");
+        }
 
-    private void Update()
-    {
-        //读取指甲血氧仪数据
-        _serialDevice?.ReadPacketData();
+        private void OnDisable()
+        {
+            //停止指甲血氧仪
+            _serialDevice.StopConnect();
+        }
+
+        private void Update()
+        {
+            //读取指甲血氧仪数据
+            _serialDevice?.ReadPacketData();
+        }
     }
 }

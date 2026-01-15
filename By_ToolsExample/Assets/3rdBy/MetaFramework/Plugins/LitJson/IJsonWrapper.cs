@@ -11,12 +11,11 @@
 #endregion
 
 
-using System.Collections;
-using System.Collections.Specialized;
-
-
-namespace LitJson
+namespace _3rdBy.MetaFramework.Plugins.LitJson
 {
+    using System.Collections;
+    using System.Collections.Specialized;
+
     public enum JsonType
     {
         None,

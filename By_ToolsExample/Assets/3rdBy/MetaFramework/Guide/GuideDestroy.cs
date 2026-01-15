@@ -1,9 +1,8 @@
-﻿using System;
-using UnityEngine;
-using UnityEngine.Events;
-
-namespace ZCustom
+﻿namespace _3rdBy.MetaFramework.Guide
 {
+    using UnityEngine;
+    using UnityEngine.Events;
+
     public class GuideDestroy : MonoBehaviour
     {
         public UnityAction Destroy;

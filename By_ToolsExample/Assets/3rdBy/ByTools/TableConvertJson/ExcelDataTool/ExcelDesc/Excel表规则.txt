@@ -1,0 +1,12 @@
+<color=yellow><b><size=12> Excel表规则说明： </size></b></color>
+<color=green> 1. Excel表需要以"t_"前缀开头，后缀格式为xlsm,xlsx </color>
+<color=green> 2. 只取每个Excel表的第一个sheet </color>
+<color=green> 3. 第4行为属性名，需要取有意义的名字，最好是英文。每个表必须定义ID属性。如果以‘#’号开头，表示不导出. </color>
+<color=green> 4. 第5行是注释 </color>
+<color=green> 5. 第6行是类型，目前支持的类型有："string", "int", "float", "bool" </color>
+<color=green> 6. 第7行以下是数据 </color>
+<color=green> 7. 集合数据的分隔符顺序（从低到高）： '|'  ','  ';'   数组的类型为 int[], int[][], int[][][], string[], string[][], string[][][], 以此类推，目前仅支持3阶数组，后面需要可以再加 </color>
+<color=green> 8. 示例表请看【ExampleTable.xlsx】 </color>
+
+<color=yellow><b><size=12> 校验格式方法： </size></b></color>
+<color=green> 打开Unity工程，选择ByTools/🧩 表格转换Json工具,点击导出所有表格，看日志查看错误信息 </color>

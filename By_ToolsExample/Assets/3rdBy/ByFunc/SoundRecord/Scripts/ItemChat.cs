@@ -1,4 +1,4 @@
-namespace _3rdBy.SoundRecord.Scripts
+namespace _3rdBy.ByFunc.SoundRecord.Scripts
 {
     using UnityEngine;
     using UnityEngine.UI;

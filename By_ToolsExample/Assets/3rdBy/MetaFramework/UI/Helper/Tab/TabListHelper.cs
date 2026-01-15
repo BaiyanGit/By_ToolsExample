@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.UI;
-using ZCustom;
-
-namespace MetaFramework.Helper
+﻿namespace _3rdBy.MetaFramework.UI.Helper.Tab
 {
+    using System.Collections.Generic;
+    using UnityEngine;
+
     public class TabListHelper : MonoBehaviour
     {
         [SerializeField] private List<TabItemHelper> tabItems;

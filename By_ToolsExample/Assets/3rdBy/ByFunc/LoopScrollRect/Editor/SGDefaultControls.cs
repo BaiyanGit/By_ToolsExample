@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.LoopScrollRect.Editor
+﻿namespace _3rdBy.ByFunc.LoopScrollRect.Editor
 {
     using UnityEngine;
     using UnityEngine.UI;

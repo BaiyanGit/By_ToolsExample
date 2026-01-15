@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.ByTools.Extension.Editor
+﻿namespace _3rdBy.ByFunc.Extension.Editor
 {
     using ExtraFoundation.Components;
     using UnityEditor;

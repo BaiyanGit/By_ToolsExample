@@ -58,6 +58,9 @@
 
         /// <summary>
         /// 获取枚举类型的所有 InspectorName 描述（字符串数组形式）
+        /// 使用示例：
+        /// 1）string[] names = EnumExtensions.GetInspectorNameArray(typeof(MyEnum));
+        /// 2）string[] names = = default(MyEnum).GetInspectorNameArray();
         /// </summary>
         public static string[] GetInspectorNameArray<T>(this T enumType) where T : Enum
         {

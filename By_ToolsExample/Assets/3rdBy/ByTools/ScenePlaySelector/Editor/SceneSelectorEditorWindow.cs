@@ -57,7 +57,7 @@
         private readonly string[] _sourceNames = { "BuildSettings", "ProjectAssets" };
         private Vector2 _sceneListScrollPos;
         private readonly List<SceneData> _sceneDataLists = new();
-        private static string fileFullPath;
+        private static string _fileFullPath;
 
         private double _lastRefreshTime;
         private const double RefreshInterval = 1;
@@ -135,16 +135,16 @@
 
         private void DeleteJsonFile()
         {
-            if (!string.IsNullOrEmpty(fileFullPath))
+            if (!string.IsNullOrEmpty(_fileFullPath))
             {
-                var configFile = Path.GetFileNameWithoutExtension(fileFullPath);
-                if (File.Exists(fileFullPath))
+                var configFile = Path.GetFileNameWithoutExtension(_fileFullPath);
+                if (File.Exists(_fileFullPath))
                 {
                     if (GUILayout.Button($"删除当前配置文件 [ {configFile}.json ]"))
                     {
-                        if (File.Exists(fileFullPath))
+                        if (File.Exists(_fileFullPath))
                         {
-                            File.Delete(fileFullPath);
+                            File.Delete(_fileFullPath);
                             AssetDatabase.Refresh();
                         }
                         else
@@ -255,8 +255,8 @@
 
         private void GetScenesWay()
         {
-            fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
-            if (File.Exists(fileFullPath))
+            _fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
+            if (File.Exists(_fileFullPath))
                 ReadJsonFile();
             else
                 GetScenes();
@@ -312,10 +312,10 @@
         {
             try
             {
-                fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
+                _fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
 
-                if (File.Exists(fileFullPath)) File.Delete(fileFullPath);
-                File.WriteAllText(fileFullPath, jsonContent, Encoding.UTF8);
+                if (File.Exists(_fileFullPath)) File.Delete(_fileFullPath);
+                File.WriteAllText(_fileFullPath, jsonContent, Encoding.UTF8);
             }
             catch (Exception e)
             {
@@ -328,16 +328,16 @@
 
         private void ReadJsonFile()
         {
-            fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
+            _fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
 
-            if (!File.Exists(fileFullPath))
+            if (!File.Exists(_fileFullPath))
             {
                 Debug.LogError("文件不存在");
                 EditorGUILayout.EndHorizontal();
                 return;
             }
 
-            var jsonContent     = File.ReadAllText(fileFullPath);
+            var jsonContent     = File.ReadAllText(_fileFullPath);
             var dataListWrapper = JsonUtility.FromJson<SceneDataListWrapper>(jsonContent);
             // Debug.Log(string.Join("\n", dataListWrapper.sceneDataList.Select(s => s.name)));
 

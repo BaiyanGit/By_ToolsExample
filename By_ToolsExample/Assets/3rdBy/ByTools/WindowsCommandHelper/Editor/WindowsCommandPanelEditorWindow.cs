@@ -1,11 +1,11 @@
-﻿namespace ByTools.WindowsCommandHelper.Editor
+﻿namespace _3rdBy.ByTools.WindowsCommandHelper.Editor
 {
-    using UnityEngine;
-    using UnityEditor;
+    using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System;
-    using Scripts;
+    using global::ByTools.WindowsCommandHelper.Scripts;
+    using UnityEditor;
+    using UnityEngine;
     using Debug = UnityEngine.Debug;
 
     /// <summary>

@@ -1,4 +1,4 @@
-﻿namespace ByTools.MacroDefinitionSwitcher.Editor
+﻿namespace _3rdBy.ByTools.MacroDefinitionSwitcher.Editor
 {
     using System;
     using System.Collections.Generic;

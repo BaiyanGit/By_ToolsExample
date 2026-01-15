@@ -1,14 +1,14 @@
-using System;
-using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine;
 //Object并非C#基础中的Object，而是 UnityEngine.Object
-using Object = UnityEngine.Object;
 
 //自定义ReferenceCollector类在界面中的显示与功能
-namespace _3rdBy.ByTools.Extension.Editor
+namespace _3rdBy.ByFunc.Extension.Editor
 {
+	using System;
+	using System.Collections.Generic;
+	using UnityEditor;
+	using UnityEngine;
 	using Editor = UnityEditor.Editor;
+	using Object = UnityEngine.Object;
 
 	[CustomEditor(typeof (ReferenceCollector))]
 	public class ReferenceCollectorEditor: Editor

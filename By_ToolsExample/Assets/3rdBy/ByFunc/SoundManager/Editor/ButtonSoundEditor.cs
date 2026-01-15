@@ -1,7 +1,6 @@
-using UnityEditor;
-
-namespace _3rdBy.SoundManager.Editor
+namespace _3rdBy.ByFunc.SoundManager.Editor
 {
+    using UnityEditor;
     using Editor = UnityEditor.Editor;
 
     [CustomEditor(typeof(ButtonSound)), CanEditMultipleObjects]

@@ -1,4 +1,4 @@
-﻿namespace ByTools.ChangeTMP.Editor
+﻿namespace _3rdBy.ByTools.ChangeTMP.Editor
 {
     using System.Text.RegularExpressions;
     using TMPro;

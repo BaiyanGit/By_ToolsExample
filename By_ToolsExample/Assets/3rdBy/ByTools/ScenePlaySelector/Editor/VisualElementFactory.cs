@@ -108,11 +108,11 @@
             var button = new Button(onClick)
             {
                 text = text,
-                
+
                 style =
                 {
-                    marginLeft      = 4,
-                    marginRight     = 2,
+                    marginLeft  = 4,
+                    marginRight = 2,
                     // backgroundColor = Color.blue
                 }
             };

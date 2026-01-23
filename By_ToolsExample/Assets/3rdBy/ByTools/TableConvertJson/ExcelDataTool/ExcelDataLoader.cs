@@ -6,7 +6,7 @@
     using System.Reflection;
     using Cysharp.Threading.Tasks;
     using ExcelData;
-    using MetaFramework.Plugins.LitJson;
+    using LitJson;
     using UnityEngine;
     using UnityEngine.Networking;
 
@@ -34,14 +34,14 @@
         private void Awake()
         {
             _allConfigTypes = GetAllAttributeTypes();
-            _allConfigDict = new Dictionary<Type, object>();
+            _allConfigDict  = new Dictionary<Type, object>();
         }
 
         private List<Type> GetAllAttributeTypes()
         {
             //标签查找
             var assembly = Assembly.GetAssembly(typeof(ExcelConfigAttribute));
-            var types = assembly.GetExportedTypes();
+            var types    = assembly.GetExportedTypes();
 
             bool IsMyAttribute(IEnumerable<Attribute> o)
             {
@@ -53,14 +53,14 @@
             return typeIes.Where(o => o.IsAbstract == false).ToList();
         }
 
-        private string ResourcesPath(Type type)
+        private static string ResourcesPath(Type type)
         {
             var jsonName = type.Name.Replace(FileSeparator, "");
             var jsonPath = $"{FileFolder}/{jsonName}";
             return jsonPath;
         }
 
-        private string StreamingPath(Type type)
+        private static string StreamingPath(Type type)
         {
             var jsonName = type.Name.Replace(FileSeparator, "");
             var jsonPath = $"{Application.streamingAssetsPath}/{FileFolder}/{jsonName}{FileSuffix}";
@@ -73,10 +73,10 @@
             {
                 _allConfigDict.TryAdd(configType, null);
 
-                object asset = null;
-                var jsonPath = ResourcesPath(configType);
-                var loadAsync = await Resources.LoadAsync(jsonPath);
-                var json = loadAsync as TextAsset;
+                object asset     = null;
+                var    jsonPath  = ResourcesPath(configType);
+                var    loadAsync = await Resources.LoadAsync(jsonPath);
+                var    json      = loadAsync as TextAsset;
                 if (json != null)
                 {
                     asset = JsonMapper.ToObject(json.text, configType);
@@ -96,8 +96,8 @@
             {
                 _allConfigDict.TryAdd(configType, null);
 
-                object asset = null;
-                var jsonPath = StreamingPath(configType);
+                object          asset      = null;
+                var             jsonPath   = StreamingPath(configType);
                 UnityWebRequest webRequest = UnityWebRequest.Get(jsonPath);
                 await webRequest.SendWebRequest();
                 if (string.IsNullOrEmpty(webRequest.error))
@@ -129,9 +129,9 @@
             {
                 _allConfigDict.TryAdd(configType, null);
 
-                object asset = null;
-                var jsonPath = ResourcesPath(configType);
-                var json = Resources.Load<TextAsset>(jsonPath);
+                object asset    = null;
+                var    jsonPath = ResourcesPath(configType);
+                var    json     = Resources.Load<TextAsset>(jsonPath);
                 if (json != null)
                 {
                     asset = JsonMapper.ToObject(json.text, configType);

@@ -72,7 +72,7 @@
             }
         }
 
-        [MenuItem("ByTools/🧩 替换Text为TextMeshPro")]
+        [MenuItem("ByTools/🗒️ 替换Text为TextMeshPro")]
         private static void Init()
         {
             _myWindow         = GetWindow(typeof(Text2TextMeshProUtilEditorWindow));

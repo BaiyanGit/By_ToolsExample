@@ -23,7 +23,7 @@
             _panelCore.BuildCategoryMap();
         }
 
-        [MenuItem("ByTools/🧩 Windows 命令面板")]
+        [MenuItem("ByTools/🖥️ Windows 命令面板")]
         public static void ShowWindow()
         {
             _window         = GetWindow<WindowsCommandPanelEditorWindow>("Windows 命令面板");

@@ -9,12 +9,13 @@
 #endregion
 
 
-namespace _3rdBy.MetaFramework.Plugins.LitJson
-{
-    using System;
-    using System.IO;
-    using System.Text;
+using System;
+using System.IO;
+using System.Text;
 
+
+namespace LitJson
+{
     internal class FsmContext
     {
         public bool  Return;

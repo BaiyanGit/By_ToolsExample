@@ -13,7 +13,7 @@ namespace _3rdBy.ByTools.TableConvertJson.XmlDataTool
     using System.Linq;
     using System.Reflection;
     using Cysharp.Threading.Tasks;
-    using MetaFramework.Plugins.LitJson;
+    using LitJson;
     using UnityEngine;
     using UnityEngine.Networking;
     using XmlData;
@@ -36,20 +36,20 @@ namespace _3rdBy.ByTools.TableConvertJson.XmlDataTool
         private List<Type> _allConfigTypes;
         private Dictionary<Type, object> _allConfigDict;
         private const string FileSeparator = "Table"; // 文件分隔符
-        private const string FileFolder = "XmlData"; // 文件夹
-        private const string FileSuffix = ".json"; // 文件格式
+        private const string FileFolder = "XmlData";  // 文件夹
+        private const string FileSuffix = ".json";    // 文件格式
 
         private void Awake()
         {
             _allConfigTypes = GetAllAttributeTypes();
-            _allConfigDict = new Dictionary<Type, object>();
+            _allConfigDict  = new Dictionary<Type, object>();
         }
 
         private static List<Type> GetAllAttributeTypes()
         {
             var assembly = Assembly.GetAssembly(typeof(XmlByAttribute)); // 标签查找
-            var types = assembly.GetExportedTypes();
-            var typeIes = types.Where(o => isMyAttribute(Attribute.GetCustomAttributes(o, true)));
+            var types    = assembly.GetExportedTypes();
+            var typeIes  = types.Where(o => isMyAttribute(Attribute.GetCustomAttributes(o, true)));
             return typeIes.Where(o => o.IsAbstract == false).ToList(); // 去除abstract父类
 
             bool isMyAttribute(IEnumerable<Attribute> o)
@@ -89,8 +89,8 @@ namespace _3rdBy.ByTools.TableConvertJson.XmlDataTool
             {
                 _allConfigDict.TryAdd(configType, null);
 
-                object asset = null;
-                var jsonPath = ResourcesPath(configType);
+                object asset    = null;
+                var    jsonPath = ResourcesPath(configType);
                 FileExist(jsonPath);
                 var json = Resources.Load<TextAsset>(jsonPath);
                 if (json != null)
@@ -119,11 +119,11 @@ namespace _3rdBy.ByTools.TableConvertJson.XmlDataTool
             {
                 _allConfigDict.TryAdd(configType, null);
 
-                object asset = null;
-                var jsonPath = ResourcesPath(configType);
+                object asset    = null;
+                var    jsonPath = ResourcesPath(configType);
                 FileExist(jsonPath);
                 var loadAsync = await Resources.LoadAsync(jsonPath);
-                var json = loadAsync as TextAsset;
+                var json      = loadAsync as TextAsset;
                 if (json != null)
                 {
                     asset = JsonMapper.ToObject(json.text, configType);
@@ -145,9 +145,9 @@ namespace _3rdBy.ByTools.TableConvertJson.XmlDataTool
             foreach (var configType in _allConfigTypes)
             {
                 _allConfigDict.TryAdd(configType, null);
-                
-                object asset = null;
-                var jsonPath = StreamingPath(configType);
+
+                object asset    = null;
+                var    jsonPath = StreamingPath(configType);
                 FileExist(jsonPath);
                 var webRequest = UnityWebRequest.Get(jsonPath);
                 await webRequest.SendWebRequest();

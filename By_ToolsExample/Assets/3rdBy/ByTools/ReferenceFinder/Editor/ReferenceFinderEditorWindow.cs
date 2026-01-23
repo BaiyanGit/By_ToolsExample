@@ -53,7 +53,7 @@
         }
 
         //打开窗口
-        [MenuItem("ByTools/🧩 对象的引用资源查找器", false, 1000)]
+        [MenuItem("ByTools/👓 对象的引用资源查找器", false, 1000)]
         private static void OpenWindow()
         {
             var window = GetWindow<ReferenceFinderEditorWindow>();

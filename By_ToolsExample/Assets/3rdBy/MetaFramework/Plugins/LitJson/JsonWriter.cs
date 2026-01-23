@@ -11,14 +11,15 @@
 #endregion
 
 
-namespace _3rdBy.MetaFramework.Plugins.LitJson
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.IO;
-    using System.Text;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Text;
 
+
+namespace LitJson
+{
     internal enum Condition
     {
         InArray,

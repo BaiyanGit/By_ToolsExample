@@ -9,10 +9,11 @@
 #endregion
 
 
-namespace _3rdBy.MetaFramework.Plugins.LitJson
-{
-    using System;
+using System;
 
+
+namespace LitJson
+{
     public class JsonException :
 #if NETSTANDARD1_5
         Exception

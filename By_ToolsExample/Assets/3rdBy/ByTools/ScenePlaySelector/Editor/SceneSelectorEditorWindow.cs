@@ -69,6 +69,8 @@
                                               "2. 更新：项目有新增或删除场景文件时使用\n" +
                                               "3. 保存：设置显示和隐藏场景在Toolbar栏中\n";
 
+        [Header("窗口大小")] private static readonly Vector2 windowSize = new(800, 600);
+
         #region 自动刷新
 
         private void OnEnable()
@@ -115,11 +117,12 @@
 
         #endregion
 
-        [MenuItem("ByTools/🧩 场景显示配置器")]
+        [MenuItem("ByTools/🖼️ 场景显示配置器")]
         public static void ShowWindow()
         {
             var window = GetWindow<SceneSelectorEditorWindow>("场景显示配置器");
-            window.minSize = new Vector2(360, 90);
+            window.minSize = windowSize;
+            window.maxSize = windowSize;
             window.Show();
         }
 
@@ -204,7 +207,7 @@
 
                 string jsonString = JsonUtility.ToJson(wrapper, true); // true表示格式化输出
                 SaveJsonFile(jsonString);
-                ScenePlaySelector.RefreshToolbar();
+                // ScenePlaySelector.RefreshToolbar();
             }
 
             if (GUILayout.Button("全选"))

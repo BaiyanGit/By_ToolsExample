@@ -10,12 +10,13 @@
 #endregion
 
 
-namespace _3rdBy.MetaFramework.Plugins.LitJson
-{
-    using System;
-    using System.Collections;
-    using System.Collections.Specialized;
+using System;
+using System.Collections;
+using System.Collections.Specialized;
 
+
+namespace LitJson
+{
     public class JsonMockWrapper : IJsonWrapper
     {
         public bool IsArray => false;

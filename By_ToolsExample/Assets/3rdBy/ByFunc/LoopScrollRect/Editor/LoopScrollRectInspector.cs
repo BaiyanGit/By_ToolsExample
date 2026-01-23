@@ -3,7 +3,6 @@
 	using Scripts;
 	using UnityEditor;
 	using UnityEngine;
-	using UnityEngine.UI;
 	using Editor = UnityEditor.Editor;
 
 	[CustomEditor(typeof(LoopScrollRect), true)]

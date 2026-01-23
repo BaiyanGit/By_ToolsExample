@@ -37,7 +37,7 @@ namespace _3rdBy.ByTools.ReplaceWithPrefabByMesh.Editor
         private readonly HashSet<Mesh> _prefabMeshes = new();
         private bool _pendingReplaceConfirm;
 
-        [MenuItem("ByTools/🧩 Prefab替换场景对象 | 场景对象批量移动 &%4", false, 1001)]
+        [MenuItem("ByTools/🥏 Prefab场景替换与批量移动 &%4", false, 1001)]
         private static void OpenWindow()
         {
             var w = GetWindow<ReplaceWithPrefabByMeshEditorWindow>("Replace By Prefab Mesh");

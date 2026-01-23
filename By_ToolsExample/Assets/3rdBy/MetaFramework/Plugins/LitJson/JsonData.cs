@@ -8,14 +8,15 @@
 #endregion
 
 
-namespace _3rdBy.MetaFramework.Plugins.LitJson
-{
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.IO;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO;
 
+
+namespace LitJson
+{
     public class JsonData : IJsonWrapper, IEquatable<JsonData>
     {
         #region Fields

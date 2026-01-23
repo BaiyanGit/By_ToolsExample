@@ -23,7 +23,7 @@ namespace _3rdBy.ByTools.GenerateAssets.Editor
         private const string Desc = "生成.Asset配置文件工具，支持批量生成 ScriptableObject 资产。(支持所有的Mono脚本)";
         private const string OutputFolderKey = "OutputFolderKey";
 
-        [MenuItem("ByTools/🧩 .asset生成工具")]
+        [MenuItem("ByTools/🗂️ .asset生成工具")]
         public static void Open()
         {
             GetWindow<AssetGeneratorEditorWindow>("SO资产生成器");

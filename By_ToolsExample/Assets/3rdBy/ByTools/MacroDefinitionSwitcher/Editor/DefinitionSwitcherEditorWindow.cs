@@ -13,7 +13,7 @@
     /// </summary>
     public class DefinitionSwitcherEditorWindow : EditorWindow
     {
-        [MenuItem("ByTools/🧩 宏定义切换工具")]
+        [MenuItem("ByTools/🔖 宏定义切换工具")]
         public static void ShowWindow()
         {
             GetWindow<DefinitionSwitcherEditorWindow>("宏定义切换工具");
@@ -41,6 +41,8 @@
         private bool _buildNameByTime;
         private bool _buildNameByPlatform;
         private bool _autoRunAfterBuild;
+        private bool _customBuildName;
+        private string _buildProductName;
 
         [Serializable]
         private class MacroConfig
@@ -67,6 +69,12 @@
             _buildNameByTime     = EditorPrefs.GetBool("MacroSwitcher_BuildNameByTime", false);
             _buildNameByPlatform = EditorPrefs.GetBool("MacroSwitcher_BuildNameByPlatform", false);
             _autoRunAfterBuild   = EditorPrefs.GetBool("MacroSwitcher_AutoRunAfterBuild", false);
+            _customBuildName     = EditorPrefs.GetBool("MacroSwitcher_CustomBuildName", false);
+            _buildProductName    = EditorPrefs.GetString("MacroSwitcher_BuildProductName", "");
+            if (string.IsNullOrEmpty(_buildProductName))
+            {
+                _buildProductName = Application.productName;
+            }
         }
 
         private BuildTargetGroup _buildTargetGroup;
@@ -234,16 +242,17 @@
                 GUILayout.BeginHorizontal();
 
                 // 构建名称
-                var newNameByTime = EditorGUILayout.Toggle("以时间构建名称", _buildNameByTime);
-
+                var newNameByTime = EditorGUILayout.Toggle(_buildNameByTime, GUILayout.Width(15));
+                EditorGUILayout.LabelField("以时间构建名称", GUILayout.Width(100));
                 if (newNameByTime != _buildNameByTime)
                 {
                     _buildNameByTime = newNameByTime;
                     EditorPrefs.SetBool("MacroSwitcher_BuildNameByTime", _buildNameByTime);
                 }
 
-                var newNameByPlatform = EditorGUILayout.Toggle("以平台构建名称", _buildNameByPlatform);
-
+                // 构建名称
+                var newNameByPlatform = EditorGUILayout.Toggle(_buildNameByPlatform, GUILayout.Width(15));
+                EditorGUILayout.LabelField("以平台构建名称", GUILayout.Width(100));
                 if (newNameByPlatform != _buildNameByPlatform)
                 {
                     _buildNameByPlatform = newNameByPlatform;
@@ -251,7 +260,8 @@
                 }
 
                 // 开发模式构建
-                var newDevBuild = EditorGUILayout.Toggle("开发模式构建", _developmentBuild);
+                var newDevBuild = EditorGUILayout.Toggle(_developmentBuild, GUILayout.Width(15));
+                EditorGUILayout.LabelField("开发模式构建", GUILayout.Width(100));
                 if (newDevBuild != _developmentBuild)
                 {
                     _developmentBuild = newDevBuild;
@@ -259,7 +269,8 @@
                 }
 
                 // 构建后自动运行
-                var newAutoRun = EditorGUILayout.Toggle("构建后自动运行", _autoRunAfterBuild);
+                var newAutoRun = EditorGUILayout.Toggle(_autoRunAfterBuild, GUILayout.Width(15));
+                EditorGUILayout.LabelField("构建后自动运行", GUILayout.Width(100));
                 if (newAutoRun != _autoRunAfterBuild)
                 {
                     _autoRunAfterBuild = newAutoRun;
@@ -267,11 +278,28 @@
                 }
 
                 // 是否切换后直接打包
-                var newBuildAfterSwitch = EditorGUILayout.Toggle("切换宏定义后直接打包", _buildAfterSwitch);
+                var newBuildAfterSwitch = EditorGUILayout.Toggle(_buildAfterSwitch, GUILayout.Width(15));
+                EditorGUILayout.LabelField("切换宏定义后直接打包", GUILayout.Width(130));
                 if (newBuildAfterSwitch != _buildAfterSwitch)
                 {
                     _buildAfterSwitch = newBuildAfterSwitch;
                     EditorPrefs.SetBool("MacroSwitcher_BuildAfterSwitch", _buildAfterSwitch);
+                }
+
+                // 自定义构建名称
+                var newCustomBuildName = EditorGUILayout.Toggle(_customBuildName, GUILayout.Width(15));
+                EditorGUILayout.LabelField("自定义构建名称", GUILayout.Width(100));
+                if (newCustomBuildName != _customBuildName)
+                {
+                    _customBuildName = newCustomBuildName;
+                    EditorPrefs.SetBool("MacroSwitcher_CustomBuildName", newCustomBuildName);
+                }
+
+                var newBuildProductName = _customBuildName ? EditorGUILayout.TextField(_buildProductName) : "";
+                if (!_buildProductName.Equals(newBuildProductName))
+                {
+                    _buildProductName = newBuildProductName;
+                    EditorPrefs.SetString("MacroSwitcher_BuildProductName", _buildProductName);
                 }
 
                 GUILayout.EndHorizontal();
@@ -384,17 +412,19 @@
                 }
 
                 // 准备构建选项
-                var options = BuildOptions.None;
+                var options                     = BuildOptions.None;
                 if (_developmentBuild) options  |= BuildOptions.Development;
                 if (_autoRunAfterBuild) options |= BuildOptions.AutoRunPlayer;
 
                 // 构建输出路径目录
-                var productName = string.IsNullOrEmpty(PlayerSettings.productName) ? "UnityGame" : PlayerSettings.productName;
-                var timestamp = _buildNameByTime ? $"({DateTime.Now:HH.mm})" : "";
-                var platform = _buildNameByPlatform ? $"_{PlatformName()}" : "";
-                var outBuildFolderName = $"{productName}{platform}{timestamp}";
-                var buildOutPath = $"{_buildOutputPath}/{outBuildFolderName}";
+                // var productName        = string.IsNullOrEmpty(PlayerSettings.productName) ? "UnityGame" : PlayerSettings.productName;
+                string productName        = GetProductName();
+                var    timestamp          = _buildNameByTime ? $"({DateTime.Now:HH.mm})" : "";
+                var    platform           = _buildNameByPlatform ? $"_{PlatformName()}" : "";
+                var    outBuildFolderName = $"{productName}{platform}{timestamp}";
+                var    buildOutPath       = $"{_buildOutputPath}/{outBuildFolderName}";
 
+                Debug.Log($"准备构建输出路径: {buildOutPath}     -- {outBuildFolderName}");
                 // 确保输出目录存在
                 if (!Directory.Exists(buildOutPath))
                 {
@@ -407,9 +437,12 @@
                 // return;
 
 #if UNITY_2018_3_OR_NEWER
-                var report = BuildPipeline.BuildPlayer(scenes, buildPath, EditorUserBuildSettings.activeBuildTarget, options);
+                var report       = BuildPipeline.BuildPlayer(scenes, buildPath, EditorUserBuildSettings.activeBuildTarget, options);
                 var buildSuccess = report.summary.result == UnityEditor.Build.Reporting.BuildResult.Succeeded;
-                var errorMsg = buildSuccess ? "" : report.summary.ToString();
+                var errorMsg     = buildSuccess ? "" : report.summary.ToString();
+                // 测试
+                // var buildSuccess = true;
+                // var errorMsg     = "";
 #else
                 string errorMsg = BuildPipeline.BuildPlayer(scenes, buildPath, EditorUserBuildSettings.activeBuildTarget, options);
                 bool buildSuccess = string.IsNullOrEmpty(errorMsg);
@@ -442,10 +475,32 @@
             return platform.Replace("Standalone", "").Replace("Windows", "Win").Replace("OSX", "Mac");
         }
 
+        private string GetProductName()
+        {
+            string productName;
+
+            if (!string.IsNullOrEmpty(_buildProductName))
+            {
+                productName = _buildProductName;
+            }
+            else if (string.IsNullOrEmpty(PlayerSettings.productName))
+            {
+                productName = "UnityGame";
+            }
+            else
+            {
+                productName = PlayerSettings.productName;
+            }
+
+            Debug.Log($"获取产品名称: {productName}");
+            return productName;
+        }
+
         // 新增：生成构建文件名
         private string GetBuildFileName()
         {
-            var productName = string.IsNullOrEmpty(PlayerSettings.productName) ? "UnityGame" : PlayerSettings.productName;
+            string productName = GetProductName();
+
             switch (EditorUserBuildSettings.activeBuildTarget)
             {
                 case BuildTarget.StandaloneWindows:
@@ -462,7 +517,7 @@
                     break;
             }
 
-            // Debug.Log($"生成构建文件名: {productName}");
+            Debug.Log($"生成构建文件名: {productName}");
             return productName;
         }
 

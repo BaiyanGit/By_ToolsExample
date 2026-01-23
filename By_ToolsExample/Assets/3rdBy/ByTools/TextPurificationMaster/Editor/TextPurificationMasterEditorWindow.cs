@@ -17,7 +17,7 @@ namespace _3rdBy.ByTools.TextPurificationMaster.Editor
         private string _successTips;
 
 
-        [MenuItem("ByTools/🧩 文本净化大师")]
+        [MenuItem("ByTools/📄 文本净化大师")]
         private static void ShowEditor()
         {
             var window = GetWindow<TextPurificationMasterEditorWindow>();

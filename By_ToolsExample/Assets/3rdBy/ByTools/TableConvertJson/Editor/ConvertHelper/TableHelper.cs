@@ -1,10 +1,8 @@
 ﻿namespace _3rdBy.ByTools.TableConvertJson.ConvertHelper
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using ByFunc.Extension;
     using UnityEditor;
     using UnityEngine;
 
@@ -82,26 +80,6 @@
 
             if (!Directory.Exists(assetFolderPath)) Directory.CreateDirectory(assetFolderPath);
             return assetFolderPath;
-        }
-    }
-
-    /// <summary>
-    /// 枚举InspectorName属性
-    /// </summary>
-    public static class EnumInspectorNameAttribute
-    {
-        public static string[] GetInspectorNames<T>(this T enumType) where T : Enum
-        {
-            var type   = typeof(T);
-            var values = Enum.GetValues(type);
-            var names  = new List<string>();
-
-            foreach (T value in values)
-            {
-                names.Add(value.GetInspectorName());
-            }
-
-            return names.ToArray();
         }
     }
 }

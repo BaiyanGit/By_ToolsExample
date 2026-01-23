@@ -66,9 +66,12 @@
         #endregion
 
         [Header("窗口大小")] private static readonly Vector2 windowSize = new(800, 600);
+
         [Header("单个文件路径")] private string _filePath;
-        [Header("生成路径")] private string[] _outputFilePathArray;
-        [Header("生成路径选择")] private int _selectedOutputFilePath;
+
+        // [Header("生成路径")] private string[] _outputFilePathArray;
+        [Header("生成路径")] private SaveJsonPathType _saveFilePathType;
+
         [Header("处理的文件集合")] private Dictionary<string, string> _elementTablePaths; // key:文件名，value:文件路径
         [Header("处理的文件集合滚动列表位置")] private Vector2 _elementTableScrollPos = Vector2.zero;
         [Header("文件列表背景样式")] private GUIStyle _elementTableBgStyle;
@@ -94,7 +97,7 @@
                 _excelDescStr = File.ReadAllText(dataPath);
             }
 
-            _outputFilePathArray = default(SaveJsonPathType).GetInspectorNames();
+            // _outputFilePathArray = default(SaveJsonPathType).GetInspectorNames();
         }
 
         private void OnGUI()
@@ -212,10 +215,10 @@
                         {
                             case ".xls" or ".xlsx" or ".xlsm":
                                 new ExcelExportToClass().Generate(file.Value);
-                                new ExcelExportToAsset().Generate(file.Value, (SaveJsonPathType)_selectedOutputFilePath);
+                                new ExcelExportToAsset().Generate(file.Value, _saveFilePathType);
                                 break;
                             case ".xml":
-                                new XmlExportToAsset().XmlGenerateToJson(file.Value, (SaveJsonPathType)_selectedOutputFilePath, out var json, out var fileName);
+                                new XmlExportToAsset().XmlGenerateToJson(file.Value, _saveFilePathType, out var json, out var fileName);
                                 new XmlExportToClass().GenerateClassesFromJson(json, fileName);
                                 break;
                         }
@@ -233,7 +236,7 @@
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label("生成路径：", GUILayout.Width(70));
-            _selectedOutputFilePath = EditorGUILayout.Popup(_selectedOutputFilePath, _outputFilePathArray);
+            _saveFilePathType = (SaveJsonPathType)EditorGUILayout.EnumPopup(_saveFilePathType);
 
             if (GUILayout.Button("清除所有文件"))
             {
@@ -273,10 +276,10 @@
                     {
                         case ".xls" or ".xlsx" or ".xlsm":
                             new ExcelExportToClass().Generate(file.Value);
-                            new ExcelExportToAsset().Generate(file.Value, (SaveJsonPathType)_selectedOutputFilePath);
+                            new ExcelExportToAsset().Generate(file.Value, _saveFilePathType);
                             break;
                         case ".xml":
-                            new XmlExportToAsset().XmlGenerateToJson(file.Value, (SaveJsonPathType)_selectedOutputFilePath, out var json, out var fileName);
+                            new XmlExportToAsset().XmlGenerateToJson(file.Value, _saveFilePathType, out var json, out var fileName);
                             new XmlExportToClass().GenerateClassesFromJson(json, fileName);
                             break;
                     }

@@ -4,6 +4,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using UnityEditor;
     using UnityEditor.SceneManagement;
     using UnityEngine;
@@ -21,6 +22,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
         private const string PrefKeySelectedBuildScene = "ScenePlaySelector_BuildScene";
         private const string PrefKeySelectedProjectScene = "ScenePlaySelector_ProjectScene";
         private static readonly string[] sourceNames = { "BuildSettings", "ProjectAssets" };
+        private static Vector2 _lastSize;
 
         private enum SceneSource
         {
@@ -30,7 +32,31 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
 
         static ScenePlaySelector()
         {
+            EditorApplication.update    += EnsureToolbar;
             EditorApplication.delayCall += InitToolbar;
+        }
+
+        private static void EnsureToolbar()
+        {
+            if (!HasToolbar())
+            {
+                InitToolbar();
+            }
+
+            // 若手动打开其它场景，处理选择的Index
+            // var activeScene = SceneManager.GetActiveScene();
+        }
+
+        private static bool HasToolbar()
+        {
+            var toolbarType = typeof(Editor).Assembly.GetType("UnityEditor.Toolbar");
+            var toolbars    = Resources.FindObjectsOfTypeAll(toolbarType);
+            if (toolbars.Length == 0) return false;
+
+            var rootField = toolbarType.GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
+            var root      = rootField?.GetValue(toolbars[0]) as VisualElement;
+            var leftZone  = root?.Q("ToolbarZoneLeftAlign");
+            return leftZone?.Q("ScenePlaySelector") != null;
         }
 
         public static void RefreshToolbar()
@@ -49,7 +75,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             }
 
             var toolbar   = (ScriptableObject)toolbars[0];
-            var rootField = toolbarType.GetField("m_Root", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var rootField = toolbarType.GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
             if (rootField == null)
             {
                 Debug.LogError("ScenePlaySelector: 未找到工具栏 (m_Root)");
@@ -65,8 +91,8 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
                 return;
             }
 
-            var existingContainer = leftZone.Q("ScenePlaySelector");
-            if (existingContainer != null) leftZone.Remove(existingContainer);
+            // var existingContainer = leftZone.Q("ScenePlaySelector");
+            // if (existingContainer != null) leftZone.Remove(existingContainer);
 
             var container = new VisualElement
             {
@@ -79,6 +105,9 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
                     marginRight   = 6,
                 }
             };
+
+            EditorToolbarUtil.AddOrReplace("ScenePlaySelector", container);
+
             var label = VisualElementFactory.CreateToolbarLabel("Source:", FontStyle.Bold);
             container.Add(label);
 
@@ -107,7 +136,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             container.Add(scenePopup);
 
             // --- Source 切换回调 ---
-            sourcePopup.RegisterValueChangedCallback(evt =>
+            sourcePopup.RegisterValueChangedCallback(_ =>
             {
                 selectedSource = (SceneSource)sourcePopup.index;
                 EditorPrefs.SetInt(PrefKeySelectedIndexSource, (int)selectedSource);
@@ -134,7 +163,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             });
 
             // --- 场景切换回调（立即打开 场景） ---
-            scenePopup.RegisterValueChangedCallback(evt =>
+            scenePopup.RegisterValueChangedCallback(_ =>
             {
                 int index = scenePopup.index;
                 switch (selectedSource)

@@ -19,15 +19,15 @@
 
         private static readonly List<string> tags = new();
         private static readonly Dictionary<string, List<GameObject>> objects = new();
-        private int selectedOption; //列表中选中的索引
-        private int curSelectIndex; //当前选择标签的索引
+        private int _selectedOption; //列表中选中的索引
+        private int _curSelectIndex; //当前选择标签的索引
         private static string _tagName = "";
 
         private static GUILayoutOption _btnWidth;
-        private Vector2 tagsScrollPosition = Vector2.zero;
-        private Vector2 objsScrollPosition = Vector2.zero;
+        private Vector2 _tagsScrollPosition = Vector2.zero;
+        private Vector2 _objsScrollPosition = Vector2.zero;
 
-        [MenuItem("ByTools/🧩 标签Tag查找对象")]
+        [MenuItem("ByTools/🏷️ 标签Tag查找对象")]
         public static void ShowWindow()
         {
             var window = GetWindow<FindHierarchyTagEditorWindow>("Find With Tag");
@@ -100,11 +100,11 @@
             switch (viewType)
             {
                 case ViewType.TagView:
-                    tagsScrollPosition = GUILayout.BeginScrollView(tagsScrollPosition, viewWidth);
+                    _tagsScrollPosition = GUILayout.BeginScrollView(_tagsScrollPosition, viewWidth);
                     TagsView();
                     break;
                 case ViewType.ObjView:
-                    objsScrollPosition = GUILayout.BeginScrollView(objsScrollPosition, viewWidth);
+                    _objsScrollPosition = GUILayout.BeginScrollView(_objsScrollPosition, viewWidth);
                     ObjsView();
                     break;
                 default:
@@ -121,10 +121,10 @@
         private void TagsView()
         {
             //显示所有标签
-            selectedOption = GUILayout.SelectionGrid(selectedOption, tags.ToArray(), 1);
-            if (curSelectIndex == selectedOption) return;
-            curSelectIndex = selectedOption;
-            _tagName = tags[curSelectIndex]; //当前标签名字
+            _selectedOption = GUILayout.SelectionGrid(_selectedOption, tags.ToArray(), 1);
+            if (_curSelectIndex == _selectedOption) return;
+            _curSelectIndex = _selectedOption;
+            _tagName = tags[_curSelectIndex]; //当前标签名字
             //显示右边视图
         }
 

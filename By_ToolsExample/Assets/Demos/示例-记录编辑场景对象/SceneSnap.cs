@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
     using System.Linq;
-    using _3rdBy.MetaFramework.Plugins.LitJson;
+    using LitJson;
     using UnityEngine;
 
     public class SceneSnap : MonoBehaviour

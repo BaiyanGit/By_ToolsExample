@@ -9,7 +9,7 @@
 #endregion
 
 
-namespace _3rdBy.MetaFramework.Plugins.LitJson
+namespace LitJson
 {
     internal enum ParserToken
     {

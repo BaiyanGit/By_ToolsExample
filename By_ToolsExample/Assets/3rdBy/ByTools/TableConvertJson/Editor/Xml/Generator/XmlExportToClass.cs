@@ -11,7 +11,7 @@ namespace _3rdBy.ByTools.TableConvertJson.Editor.Xml.Generator
     using System.Linq;
     using System.Text;
     using ConvertHelper;
-    using MetaFramework.Plugins.LitJson;
+    using LitJson;
     using UnityEditor;
     using UnityEngine;
 

@@ -51,6 +51,8 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
 
         private void Start()
         {
+            width                       = Screen.width;
+            height                      = Screen.height;
             Application.targetFrameRate = frameRate;
         }
 
@@ -67,7 +69,8 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
             _frame                     = new Texture2D(width, height, TextureFormat.RGB24, false);
             targetCamera.targetTexture = _rt;
 
-            string outputPath = RecorderPathUtil.NewVideoPath();
+            // string outputPath = RecorderPathUtil.NewVideoPath();
+            string outputPath = RecorderPathUtil.ShareComputerVideoPath();
 
             // 如果使用麦克风模式：先启动麦克风采集，等待就绪
             if (audioMode == RecorderAudioMode.Microphone)
@@ -413,7 +416,6 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
 
             // 视频输入
             args += $"-f rawvideo -pix_fmt rgb24 -s {width}x{height} -r {frameRate} -i \"{videoPipePath}\" ";
-
 
             switch (audioMode)
             {

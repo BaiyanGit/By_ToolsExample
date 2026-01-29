@@ -30,7 +30,7 @@ namespace _3rdBy.ByFunc.ProgressWindow
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Init()
         {
-            Debug.Log("ProgressWindow Start");
+            Debug.LogWarning("ProgressWindow Start");
             if (!_instance)
             {
                 var go = new GameObject("ProgressWindow").AddComponent<ProgressWindow>();

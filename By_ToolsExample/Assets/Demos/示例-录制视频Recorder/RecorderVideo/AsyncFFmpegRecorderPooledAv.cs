@@ -76,13 +76,13 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
 
                 // 等待麦克风就绪（最多 2 秒）
                 int wait = 0;
-                while ((audioCapture == null || !audioCapture.IsReady) && wait < 2000)
+                while ((audioCapture == null || !audioCapture.isReady) && wait < 2000)
                 {
                     Thread.Sleep(10);
                     wait += 10;
                 }
 
-                if (audioCapture == null || !audioCapture.IsReady)
+                if (audioCapture == null || !audioCapture.isReady)
                 {
                     Debug.LogWarning("AudioCapture 未能在超时内就绪，继续启动 ffmpeg 但音频参数可能不正确。");
                 }
@@ -116,7 +116,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
                 _audioThread.Start();
             }
 
-            Debug.Log($"🎥 录制开始|音频模式 = {audioMode}");
+            Debug.Log($"🟢 录制开始|音频模式 = {audioMode}");
         }
 
         public void StopRecording()
@@ -375,7 +375,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
                 {
                     _videoPipeServer.WaitForConnection();
                     _videoPipeWriter = new BinaryWriter(_videoPipeServer);
-                    Debug.Log("视频管已连接.");
+                    Debug.Log("🖇️ 视频管已连接.");
                 }
                 catch (Exception e)
                 {
@@ -393,7 +393,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
                     {
                         _audioPipeServer.WaitForConnection();
                         _audioPipeWriter = new BinaryWriter(_audioPipeServer);
-                        Debug.Log("音频管已连接.");
+                        Debug.Log("🖇️ 音频管已连接.");
                     }
                     catch (Exception e)
                     {
@@ -632,7 +632,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
                 }
             }
 
-            Debug.Log("视频写入线程退出.");
+            Debug.Log("⏏️ 视频写入线程退出.");
         }
 
         private void AudioWriteLoop()
@@ -712,7 +712,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
                 }
             }
 
-            Debug.Log("音频写入线程退出.");
+            Debug.Log("⏏️ 音频写入线程退出.");
         }
 
         #endregion

@@ -3,6 +3,9 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
     using System.IO;
     using UnityEngine;
 
+    /// <summary>
+    /// 路径工具类
+    /// </summary>
     public static class RecorderPathUtil
     {
         private static string streamingRoot => Application.streamingAssetsPath;
@@ -22,12 +25,18 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
 
         public static string NewScreenshotPath()
         {
-            return Path.Combine(screenshotDir, $"shot_{System.DateTime.Now:yyyyMMdd_HHmmss}.png");
+            return Path.Combine(screenshotDir, $"Shot_{System.DateTime.Now:yyyyMMdd_HHmmss}.png");
         }
 
         public static string NewVideoPath()
         {
-            return Path.Combine(videoDir, $"record_{System.DateTime.Now:yyyyMMdd_HHmmss}111.mp4");
+            return Path.Combine(videoDir, $"Record_{System.DateTime.Now:yyyyMMdd_HHmmss}.mp4");
+        }
+
+        public static string ShareComputerVideoPath()
+        {
+            const string sharePath = @"\\DESKTOP-MNEF9HR\testshare\ShareVideo\";
+            return Path.Combine(sharePath, $"Record_{System.DateTime.Now:yyyyMMdd_HHmmss}.mp4");
         }
     }
 }

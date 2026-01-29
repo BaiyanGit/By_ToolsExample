@@ -184,9 +184,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37d9797082434526ac7f2bf3355f9536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  recordKey: 290
-  stopKey: 291
+  recordKey: 286
+  stopKey: 287
+  changeColorKey: 285
   recorder: {fileID: 39688273}
+  recordColor: 0
+  meshRenderer: {fileID: 1174503184}
 --- !u!1 &99512878
 GameObject:
   m_ObjectHideFlags: 0

@@ -72,7 +72,12 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
             // 如果使用麦克风模式：先启动麦克风采集，等待就绪
             if (audioMode == RecorderAudioMode.Microphone)
             {
-                audioCapture?.StartCapture();
+                var enableMicrophone = audioCapture?.StartCapture();
+                if (enableMicrophone != null && (bool)!enableMicrophone)
+                {
+                    Debug.Log("麦克风启动成功，准备启动 ffmpeg 录制...");
+                    return;
+                }
 
                 // 等待麦克风就绪（最多 2 秒）
                 int wait = 0;
@@ -154,7 +159,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
                     {
                         if (_videoPipeServer != null)
                         {
-                            // Disconnect/Dispose to ensure client sees EOF
+                            // 断开/处理以确保客户端看到EOF
                             try
                             {
                                 _videoPipeServer.Disconnect();
@@ -602,7 +607,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
                                 }
                                 catch (Exception ex)
                                 {
-                                    Debug.LogWarning($"Video pipe write exception: {ex}");
+                                    Debug.LogWarning($"视频管道写入异常: {ex}");
                                     try
                                     {
                                         _videoPipeWriter.Close();

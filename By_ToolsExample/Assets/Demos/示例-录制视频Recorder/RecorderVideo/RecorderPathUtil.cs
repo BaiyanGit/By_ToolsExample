@@ -27,7 +27,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
 
         public static string NewVideoPath()
         {
-            return Path.Combine(videoDir, $"record_{System.DateTime.Now:yyyyMMdd_HHmmss}.mp4");
+            return Path.Combine(videoDir, $"record_{System.DateTime.Now:yyyyMMdd_HHmmss}111.mp4");
         }
     }
 }

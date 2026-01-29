@@ -1,4 +1,4 @@
-﻿namespace Demos.示例_录制视频Recorder
+﻿/*namespace Demos.示例_录制视频Recorder
 {
     using System;
     using System.Collections.Concurrent;
@@ -9,7 +9,7 @@
     /// 简单的主线程调度器：允许从任意线程将 Action 投递到 Unity 主线程执行。
     /// 自动以单例方式存在（若场景中没有，会在第一次访问时创建 GameObject）。
     /// 用法：
-    ///   UnityMainThreadDispatcher.Instance.Enqueue(() => { /* Unity API 调用 */ });
+    ///   UnityMainThreadDispatcher.Instance.Enqueue(() => { /* Unity API 调用 #1# });
     /// </summary>
     public class UnityMainThreadDispatcher : MonoBehaviour
     {
@@ -87,4 +87,4 @@
             if (_instance == this) _instance = null;
         }
     }
-}
+}*/

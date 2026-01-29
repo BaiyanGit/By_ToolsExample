@@ -8,6 +8,13 @@
         [Header("结束录制按键")] public KeyCode stopKey = KeyCode.F10;
         [Header("录制器")] public AsyncFFmpegRecorderPooledAv recorder;
 
+
+        [ContextMenu("创建录制器")]
+        public void CreateRecorder()
+        {
+            RecorderPathUtil.EnsureDirectories();
+        }
+
         private void Update()
         {
             if (Input.GetKeyDown(recordKey))

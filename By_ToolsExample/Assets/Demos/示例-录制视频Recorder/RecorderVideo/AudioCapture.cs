@@ -7,7 +7,6 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
     public class AudioCapture : MonoBehaviour
     {
         [Header("麦克风设备（空表示默认设备）")] public string deviceName = ""; // 建议在 Inspector 留空或指定 Microphone.devices[0]
-
         [Header("首选采样率/声道（会根据设备能力调整）")] public int sampleRate = 44100;
         public int channels = 1;
 
@@ -58,18 +57,18 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
             }
 
             // 获取设备支持的采样率范围并选择合适的频率
-            int minFreq = 0, maxFreq = 0;
+            int minFreq, maxFreq;
             try
             {
                 Microphone.GetDeviceCaps(deviceName, out minFreq, out maxFreq);
             }
             catch (Exception e)
             {
-                Debug.LogError($"GetDeviceCaps failed: {e}. Will proceed with desired sampleRate.");
+                Debug.LogError($" 获取设备支持的采样率范围失败: {e}. 将继续进行所需的采样率.");
                 minFreq = maxFreq = 0;
             }
 
-            int chosenFreq = sampleRate;
+            int chosenFreq;
             if (minFreq == 0 && maxFreq == 0)
             {
                 // 任意采样率一般可用，使用首选值
@@ -83,7 +82,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
             }
 
             // 使用较长循环缓冲（例如 5 秒），减少 wrap 频率
-            int clipSeconds = 5;
+            const int clipSeconds = 5;
 
             // 尝试多次启动（如果先前 Stop 还未完全释放设备，可能需要重试）
             const int attempts       = 8;
@@ -161,7 +160,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
             }
 
             _recording = true;
-            Debug.Log($"音频采集：开始捕获 -> 设备='{deviceName}', 采样率={sampleRate}, 频道={channels}, 剪辑样本={(_micClip ? _micClip.samples : 0)}");
+            Debug.Log($"音频采集开始捕获 -> \n设备='{deviceName}', 采样率={sampleRate}, 频道={channels}, 剪辑样本={(_micClip ? _micClip.samples : 0)}");
             return true;
         }
 
@@ -197,7 +196,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
             else
             {
                 // 环回情况：从 lastSample 到 clipEnd，再从 0 到 pos
-                newSamples = (_micClip.samples - _lastSample) + pos;
+                newSamples = _micClip.samples - _lastSample + pos;
             }
 
             if (newSamples <= 0) return;

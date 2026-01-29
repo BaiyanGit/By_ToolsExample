@@ -12,7 +12,7 @@ namespace Demos.示例_自复位方向盘
 
         public Transform targetFollow;
 
-  
+
         public float _accelerationX;
         public float _accelerationY;
         public float _accelerationZ;
@@ -24,11 +24,8 @@ namespace Demos.示例_自复位方向盘
         private void Awake()
         {
             Instance = this;
-
-
         }
 
-  
 
         private void LateUpdate()
         {
@@ -48,12 +45,10 @@ namespace Demos.示例_自复位方向盘
             target.SetParent(null);
         }
 
-    
 
         private void OnDestroy()
         {
             Instance = null;
         }
-
     }
 }

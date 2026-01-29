@@ -18,7 +18,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
         public readonly ConcurrentQueue<byte[]> pcmQueue = new();
 
         // 外部用来检测麦克风是否已就绪（有有效位置）
-        public bool IsReady => _micClip != null && Microphone.GetPosition(deviceName) > 0;
+        public bool isReady => _micClip != null && Microphone.GetPosition(deviceName) > 0;
 
         /// <summary>
         /// 启动麦克风采集。该函数会在内部尝试多次启动麦克风（带短延时），以应对驱动释放/资源未及时回收的情况。
@@ -65,7 +65,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"GetDeviceCaps failed: {e}. Will proceed with desired sampleRate.");
+                Debug.LogError($"GetDeviceCaps failed: {e}. Will proceed with desired sampleRate.");
                 minFreq = maxFreq = 0;
             }
 
@@ -90,7 +90,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
             const int attemptDelayMs = 100; // 每次尝试间隔
             bool      started        = false;
 
-            for (int i = 0; i < attempts && !started; i++)
+            for (int i = 0; i < attempts; i++)
             {
                 try
                 {
@@ -98,7 +98,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogWarning($"Microphone.Start threw exception (attempt {i + 1}/{attempts}): {ex}");
+                    Debug.LogError($"Microphone.Start 出现一个错误： (尝试 {i + 1}/{attempts}): {ex}");
                     _micClip = null;
                 }
 
@@ -117,20 +117,19 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
                         started = true;
                         break;
                     }
-                    else
-                    {
-                        // 未就绪：结束本次尝试并等待重试
-                        try
-                        {
-                            Microphone.End(deviceName);
-                        }
-                        catch
-                        {
-                        }
 
-                        _micClip = null;
-                        System.Threading.Thread.Sleep(attemptDelayMs);
+                    // 未就绪：结束本次尝试并等待重试
+                    try
+                    {
+                        Microphone.End(deviceName);
                     }
+                    catch
+                    {
+                        // 忽略异常
+                    }
+
+                    _micClip = null;
+                    System.Threading.Thread.Sleep(attemptDelayMs);
                 }
                 else
                 {
@@ -141,7 +140,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
 
             if (!started)
             {
-                Debug.LogWarning("AudioCapture.StartCapture: 无法启动麦克风（超时/失败）。");
+                Debug.LogError("AudioCapture.StartCapture: 无法启动麦克风（超时/失败）。");
                 _recording = false;
                 return false;
             }
@@ -162,7 +161,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
             }
 
             _recording = true;
-            Debug.Log($"AudioCapture.StartCapture -> device='{deviceName}', sampleRate={sampleRate}, channels={channels}, clipSamples={(_micClip != null ? _micClip.samples : 0)}");
+            Debug.Log($"音频采集：开始捕获 -> 设备='{deviceName}', 采样率={sampleRate}, 频道={channels}, 剪辑样本={(_micClip ? _micClip.samples : 0)}");
             return true;
         }
 
@@ -175,7 +174,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"Microphone.End() error: {e}");
+                Debug.LogWarning($"Microphone.End() 错误: {e}");
             }
 
             // 不在 Stop 阶段做长时间阻塞等待驱动释放（避免卡主主线程）。
@@ -235,7 +234,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
             _lastSample = pos;
         }
 
-        private byte[] FloatToPCM16(float[] samples)
+        private static byte[] FloatToPCM16(float[] samples)
         {
             byte[] pcm = new byte[samples.Length * 2];
             for (int i = 0; i < samples.Length; i++)

@@ -68,7 +68,7 @@ Shader "UI/Guide/GuideUICircle"
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            struct v2f
+            struct v2_f
             {
                 float4 vertex   : SV_POSITION;
                 fixed4 color    : COLOR;
@@ -83,9 +83,9 @@ Shader "UI/Guide/GuideUICircle"
             float2 _Center;
             float _Slider;
 
-            v2f vert(appdata_t v)
+            v2_f vert(appdata_t v)
             {
-                v2f OUT;
+                v2_f OUT;
                 UNITY_SETUP_INSTANCE_ID(v);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
                 OUT.worldPosition = v.vertex;
@@ -99,7 +99,7 @@ Shader "UI/Guide/GuideUICircle"
 
             sampler2D _MainTex;
 
-            fixed4 frag(v2f IN) : SV_Target
+            fixed4 frag(v2_f IN) : SV_Target
             {
                 half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
 

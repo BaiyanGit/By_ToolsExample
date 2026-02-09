@@ -10,9 +10,12 @@ using Debug = UnityEngine.Debug;
 
 namespace Demos.示例_录制视频Recorder.RecorderVideo
 {
+    using UnityEngine.UI;
+
     public class AsyncFFmpegRecorderPooledAv : MonoBehaviour
     {
         [Header("视频")] public Camera targetCamera;
+        [Header("UI")] public Camera uiCamera;
         public int width = 1920;
         public int height = 1080;
         public int frameRate = 30;
@@ -48,13 +51,45 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
         private ConcurrentQueue<FrameBuffer> _freePool = new();
         private ConcurrentQueue<FrameBuffer> _videoQueue = new();
         [Header("音频模式")] public RecorderAudioMode audioMode = RecorderAudioMode.Microphone;
+        [Header("录制方式")] public RecorderViewMode recorderMode = RecorderViewMode.Camera;
+        public int targetDisplay = 0;
 
         private void Start()
         {
-            width                       = Screen.width;
-            height                      = Screen.height;
+            for (int i = 1; i < Display.displays.Length; i++)
+            {
+                Display.displays[i].Activate();
+            }
+
+            switch (recorderMode)
+            {
+                case RecorderViewMode.Camera:
+                    width  = Screen.width;
+                    height = Screen.height;
+                    break;
+                case RecorderViewMode.GameView:
+                    width  = Display.displays[targetDisplay].systemWidth;
+                    height = Display.displays[targetDisplay].systemHeight;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
             Application.targetFrameRate = frameRate;
         }
+
+        #region 新增录制窗口模式选择
+
+        public RawImage rawImage;
+
+        private IEnumerator CaptureFrameCoroutine1(FrameBuffer buffer)
+        {
+            yield return new WaitForEndOfFrame();
+            var screenTex = ScreenCapture.CaptureScreenshotAsTexture();
+            rawImage.texture = screenTex;
+        }
+
+        #endregion
 
         #region Public API
 
@@ -68,9 +103,11 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
             _rt                        = new RenderTexture(width, height, 24);
             _frame                     = new Texture2D(width, height, TextureFormat.RGB24, false);
             targetCamera.targetTexture = _rt;
+            uiCamera.targetTexture     = _rt;
+            uiCamera.clearFlags        = CameraClearFlags.Depth;
 
-            // string outputPath = RecorderPathUtil.NewVideoPath();
-            string outputPath = RecorderPathUtil.ShareComputerVideoPath();
+            string outputPath = RecorderPathUtil.NewVideoPath();
+            // string outputPath = RecorderPathUtil.ShareComputerVideoPath();
 
             // 如果使用麦克风模式：先启动麦克风采集，等待就绪
             if (audioMode == RecorderAudioMode.Microphone)
@@ -324,6 +361,7 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
 
             // 在每帧末尾读取最终渲染内容，避免丢失在 LateUpdate/OnRender 之后发生的移动
             StartCoroutine(CaptureFrameCoroutine(buffer));
+            // StartCoroutine(CaptureFrameCoroutine1(buffer));
         }
 
         private IEnumerator CaptureFrameCoroutine(FrameBuffer buffer)
@@ -333,7 +371,9 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
             RenderTexture.active = _rt;
             _frame.ReadPixels(new Rect(0, 0, width, height), 0, 0);
             _frame.Apply();
-            RenderTexture.active = null;
+            RenderTexture.active   = null;
+
+            rawImage.texture       = _frame;
 
             var raw = _frame.GetRawTextureData<byte>();
             raw.CopyTo(buffer.data);
@@ -742,5 +782,11 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
         [InspectorName("不录声音")] None,
         [InspectorName("麦克风")] Microphone,
         [InspectorName("系统声音")] System
+    }
+
+    public enum RecorderViewMode
+    {
+        [InspectorName("相机视角")] Camera,
+        [InspectorName("窗口视角")] GameView
     }
 }

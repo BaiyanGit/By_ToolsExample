@@ -54,7 +54,7 @@ Properties {
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            struct v2f
+            struct v2_f
             {
                 float4 pos: SV_POSITION;
                 float2 uv : TEXCOORD0;
@@ -78,11 +78,11 @@ Properties {
             int _SeeThroughOrdered;
 	        UNITY_DECLARE_DEPTH_TEXTURE(_CameraDepthTexture);
 
-            v2f vert (appdata v)
+            v2_f vert (appdata v)
             {
-                v2f o;
+                v2_f o;
                 UNITY_SETUP_INSTANCE_ID(v);
-                UNITY_INITIALIZE_OUTPUT(v2f, o);
+                UNITY_INITIALIZE_OUTPUT(v2_f, o);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 o.pos    = ComputeVertexPosition(v.vertex);
                 #if HP_DEPTH_OFFSET
@@ -109,7 +109,7 @@ Properties {
                 return lerp(persp,ortho,unity_OrthoParams.w);
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            fixed4 frag (v2_f i) : SV_Target
             {
                 #if HP_DEPTH_OFFSET
                     float sceneZ = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.scrPos.xy / i.scrPos.w);

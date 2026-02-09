@@ -25,18 +25,18 @@ namespace Demos.示例_录制视频Recorder.RecorderVideo
 
         public static string NewScreenshotPath()
         {
-            return Path.Combine(screenshotDir, $"Shot_{System.DateTime.Now:yyyyMMdd_HHmmss}.png");
+            return Path.Combine(screenshotDir, $"Shot_{System.DateTime.Now:yyyyMMdd_HH_mm_ss}.png");
         }
 
         public static string NewVideoPath()
         {
-            return Path.Combine(videoDir, $"Record_{System.DateTime.Now:yyyyMMdd_HHmmss}.mp4");
+            return Path.Combine(videoDir, $"Record_{System.DateTime.Now:yyyyMMdd_HH_mm_ss}.mp4");
         }
 
         public static string ShareComputerVideoPath()
         {
             const string sharePath = @"\\DESKTOP-MNEF9HR\testshare\ShareVideo\";
-            return Path.Combine(sharePath, $"Record_{System.DateTime.Now:yyyyMMdd_HHmmss}.mp4");
+            return Path.Combine(sharePath, $"ShareRecord_{System.DateTime.Now:yyyyMMdd_HH_mm_ss}.mp4");
         }
     }
 }

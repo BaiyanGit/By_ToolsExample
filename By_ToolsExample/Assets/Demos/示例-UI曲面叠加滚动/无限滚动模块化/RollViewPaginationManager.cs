@@ -1,0 +1,130 @@
+namespace Demos.示例_UI曲面叠加滚动.无限滚动
+{
+    using System;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.UI;
+
+    /// <summary>
+    /// 分页管理器 - 处理分页指示器和页码逻辑
+    /// </summary>
+    public class RollViewPaginationManager : MonoBehaviour
+    {
+        [Header("分页系统")] public Transform pageIndicatorParent; // 分页指示器的父容器
+        [Header("分页预制体")] public GameObject pagePrefab;        // 分页指示器预制体
+        [Header("每页项目数")] public int itemsPerPage = 1;         // 每页显示的项目数
+
+        private readonly List<Image> _pageIndicators = new();
+        private int _lastPageIndex = -1;
+
+        public event Action<int> OnPageChanged;
+
+        private void OnEnable()
+        {
+            itemsPerPage = Mathf.Max(1, itemsPerPage);
+        }
+
+        public void Initialize(int totalItems)
+        {
+            InitializePageIndicators(totalItems);
+        }
+
+        /// <summary>
+        /// 初始化分页指示器
+        /// </summary>
+        private void InitializePageIndicators(int totalItems)
+        {
+            if (!pageIndicatorParent || !pagePrefab)
+                return;
+
+            // 清空现有的分页指示器
+            foreach (Transform child in pageIndicatorParent)
+                Destroy(child.gameObject);
+            _pageIndicators.Clear();
+
+            // 计算总页数
+            int totalPages = GetTotalPages(totalItems);
+
+            // 创建分页指示器
+            for (int i = 0; i < totalPages; i++)
+            {
+                var pageObj   = Instantiate(pagePrefab, pageIndicatorParent);
+                var pageImage = pageObj.GetComponent<Image>();
+                if (pageImage)
+                {
+                    _pageIndicators.Add(pageImage);
+                    int pageIndex = i;
+                    // 为分页指示器添加点击事件
+                    var pageBtn           = pageObj.GetComponent<Button>();
+                    if (!pageBtn) pageBtn = pageObj.AddComponent<Button>();
+                    pageBtn.onClick.AddListener(() => OnPageIndicatorClicked?.Invoke(pageIndex));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 更新分页指示器的状态
+        /// </summary>
+        public void UpdatePageIndicators(int centerIndex, int totalItems)
+        {
+            int currentPage = GetCurrentPage(centerIndex);
+            if (currentPage == _lastPageIndex)
+                return;
+
+            _lastPageIndex = currentPage;
+            OnPageChanged?.Invoke(currentPage);
+
+            for (int i = 0; i < _pageIndicators.Count; i++)
+            {
+                _pageIndicators[i].color = i == currentPage ? Color.white : new Color(1, 1, 1, 0.5f);
+            }
+        }
+
+        /// <summary>
+        /// 获取当前页码
+        /// </summary>
+        public int GetCurrentPage(int centerIndex)
+        {
+            return centerIndex / itemsPerPage;
+        }
+
+        /// <summary>
+        /// 获取总页数
+        /// </summary>
+        public int GetTotalPages(int totalItems)
+        {
+            return Mathf.CeilToInt((float)totalItems / itemsPerPage);
+        }
+
+        /// <summary>
+        /// 计算目标滚动值（用于跳转到指定页）
+        /// </summary>
+        public int CalculateTargetScroll(int pageIndex, int totalItems)
+        {
+            int totalPages = GetTotalPages(totalItems);
+            pageIndex = Mathf.Clamp(pageIndex, 0, totalPages - 1);
+            return pageIndex * itemsPerPage;
+        }
+
+        /// <summary>
+        /// 计算下一页的滚动值
+        /// </summary>
+        public int CalculateNextPageScroll(int currentScroll, int totalItems)
+        {
+            int nextScroll = currentScroll + itemsPerPage;
+            int maxScroll  = totalItems - 1;
+            return Mathf.Min(nextScroll, maxScroll);
+        }
+
+        /// <summary>
+        /// 计算上一页的滚动值
+        /// </summary>
+        public int CalculatePrevPageScroll(int currentScroll)
+        {
+            int prevScroll = currentScroll - itemsPerPage;
+            return Mathf.Max(prevScroll, 0);
+        }
+
+        public event Action<int> OnPageIndicatorClicked;
+    }
+}

@@ -1,4 +1,4 @@
-namespace Demos.示例_UI曲面叠加滚动.无限滚动
+namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
 {
     using System;
     using System.Collections.Generic;
@@ -107,22 +107,51 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动
         }
 
         /// <summary>
-        /// 计算下一页的滚动值
+        /// 计算下一页的滚动值（保留旧签名以兼容性，旧逻辑按“循环”处理）
         /// </summary>
         public int CalculateNextPageScroll(int currentScroll, int totalItems)
         {
+            return CalculateNextPageScroll(currentScroll, totalItems, true);
+        }
+
+        /// <summary>
+        /// 计算下一页的滚动值（可选择是否循环）
+        /// </summary>
+        public int CalculateNextPageScroll(int currentScroll, int totalItems, bool isLoop)
+        {
             int nextScroll = currentScroll + itemsPerPage;
             int maxScroll  = totalItems - 1;
+            if (nextScroll > maxScroll)
+            {
+                if (isLoop)
+                {
+                    nextScroll = 0;
+                }
+                else
+                {
+                    nextScroll = maxScroll;
+                }
+            }
+
             return Mathf.Min(nextScroll, maxScroll);
         }
 
         /// <summary>
         /// 计算上一页的滚动值
         /// </summary>
-        public int CalculatePrevPageScroll(int currentScroll)
+        public int CalculatePrevPageScroll(int currentScroll, int totalItems, bool isLoop)
         {
             int prevScroll = currentScroll - itemsPerPage;
-            return Mathf.Max(prevScroll, 0);
+
+            if (isLoop)
+            {
+                if (prevScroll < 0)
+                {
+                    prevScroll = itemsPerPage * (GetTotalPages(totalItems) - 1);
+                }
+            }
+
+            return prevScroll; //Mathf.Max(prevScroll, 0);
         }
 
         public event Action<int> OnPageIndicatorClicked;

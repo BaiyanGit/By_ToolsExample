@@ -1,4 +1,4 @@
-namespace Demos.示例_UI曲面叠加滚动.无限滚动
+namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
 {
     using UnityEngine;
     using UnityEngine.UI;
@@ -8,8 +8,8 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动
     /// </summary>
     public class RollViewArrowController : MonoBehaviour
     {
-        [Header("左箭头")] public Button leftArrow;           // 左箭头按钮
-        [Header("右箭头")] public Button rightArrow;          // 右箭头按钮
+        [Header("左箭头")] public Button leftArrow;              // 左箭头按钮
+        [Header("右箭头")] public Button rightArrow;             // 右箭头按钮
         [Header("箭头隐藏透明度")] public float disableAlpha = 0.3f; // 箭头禁用时的透明度
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动
                 return;
 
             var color = arrowButton.image.color;
-            color.a = active ? 1f : disableAlpha;
+            color.a                 = active ? 1f : disableAlpha;
             arrowButton.image.color = color;
 
             arrowButton.interactable = active;

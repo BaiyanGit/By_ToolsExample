@@ -1,14 +1,17 @@
-namespace Demos.示例_UI曲面叠加滚动.无限滚动
+namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
 {
     using System;
     using UnityEngine;
     using UnityEngine.EventSystems;
+    using UnityEngine.UI;
 
     /// <summary>
     /// 输入处理器 - 处理拖拽、键盘和鼠标输入
     /// </summary>
     public class RollViewInputHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
+        [Header("上一个")] public Button prevButton;
+        [Header("下一个")] public Button nextButton;
         [Header("拖拽力度")] public float dragSensitivity = 0.001f; // 拖拽时滚动的敏感度
         [Header("滚轮速度")] public float wheelSpeed = 0.8f;        // 鼠标滚轮的滚动速度
 
@@ -21,6 +24,17 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动
         private bool _isDragging;
 
         public bool IsDragging => _isDragging;
+
+
+        private void Start()
+        {
+            // 添加 null 检查，避免未绑定按钮时报错
+            if (prevButton != null)
+                prevButton.onClick.AddListener(() => { OnMovePrevAction?.Invoke(); });
+
+            if (nextButton != null)
+                nextButton.onClick.AddListener(() => { OnMoveNextAction?.Invoke(); });
+        }
 
         public void OnBeginDrag(PointerEventData eventData)
         {

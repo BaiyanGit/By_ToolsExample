@@ -21,9 +21,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         public event Action        OnMoveNextAction;
         public event Action        OnMovePrevAction;
 
-        private bool _isDragging;
-
-        public bool IsDragging => _isDragging;
+        public bool isDragging { get; private set; }
 
 
         private void Start()
@@ -38,7 +36,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-            _isDragging = true;
+            isDragging = true;
             OnBeginDragAction?.Invoke();
         }
 
@@ -50,7 +48,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            _isDragging = false;
+            isDragging = false;
             OnEndDragAction?.Invoke();
         }
 

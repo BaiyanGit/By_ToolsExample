@@ -258,7 +258,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
                 return;
             }
 
-            bool isDragging = inputHandler.IsDragging;
+            bool isDragging = inputHandler.isDragging;
             Debug.Log($"[输入处理器] 当前拖拽状态: {(isDragging ? "拖拽中" : "未拖拽")}");
         }
 
@@ -361,7 +361,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
             if (inputHandler)
             {
                 Debug.Log("[RollViewInputHandler]");
-                Debug.Log($"  - 拖拽状态: {(inputHandler.IsDragging ? "拖拽中" : "未拖拽")}");
+                Debug.Log($"  - 拖拽状态: {(inputHandler.isDragging ? "拖拽中" : "未拖拽")}");
                 Debug.Log($"  - 拖拽敏感度: {inputHandler.dragSensitivity}");
                 Debug.Log($"  - 滚轮速度: {inputHandler.wheelSpeed}");
             }

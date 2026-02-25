@@ -15,12 +15,12 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         [Header("输入处理器")] public RollViewInputHandler inputHandler;
         [Header("箭头控制器")] public RollViewArrowController arrowController;
 
-        [Header("UI 文本显示")] public Text pageText; // 显示当前页码
-        [Header("")] public Text centerItemText;  // 显示中心项
-        [Header("")] public Text infoPanel;       // 显示详细信息
+        [Header("[Debug] 显示当前页码")] public Text pageText;
+        [Header("[Debug] 显示中心项")] public Text centerItemText;
+        [Header("[Debug] 显示详细信息")] public Text infoPanel;
 
-        [Header("测试输入")] public InputField testPageInput;  // 输入页码
-        [Header("")] public InputField testItemIndexInput; // 输入项目索引
+        [Header("[Debug] 输入页码")] public InputField testPageInput;
+        [Header("[Debug] 输入项目索引")] public InputField testItemIndexInput;
 
         private void Start()
         {

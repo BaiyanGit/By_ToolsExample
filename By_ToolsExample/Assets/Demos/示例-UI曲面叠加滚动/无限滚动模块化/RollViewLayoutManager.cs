@@ -31,7 +31,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
             int count = _items.Count;
 
             // 图层排序列表
-            List<(float t, RectTransform item)> sort = new();
+            List<(float t, RectTransform item, int index)> sort = new();
 
             for (int i = 0; i < count; i++)
             {
@@ -51,11 +51,30 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
                 item.localScale                        = Vector3.one * scale;
                 item.GetComponent<CanvasGroup>().alpha = alpha;
 
-                sort.Add((t, item));
+                sort.Add((t, item, i));
             }
 
-            // 苹果级排序：远→近
-            sort.Sort((a, b) => a.t.CompareTo(b.t));
+            // ✅ 修正版：中心最高，向左向右都逐级递减
+            // ✅ 正确排序：离中心越远 → 越先设置 → 层级越低
+            sort.Sort((a, b) =>
+            {
+                float aOffset = a.index - scroll;
+                float bOffset = b.index - scroll;
+
+                if (_infiniteLoop)
+                {
+                    aOffset = Wrap(aOffset, count);
+                    bOffset = Wrap(bOffset, count);
+                }
+
+                float aAbs = Mathf.Abs(aOffset);
+                float bAbs = Mathf.Abs(bOffset);
+
+                // 绝对值大的排前面（远的在下面）
+                return bAbs.CompareTo(aAbs);
+            });
+
+            // 设置层级（越后越上）
             for (int i = 0; i < sort.Count; i++)
                 sort[i].item.SetSiblingIndex(i);
         }

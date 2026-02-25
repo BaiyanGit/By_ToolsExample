@@ -38,8 +38,8 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
                 return;
 
             // 清空现有的分页指示器
-            foreach (Transform child in pageIndicatorParent)
-                Destroy(child.gameObject);
+            // foreach (Transform child in pageIndicatorParent)
+            //     Destroy(child.gameObject);
             _pageIndicators.Clear();
 
             // 计算总页数
@@ -48,7 +48,9 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
             // 创建分页指示器
             for (int i = 0; i < totalPages; i++)
             {
-                var pageObj   = Instantiate(pagePrefab, pageIndicatorParent);
+                var pageObj = Instantiate(pagePrefab, pageIndicatorParent);
+
+                pageObj.name = "Page_" + i;
                 var pageImage = pageObj.GetComponent<Image>();
                 if (pageImage)
                 {
@@ -59,6 +61,8 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
                     if (!pageBtn) pageBtn = pageObj.AddComponent<Button>();
                     pageBtn.onClick.AddListener(() => OnPageIndicatorClicked?.Invoke(pageIndex));
                 }
+
+                pageObj.SetActive(true);
             }
         }
 

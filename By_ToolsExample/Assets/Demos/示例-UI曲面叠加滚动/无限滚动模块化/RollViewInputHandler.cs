@@ -10,16 +10,19 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
     /// </summary>
     public class RollViewInputHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
+        [Header("启用拖拽")] public bool enableDragInput = true;
+        [Header("实时拖拽")] public bool realtimeDragInput = true;
+        [Header("启用键盘")] public bool enableKeyboardInput = true;
+        [Header("启用鼠标")] public bool enableMouseInput = true;
+
         [Header("上一个")] public Button prevButton;
         [Header("下一个")] public Button nextButton;
         [Header("拖拽力度")] public float dragSensitivity = 0.001f; // 拖拽时滚动的敏感度
-        [Header("滚轮速度")] public float wheelSpeed = 0.8f;        // 鼠标滚轮的滚动速度
-
-        public event Action<float> OnDragAction;
-        public event Action        OnBeginDragAction;
-        public event Action        OnEndDragAction;
-        public event Action        OnMoveNextAction;
-        public event Action        OnMovePrevAction;
+        public event Action<float, bool> OnDragAction;
+        public event Action              OnBeginDragAction;
+        public event Action              OnEndDragAction;
+        public event Action              OnMoveNextAction;
+        public event Action              OnMovePrevAction;
 
         public bool isDragging { get; private set; }
 
@@ -36,6 +39,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
 
         public void OnBeginDrag(PointerEventData eventData)
         {
+            if (!enableDragInput) return;
             isDragging = true;
             OnBeginDragAction?.Invoke();
         }
@@ -43,11 +47,12 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         public void OnDrag(PointerEventData eventData)
         {
             float delta = -eventData.delta.x * dragSensitivity;
-            OnDragAction?.Invoke(delta);
+            OnDragAction?.Invoke(delta, realtimeDragInput);
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
+            if (!enableDragInput) return;
             isDragging = false;
             OnEndDragAction?.Invoke();
         }
@@ -56,13 +61,18 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         private void OnGUI()
         {
             // 鼠标滚轮
+            if (!enableMouseInput) return;
             float wheel = Input.GetAxis("Mouse ScrollWheel");
             if (Mathf.Abs(wheel) > 0.01f)
             {
-                OnDragAction?.Invoke(-wheel * wheelSpeed);
+                if (wheel > 0)
+                    OnMovePrevAction?.Invoke();
+                else
+                    OnMoveNextAction?.Invoke();
             }
 
             // 键盘
+            if (!enableKeyboardInput) return;
             if (Input.GetKeyDown(KeyCode.RightArrow)) OnMoveNextAction?.Invoke();
             if (Input.GetKeyDown(KeyCode.LeftArrow)) OnMovePrevAction?.Invoke();
         }

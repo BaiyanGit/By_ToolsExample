@@ -152,11 +152,18 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
 
         #region 输入处理
 
-        private void HandleDrag(float delta)
+        private void HandleDrag(float delta, bool realtimeDragInput)
         {
             _targetScroll += delta;
+
             if (!infiniteLoop)
+            {
                 _targetScroll = Mathf.Clamp(_targetScroll, 0, _items.Count - 1);
+                _scroll       = _targetScroll;
+            }
+
+            if (realtimeDragInput)
+                _scroll = _targetScroll; // 拖拽时立即同步
         }
 
         private void HandleEndDrag()

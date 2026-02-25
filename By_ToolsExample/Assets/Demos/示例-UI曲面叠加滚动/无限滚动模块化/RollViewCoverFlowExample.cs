@@ -70,7 +70,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
             {
                 inputHandler.OnBeginDragAction += () => { Debug.Log("[输入处理器] 开始拖拽"); };
 
-                inputHandler.OnDragAction += (delta) => { Debug.Log($"[输入处理器] 拖拽中，偏移量: {delta}"); };
+                inputHandler.OnDragAction += (delta, realtimeDragInput) => { Debug.Log($"[输入处理器] 拖拽中，偏移量: {delta}"); };
 
                 inputHandler.OnEndDragAction += () => { Debug.Log("[输入处理器] 拖拽结束"); };
 
@@ -265,7 +265,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         /// <summary>
         /// 修改输入处理器参数
         /// </summary>
-        public void ModifyInputHandlerSettings(float dragSensitivity, float wheelSpeed)
+        public void ModifyInputHandlerSettings(float dragSensitivity)
         {
             if (!inputHandler)
             {
@@ -274,11 +274,9 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
             }
 
             inputHandler.dragSensitivity = dragSensitivity;
-            inputHandler.wheelSpeed      = wheelSpeed;
 
             Debug.Log("[输入处理器] 已修改参数");
             Debug.Log($"  - 拖拽敏感度: {dragSensitivity}");
-            Debug.Log($"  - 滚轮速度: {wheelSpeed}");
         }
 
         #endregion
@@ -363,7 +361,6 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
                 Debug.Log("[RollViewInputHandler]");
                 Debug.Log($"  - 拖拽状态: {(inputHandler.isDragging ? "拖拽中" : "未拖拽")}");
                 Debug.Log($"  - 拖拽敏感度: {inputHandler.dragSensitivity}");
-                Debug.Log($"  - 滚轮速度: {inputHandler.wheelSpeed}");
             }
 
             // 箭头控制器信息

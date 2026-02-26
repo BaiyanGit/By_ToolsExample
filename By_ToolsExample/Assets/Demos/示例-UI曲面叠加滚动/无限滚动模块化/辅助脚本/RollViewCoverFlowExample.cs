@@ -1,5 +1,7 @@
-namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
+namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化.辅助脚本
 {
+    using System.Collections;
+    using System.Collections.Generic;
     using UnityEngine;
     using UnityEngine.UI;
 
@@ -9,30 +11,69 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
     /// </summary>
     public class RollViewCoverFlowExample : MonoBehaviour
     {
-        [Header("滚动视图管理器")] public RollViewManager rollViewManager;
+        [Header("Item预制体")] public GameObject itemPrefab;
+        [Header("Item数量")] public int itemCount = 5;
+        [Header("滚动管理器")] public RollViewManager rollViewManager;
         [Header("布局管理器")] public RollViewLayoutManager layoutManager;
         [Header("分页管理器")] public RollViewPaginationManager paginationManager;
         [Header("输入处理器")] public RollViewInputHandler inputHandler;
         [Header("箭头控制器")] public RollViewArrowController arrowController;
 
         [Header("[Debug] 显示当前页码")] public Text pageText;
-        [Header("[Debug] 显示中心项")] public Text centerItemText;
         [Header("[Debug] 显示详细信息")] public Text infoPanel;
 
+        [Header("[Debug] 跳转页码按钮")] public Button jumpToPageButton;
         [Header("[Debug] 输入页码")] public InputField testPageInput;
-        [Header("[Debug] 输入项目索引")] public InputField testItemIndexInput;
+
+        [Header("[Debug] 跳转Item按钮")] public Button jumpToItemButton;
+        [Header("[Debug] 输入Item索引")] public InputField testItemIndexInput;
+
+        [Header("[Debug] 快速跳转首页")] public Button goToFirstPageButton;
+        [Header("[Debug] 快速跳转末页")] public Button goToLastPageButton;
+        [Header("[Debug] 日志输出")] public Text logText;
+
+        private void Awake()
+        {
+            logText.text = "";
+            jumpToPageButton.onClick.AddListener(GoToPageByInput);
+            jumpToItemButton.onClick.AddListener(GoToItemByInput);
+            goToFirstPageButton.onClick.AddListener(GoToFirstPage);
+            goToLastPageButton.onClick.AddListener(GoToLastPage);
+        }
 
         private void Start()
         {
-            // 如果没有手动配置，可以从 RollViewManager 获取
-            if (!layoutManager && rollViewManager)
-                layoutManager = rollViewManager.GetLayoutManager();
-            if (!paginationManager && rollViewManager)
-                paginationManager = rollViewManager.GetPaginationManager();
-            if (!inputHandler && rollViewManager)
-                inputHandler = rollViewManager.GetInputHandler();
-            if (!arrowController && rollViewManager)
-                arrowController = rollViewManager.GetArrowController();
+            InitializeItems();
+        }
+
+        /// <summary>
+        /// 验证组件
+        /// </summary>
+        private void OnValidate()
+        {
+            if (!rollViewManager) rollViewManager     = GetComponent<RollViewManager>();
+            if (!layoutManager) layoutManager         = GetComponent<RollViewLayoutManager>();
+            if (!paginationManager) paginationManager = GetComponent<RollViewPaginationManager>();
+            if (!inputHandler) inputHandler           = GetComponent<RollViewInputHandler>();
+            if (!arrowController) arrowController     = GetComponent<RollViewArrowController>();
+        }
+
+        /// <summary>
+        /// 初始化Item
+        /// </summary>
+        private void InitializeItems()
+        {
+            // 创建Item
+            var items = new List<RectTransform>();
+            for (int i = 0; i < itemCount; i++)
+            {
+                var item = Instantiate(itemPrefab, rollViewManager.content);
+                item.name = $"Item {i}";
+                item.SetActive(true);
+                items.Add(item.GetComponent<RectTransform>());
+            }
+
+            rollViewManager.RegisterItem(items);
 
             // 订阅事件
             SubscribeToAllEvents();
@@ -41,6 +82,9 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
             UpdateDisplay();
         }
 
+        /// <summary>
+        /// 销毁时取消事件订阅
+        /// </summary>
         private void OnDestroy()
         {
             UnsubscribeAllEvents();
@@ -48,6 +92,9 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
 
         #region 订阅事件
 
+        /// <summary>
+        /// 订阅所有事件
+        /// </summary>
         private void SubscribeToAllEvents()
         {
             // 订阅管理器事件
@@ -60,26 +107,29 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
             // 订阅分页管理器事件
             if (paginationManager)
             {
-                paginationManager.OnPageChanged += (page) => { Debug.Log($"[分页管理器] 页码已改变: {page}"); };
+                paginationManager.OnPageChanged += (page) => { Log($"[分页管理器] 页码已改变: {page}"); };
 
-                paginationManager.OnPageIndicatorClicked += (pageIndex) => { Debug.Log($"[分页管理器] 页码指示器被点击: {pageIndex}"); };
+                paginationManager.OnPageIndicatorClicked += (pageIndex) => { Log($"[分页管理器] 页码指示器被点击: {pageIndex}"); };
             }
 
             // 订阅输入处理器事件
             if (inputHandler)
             {
-                inputHandler.OnBeginDragAction += () => { Debug.Log("[输入处理器] 开始拖拽"); };
+                inputHandler.OnBeginDragAction += () => { Log("[输入处理器] 开始拖拽"); };
 
-                inputHandler.OnDragAction += (delta, realtimeDragInput) => { Debug.Log($"[输入处理器] 拖拽中，偏移量: {delta}"); };
+                inputHandler.OnDragAction += (delta, _) => { Log($"[输入处理器] 拖拽中，偏移量: {delta}"); };
 
-                inputHandler.OnEndDragAction += () => { Debug.Log("[输入处理器] 拖拽结束"); };
+                inputHandler.OnEndDragAction += () => { Log("[输入处理器] 拖拽结束"); };
 
-                inputHandler.OnMoveNextAction += () => { Debug.Log("[输入处理器] 键盘右箭头按下"); };
+                inputHandler.OnMoveNextAction += () => { Log("[输入处理器] 键盘右箭头按下"); };
 
-                inputHandler.OnMovePrevAction += () => { Debug.Log("[输入处理器] 键盘左箭头按下"); };
+                inputHandler.OnMovePrevAction += () => { Log("[输入处理器] 键盘左箭头按下"); };
             }
         }
 
+        /// <summary>
+        /// 取消所有事件订阅
+        /// </summary>
         private void UnsubscribeAllEvents()
         {
             if (rollViewManager)
@@ -93,15 +143,23 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
 
         #region 事件处理
 
+        /// <summary>
+        /// 处理中心项变化
+        /// </summary>
+        /// <param name="centerIndex"></param>
         private void HandleCenterChanged(int centerIndex)
         {
-            Debug.Log($"[管理器] 中心项已改变: {centerIndex}");
+            Log($"[管理器] 中心项已改变: {centerIndex}");
             UpdateDisplay();
         }
 
+        /// <summary>
+        /// 处理页码变化
+        /// </summary>
+        /// <param name="pageIndex"></param>
         private void HandlePageChanged(int pageIndex)
         {
-            Debug.Log($"[管理器] 页码已改变: {pageIndex}");
+            Log($"[管理器] 页码已改变: {pageIndex}");
             UpdateDisplay();
         }
 
@@ -109,6 +167,9 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
 
         #region UI 更新
 
+        /// <summary>
+        /// 更新显示
+        /// </summary>
         private void UpdateDisplay()
         {
             if (!rollViewManager)
@@ -120,9 +181,6 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
 
             if (pageText)
                 pageText.text = $"页码: {currentPage + 1} / {totalPages}";
-
-            if (centerItemText)
-                centerItemText.text = $"中心项索引: {centerIndex}";
 
             if (infoPanel)
             {
@@ -146,7 +204,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         {
             if (!layoutManager)
             {
-                Debug.LogWarning("布局管理器未配置");
+                Log("布局管理器未配置");
                 return;
             }
 
@@ -156,7 +214,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
             layoutManager.maxYOffset  = 50f;
             layoutManager.minAlpha    = 0.3f;
 
-            Debug.Log("[布局管理器] 已修改布局参数");
+            Log("[布局管理器] 已修改布局参数");
         }
 
         /// <summary>
@@ -166,7 +224,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         {
             if (!layoutManager)
             {
-                Debug.LogWarning("布局管理器未配置");
+                Log("布局管理器未配置");
                 return;
             }
 
@@ -176,7 +234,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
             layoutManager.maxYOffset  = 0.0f;
             layoutManager.minAlpha    = 0.4f;
 
-            Debug.Log("[布局管理器] 已重置布局参数");
+            Log("[布局管理器] 已重置布局参数");
         }
 
         #endregion
@@ -190,19 +248,19 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         {
             if (!paginationManager || !rollViewManager)
             {
-                Debug.LogWarning("分页管理器或管理器未配置");
+                Log("分页管理器或管理器未配置");
                 return;
             }
 
             paginationManager.itemsPerPage = Mathf.Max(1, count);
             paginationManager.Initialize(rollViewManager.GetItems().Count);
-            Debug.Log($"[分页管理器] 已修改每页项目数为: {count}");
+            Log($"[分页管理器] 已修改每页项目数为: {count}");
         }
 
         /// <summary>
         /// 通过输入框跳转页码
         /// </summary>
-        public void GoToPageByInput()
+        private void GoToPageByInput()
         {
             if (!rollViewManager || !testPageInput)
                 return;
@@ -210,36 +268,36 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
             if (int.TryParse(testPageInput.text, out int pageIndex))
             {
                 rollViewManager.GoToPage(pageIndex - 1);
-                Debug.Log($"[分页管理器] 已跳转到第 {pageIndex} 页");
+                Log($"[分页管理器] 已跳转到第 {pageIndex} 页");
             }
             else
             {
-                Debug.LogWarning("请输入有效的页码");
+                Log("请输入有效的页码");
             }
         }
 
         /// <summary>
         /// 跳转到首页
         /// </summary>
-        public void GoToFirstPage()
+        private void GoToFirstPage()
         {
             if (rollViewManager)
             {
                 rollViewManager.GoToPage(0);
-                Debug.Log("[分页管理器] 已跳转到首页");
+                Log("[分页管理器] 已跳转到首页");
             }
         }
 
         /// <summary>
         /// 跳转到末页
         /// </summary>
-        public void GoToLastPage()
+        private void GoToLastPage()
         {
             if (rollViewManager)
             {
                 int lastPage = rollViewManager.GetTotalPages() - 1;
                 rollViewManager.GoToPage(lastPage);
-                Debug.Log($"[分页管理器] 已跳转到末页");
+                Log($"[分页管理器] 已跳转到末页");
             }
         }
 
@@ -254,12 +312,12 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         {
             if (!inputHandler)
             {
-                Debug.LogWarning("输入处理器未配置");
+                Log("输入处理器未配置");
                 return;
             }
 
             bool isDragging = inputHandler.isDragging;
-            Debug.Log($"[输入处理器] 当前拖拽状态: {(isDragging ? "拖拽中" : "未拖拽")}");
+            Log($"[输入处理器] 当前拖拽状态: {(isDragging ? "拖拽中" : "未拖拽")}");
         }
 
         /// <summary>
@@ -269,14 +327,12 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         {
             if (!inputHandler)
             {
-                Debug.LogWarning("输入处理器未配置");
+                Log("输入处理器未配置");
                 return;
             }
 
             inputHandler.dragSensitivity = dragSensitivity;
-
-            Debug.Log("[输入处理器] 已修改参数");
-            Debug.Log($"  - 拖拽敏感度: {dragSensitivity}");
+            Log($"  - 拖拽敏感度: {dragSensitivity}");
         }
 
         #endregion
@@ -290,12 +346,12 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         {
             if (!arrowController)
             {
-                Debug.LogWarning("箭头控制器未配置");
+                Log("箭头控制器未配置");
                 return;
             }
 
             arrowController.disableAlpha = Mathf.Clamp01(alpha);
-            Debug.Log($"[箭头控制器] 已修改箭头隐藏透明度为: {alpha}");
+            Log($"[箭头控制器] 已修改箭头隐藏透明度为: {alpha}");
         }
 
         #endregion
@@ -305,7 +361,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         /// <summary>
         /// 通过输入框居中到指定项目
         /// </summary>
-        public void CenterOnItemByInput()
+        private void GoToItemByInput()
         {
             if (!rollViewManager || !testItemIndexInput)
                 return;
@@ -313,11 +369,11 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
             if (int.TryParse(testItemIndexInput.text, out int itemIndex))
             {
                 rollViewManager.CenterOn(itemIndex);
-                Debug.Log($"[管理器] 已居中到项目 {itemIndex}");
+                Log($"[管理器] 已居中到项目 {itemIndex}");
             }
             else
             {
-                Debug.LogWarning("请输入有效的项目索引");
+                Log("请输入有效的项目索引");
             }
         }
 
@@ -328,49 +384,71 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         {
             if (!rollViewManager)
                 return;
-
-            Debug.Log("========== 完整信息 ==========");
-
             // 管理器信息
-            Debug.Log("[RollViewManager]");
-            Debug.Log($"  - 中心项索引: {rollViewManager.GetCenterIndex()}");
-            Debug.Log($"  - 当前页码: {rollViewManager.GetCurrentPage() + 1}");
-            Debug.Log($"  - 总页数: {rollViewManager.GetTotalPages()}");
+            var log1 = $"  - 中心项索引: {rollViewManager.GetCenterIndex()}\n" +
+                       $"  - 当前页码: {rollViewManager.GetCurrentPage() + 1}\n" +
+                       $"  - 总页数: {rollViewManager.GetTotalPages()}";
+            Debug.Log(log1);
 
             // 布局管理器信息
             if (layoutManager)
             {
-                Debug.Log("[RollViewLayoutManager]");
-                Debug.Log($"  - 项目间距: {layoutManager.itemSpacing}");
-                Debug.Log($"  - 最小缩放: {layoutManager.minScale}");
-                Debug.Log($"  - 最大缩放: {layoutManager.maxScale}");
-                Debug.Log($"  - 最大Y偏移: {layoutManager.maxYOffset}");
-                Debug.Log($"  - 最小透明度: {layoutManager.minAlpha}");
+                var log = $"  - 项目间距: {layoutManager.itemSpacing}\n" +
+                          $"  - 最小缩放: {layoutManager.minScale}\n" +
+                          $"  - 最大缩放: {layoutManager.maxScale}\n" +
+                          $"  - 最大Y偏移: {layoutManager.maxYOffset}\n" +
+                          $"  - 最小透明度: {layoutManager.minAlpha}";
+                Debug.Log(log);
             }
 
             // 分页管理器信息
             if (paginationManager)
             {
-                Debug.Log("[RollViewPaginationManager]");
-                Debug.Log($"  - 每页项目数: {paginationManager.itemsPerPage}");
+                Log($"  - 每页项目数: {paginationManager.itemsPerPage}");
             }
 
             // 输入处理器信息
             if (inputHandler)
             {
-                Debug.Log("[RollViewInputHandler]");
-                Debug.Log($"  - 拖拽状态: {(inputHandler.isDragging ? "拖拽中" : "未拖拽")}");
-                Debug.Log($"  - 拖拽敏感度: {inputHandler.dragSensitivity}");
+                var log = $"  - 拖拽状态: {(inputHandler.isDragging ? "拖拽中" : "未拖拽")}\n" +
+                          $"  - 拖拽敏感度: {inputHandler.dragSensitivity}";
+                Log(log);
             }
 
             // 箭头控制器信息
             if (arrowController)
             {
-                Debug.Log("[RollViewArrowController]");
-                Debug.Log($"  - 箭头隐藏透明度: {arrowController.disableAlpha}");
+                Log($"  - 箭头隐藏透明度: {arrowController.disableAlpha}");
             }
 
             Debug.Log("==============================");
+        }
+
+
+        public ScrollRect scrollRect;
+
+        private void Log(string message)
+        {
+            if (logText)
+            {
+                StartCoroutine(AsyncLogCoroutine(message));
+            }
+        }
+
+        private IEnumerator AsyncLogCoroutine(string message)
+        {
+            yield return new WaitForSeconds(0);
+            if (logText.text.Length > 5000)
+            {
+                logText.text = "";
+            }
+
+            var time = System.DateTime.Now.ToString("[HH:mm:ss]");
+            time = $"<color=green><b>{time}</b></color>";
+
+            var msg = $"<color=red>{message}</color>\n\n";
+            logText.text                          += $"{time} {msg}";
+            scrollRect.verticalNormalizedPosition =  0f;
         }
 
         #endregion

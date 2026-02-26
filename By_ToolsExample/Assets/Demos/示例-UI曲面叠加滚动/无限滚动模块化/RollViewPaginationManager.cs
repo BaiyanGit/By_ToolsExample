@@ -10,13 +10,16 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
     /// </summary>
     public class RollViewPaginationManager : MonoBehaviour
     {
-        [Header("分页系统")] public Transform pageIndicatorParent; // 分页指示器的父容器
-        [Header("分页预制体")] public GameObject pagePrefab;        // 分页指示器预制体
-        [Header("每页项目数")] public int itemsPerPage = 1;         // 每页显示的项目数
+        [Header("分页指示器的父容器")] public Transform pageIndicatorParent;
+        [Header("分页指示器预制体")] public GameObject pagePrefab;
+        [Header("每页显示Item数量")] public int itemsPerPage = 1;
 
         private readonly List<Image> _pageIndicators = new();
         private int _lastPageIndex = -1;
 
+        /// <summary>
+        /// 当前页码发生变化时的回调
+        /// </summary>
         public event Action<int> OnPageChanged;
 
         private void OnEnable()

@@ -20,9 +20,9 @@
         protected override void OnEnable () {
             maxWidth = Screen.width - widthLimit;
 
-            self_Text = this.GetComponent<Text> ();
+            self_Text = GetComponent<Text> ();
 
-            parentRect = this.transform.parent.GetComponent<RectTransform> ();
+            parentRect = transform.parent.GetComponent<RectTransform> ();
             
             start = true;
         }
@@ -30,7 +30,7 @@
         protected override void OnDisable () {
             start = false;
             self_Text.rectTransform.sizeDelta = Vector2.zero;
-            this.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            horizontalFit = FitMode.PreferredSize;
         }
 
         // Update is called once per frame
@@ -39,12 +39,12 @@
                 if (self_Text.preferredWidth > maxWidth) {
                     self_Text.alignment = TextAnchor.MiddleLeft;
                     self_Text.rectTransform.sizeDelta = new Vector2 (maxWidth, self_Text.rectTransform.sizeDelta.y);
-                    this.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-                    this.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+                    verticalFit = FitMode.PreferredSize;
+                    horizontalFit = FitMode.Unconstrained;
                 } else {
                     self_Text.alignment = TextAnchor.MiddleCenter;
-                    this.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-                    this.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                    verticalFit = FitMode.PreferredSize;
+                    horizontalFit = FitMode.PreferredSize;
                 }
 
             }

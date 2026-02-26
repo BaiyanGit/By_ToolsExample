@@ -1285,9 +1285,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _fontColor: {r: 0.8047172, g: 0.023584902, b: 1, a: 1}
-  _fontSize: 31
-  _yOffset: 51
-  _heightBase: 30
+  _fontSize: 40
+  _yOffset: 30
+  _heightBase: 100
 --- !u!1 &648874828
 GameObject:
   m_ObjectHideFlags: 0
@@ -4295,7 +4295,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.061599255, g: 0, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.7186226, b: 0.07075471, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

@@ -15,9 +15,11 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         [Header("启用键盘")] public bool enableKeyboardInput = true;
         [Header("启用鼠标")] public bool enableMouseInput = true;
 
-        [Header("上一个")] public Button prevButton;
-        [Header("下一个")] public Button nextButton;
-        [Header("拖拽力度")] public float dragSensitivity = 0.001f; // 拖拽时滚动的敏感度
+        [Header("上一个(按钮)")] public Button prevButton;
+        [Header("下一个(按钮)")] public Button nextButton;
+        [Header("拖拽时滚动的敏感度")] public float dragSensitivity = 0.001f;
+
+
         public event Action<float, bool> OnDragAction;
         public event Action              OnBeginDragAction;
         public event Action              OnEndDragAction;

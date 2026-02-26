@@ -9,10 +9,10 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
     /// 滚动视图管理器 - 轻量级的事件分发器
     /// 只负责协调各个模块化组件
     /// </summary>
-    // [RequireComponent(typeof(RollViewLayoutManager))]
-    // [RequireComponent(typeof(RollViewPaginationManager))]
-    // [RequireComponent(typeof(RollViewInputHandler))]
-    // [RequireComponent(typeof(RollViewArrowController))]
+    [RequireComponent(typeof(RollViewLayoutManager))]
+    [RequireComponent(typeof(RollViewPaginationManager))]
+    [RequireComponent(typeof(RollViewInputHandler))]
+    [RequireComponent(typeof(RollViewArrowController))]
     public class RollViewManager : MonoBehaviour
     {
         [Header("Item容器")] public RectTransform content;      // 包含所有滚动项的容器
@@ -24,7 +24,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
         [Header("输入处理器"), SerializeField] private RollViewInputHandler _inputHandler;
         [Header("箭头控制器"), SerializeField] private RollViewArrowController _arrowController;
 
-        private readonly List<RectTransform> _items = new();
+        private List<RectTransform> _items = new();
         private float _scroll;
         private float _targetScroll;
         private float _scrollVelocity;
@@ -47,18 +47,6 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
             if (!_paginationManager) _paginationManager = GetComponent<RollViewPaginationManager>();
             if (!_inputHandler) _inputHandler           = GetComponent<RollViewInputHandler>();
             if (!_arrowController) _arrowController     = GetComponent<RollViewArrowController>();
-        }
-
-
-        private void Start()
-        {
-            InitializeItems();
-            _layoutManager.Initialize(_items, infiniteLoop);
-            _paginationManager.Initialize(_items.Count);
-
-            _targetScroll = _scroll;
-
-            SubscribeToEvents();
         }
 
         private void OnDestroy()
@@ -84,33 +72,43 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
 
         #region 初始化
 
-        [ContextMenu("刷新Items")]
-        public void RefreshItems()
+        public void RegisterItem(List<RectTransform> items)
         {
-            _items.Clear();
-            Start();
-        }
-
-        private void InitializeItems()
-        {
+            _items = items;
             if (content == null) return;
 
-            for (int i = 0; i < content.childCount; i++)
+            // 若Item是按钮，则绑定点击事件
+            for (int i = 0; i < items.Count; i++)
             {
                 int index = i;
-                var item  = content.GetChild(i) as RectTransform;
-                _items.Add(item);
+                var item  = items[i];
 
-                if (item)
+                // 添加 CanvasGroup，以支持透明度渐变
+                var canvasGroup = item.GetComponent<CanvasGroup>();
+                if (!canvasGroup) item.gameObject.AddComponent<CanvasGroup>();
+
+                // 绑定点击事件
+                var itemBtn = item.GetComponent<Button>();
+                if (itemBtn)
                 {
-                    if (!item.GetComponent<CanvasGroup>())
-                        item.gameObject.AddComponent<CanvasGroup>();
-
-                    var btn       = item.GetComponent<Button>();
-                    if (!btn) btn = item.gameObject.AddComponent<Button>();
-                    btn.onClick.AddListener(() => CenterOn(index));
+                    itemBtn.onClick.AddListener(() => CenterOn(index));
                 }
             }
+
+            // 若只有两个或两个以上Item，则禁用无限循环
+            if (_items.Count <= 2)
+            {
+                infiniteLoop = false;
+            }
+            
+            // 初始化布局
+            _layoutManager?.Initialize(_items, infiniteLoop);
+            // 初始化分页
+            _paginationManager?.Initialize(_items.Count);
+
+            _targetScroll = _scroll;
+
+            SubscribeToEvents();
         }
 
         private void SubscribeToEvents()
@@ -305,6 +303,9 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
 
         #region 状态更新
 
+        /// <summary>
+        /// 检测中心项和页码变化
+        /// </summary>
         private void DetectCenterAndPageChanged()
         {
             int centerIndex = GetCenterIndex();
@@ -317,6 +318,9 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化
             _paginationManager.UpdatePageIndicators(centerIndex, _items.Count);
         }
 
+        /// <summary>
+        /// 更新箭头显示
+        /// </summary>
         private void UpdateArrowsDisplay()
         {
             int currentPage = GetCurrentPage();

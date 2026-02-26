@@ -1,4 +1,4 @@
-namespace Demos.示例_UI曲面叠加滚动.Scripts
+namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化.辅助脚本
 {
     using UnityEngine;
     using UnityEngine.UI;

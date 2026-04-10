@@ -3,11 +3,16 @@
     using System.Collections.Generic;
     using UnityEngine;
 
+    /// <summary>
+    /// 用于获取URL参数
+    /// </summary>
     public static class NetURLHelper
     {
         private static readonly Dictionary<string, string> ParamDic = new Dictionary<string, string>();
 
+#if UNITY_WEBGL
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+#endif
         private static void Init()
         {
 #if UNITY_EDITOR

@@ -1,0 +1,4 @@
+<color=yellow><b><size=12> Json转换Excel规则说明： </size></b></color>
+<color=green> 1. 只针对本工具转成的Json文件使用 </color>
+<color=green> 2. 不支持多层嵌套的Json结构 </color>
+<color=green> 3. 不支持Xml转换 </color>

@@ -1,11 +1,10 @@
 namespace _3rdBy.MetaFramework.UI
 {
-    using Interface;
     using UnityEngine;
     using UnityEngine.UI;
 
     /// <summary>
-    /// UI,UIBase,Model,View
+    /// UI基类
     /// </summary>
     /// <typeparam name="TM">Model</typeparam>
     /// <typeparam name="TV">View</typeparam>
@@ -14,41 +13,62 @@ namespace _3rdBy.MetaFramework.UI
         where TV : class, IUIView
     {
         /// <summary>
-        /// ui name
+        /// UI名称
         /// </summary>
-        public string UIName { get; set; }
+        public string uiName { get; set; }
 
         /// <summary>
         /// UI实体
         /// </summary>
-        public GameObject UIGo { get; set; }
-
-        public UIHierarchy UIHierarchy { get; set; }
-
-        public UIType UIType { get; set; }
-
-        public bool IsShowing { get; set; }
+        public GameObject uiGo { get; set; }
 
         /// <summary>
-        /// model
+        /// UI视觉效果属性
+        /// </summary>
+        public UIHierarchy uiHierarchy { get; set; }
+
+        /// <summary>
+        /// UI类型
+        /// </summary>
+        public UIType uiType { get; set; }
+
+        /// <summary>
+        /// 是否正在显示
+        /// </summary>
+        public bool isShowing { get; set; }
+
+        /// <summary>
+        /// 获取Model
         /// </summary>
         public IUIModel uiModel { get; set; }
 
         /// <summary>
-        /// view
+        /// 获取View
         /// </summary>
         public IUIView uiView { get; set; }
 
+        /// <summary>
+        /// 获取Model
+        /// </summary>
+        /// <returns></returns>
         public TM GetModel()
         {
             return uiModel as TM;
         }
 
+        /// <summary>
+        /// 获取View
+        /// </summary>
+        /// <returns></returns>
         public TV GetView()
         {
             return uiView as TV;
         }
 
+        /// <summary>
+        /// 获取(设置)当前UI显示的层级
+        /// </summary>
+        /// <returns></returns>
         public abstract UILayer GetLayer();
 
         /// <summary>
@@ -58,10 +78,7 @@ namespace _3rdBy.MetaFramework.UI
         protected void RegisterCloseHandler(Button button)
         {
             button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(() =>
-            {
-                CloseSelf();
-            });
+            button.onClick.AddListener(() => { CloseSelf(); });
         }
 
         /// <summary>
@@ -69,9 +86,9 @@ namespace _3rdBy.MetaFramework.UI
         /// </summary>
         protected void CloseSelf()
         {
-            if (UIType == UIType.List)
+            if (uiType == UIType.List)
             {
-                UIManager.Instance.CloseNormal(UIName);
+                UIManager.Instance.CloseNormal(uiName);
             }
             else
             {

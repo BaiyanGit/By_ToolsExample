@@ -2,7 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using _3rdBy.MetaFramework.Singleton;
+    using Singleton;
     using UnityEngine;
     using UnityEngine.EventSystems;
     using UnityEngine.UI;
@@ -14,7 +14,7 @@
         Top,
         Guide,
     }
-    
+
     public enum UIType
     {
         List,
@@ -23,12 +23,12 @@
 
     public class UIRoot : MonoSingletonTemplate<UIRoot>
     {
-        private Dictionary<UILayer, RectTransform> rootDic = new Dictionary<UILayer, RectTransform>();
+        private readonly Dictionary<UILayer, RectTransform> _rootDic = new();
 
         public Camera uiCamera;
         public Canvas canvas;
-        
-        public Action UpdateAction { get; set; }
+
+        public Action updateAction { get; set; }
 
         protected override void Awake()
         {
@@ -40,7 +40,7 @@
 
         private void Update()
         {
-            UpdateAction?.Invoke();
+            updateAction?.Invoke();
         }
 
         private void FindUILayer()
@@ -49,33 +49,33 @@
             {
                 var t = transform.Find($"Canvas/{type.ToString()}_Layer");
 
-                rootDic.Add(type, t.GetComponent<RectTransform>());
+                _rootDic.Add(type, t.GetComponent<RectTransform>());
             }
         }
 
         public RectTransform GetLayerTransform(UILayer uiLayer)
         {
-            rootDic.TryGetValue(uiLayer, out var tempTrans);
+            _rootDic.TryGetValue(uiLayer, out var tempTrans);
             return tempTrans;
         }
 
         private GameObject CreateUIRoot()
         {
             GameObject go = new GameObject("UIRoot");
-            GameObject.DontDestroyOnLoad(go);
+            DontDestroyOnLoad(go);
 
             go.transform.localPosition = Vector3.zero;
-            go.transform.localScale = Vector3.one;
-            go.layer = LayerMask.NameToLayer("UI");
+            go.transform.localScale    = Vector3.one;
+            go.layer                   = LayerMask.NameToLayer("UI");
 
             var canvas = go.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 2;
 
             var canvasScaler = go.AddComponent<CanvasScaler>();
-            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            canvasScaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             canvasScaler.referenceResolution = new Vector2(1920, 1080);
-            canvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Shrink;
+            canvasScaler.screenMatchMode     = CanvasScaler.ScreenMatchMode.Shrink;
 
             go.AddComponent<GraphicRaycaster>();
 
@@ -83,10 +83,10 @@
             foreach (UILayer type in Enum.GetValues(typeof(UILayer)))
             {
                 var node = new GameObject(type.ToString());
-                node.transform.parent = go.transform;
+                node.transform.parent        = go.transform;
                 node.transform.localPosition = Vector3.zero;
-                node.transform.localScale = Vector3.one;
-                node.layer = go.layer;
+                node.transform.localScale    = Vector3.one;
+                node.layer                   = go.layer;
 
                 //����RectTransform ʹ�ڵ�������Ļ
                 var rect = node.AddComponent<RectTransform>();
@@ -98,9 +98,9 @@
 
             //add event system
             GameObject eventSystem = new GameObject("EventSystem");
-            eventSystem.transform.parent = go.transform;
+            eventSystem.transform.parent        = go.transform;
             eventSystem.transform.localPosition = Vector3.zero;
-            eventSystem.transform.localScale = Vector3.one;
+            eventSystem.transform.localScale    = Vector3.one;
 
             eventSystem.AddComponent<EventSystem>();
             eventSystem.AddComponent<StandaloneInputModule>();

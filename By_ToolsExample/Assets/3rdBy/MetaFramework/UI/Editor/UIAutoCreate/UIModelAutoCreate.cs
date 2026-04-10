@@ -11,12 +11,12 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
         {
             var tempTxt = AssetDatabase.LoadAssetAtPath<TextAsset>(templatePath);
             var tempStr = tempTxt.text;
-            
-            var modelSpaceName = "UI.UI" + uiName;
-            var modelClassName = "UIModel" + uiName;
 
-            tempStr = tempStr.Replace("{0}", modelSpaceName);
-            tempStr = tempStr.Replace("{1}", modelClassName);
+            // Tips：暂时不支持使用命名空间
+            // var modelSpaceName = "UIMetaFramework" + uiName;
+            // tempStr = tempStr.Replace("{0}", modelSpaceName);
+            var modelClassName = "UIModel" + uiName;
+            tempStr = tempStr.Replace("{0}", modelClassName);
 
             var filePath = targetPath + modelClassName + ".cs";
 

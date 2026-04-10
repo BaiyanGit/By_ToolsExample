@@ -37,21 +37,26 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
                 Debug.Log("<color=#ff0000>组件数量为0，请确认组件命名是否正确！</color>");
             }
 
-            StringBuilder strTotalProps = new StringBuilder();
-            StringBuilder strTotalGetComs = new StringBuilder();
+            var strTotalProps   = new StringBuilder();
+            var strTotalGetComs = new StringBuilder();
             foreach (var prop in _allPropsDic)
             {
                 strTotalProps.Append(prop.Value.strProp);
                 strTotalGetComs.Append(prop.Value.strGetCom);
             }
 
-            var modelSpaceName = "UI.UI" + uiName;
-            var viewClassName = "UIView" + uiName;
+            // var modelSpaceName = "UIMetaFramework" + uiName;
+            var viewClassName  = "UIView" + uiName;
 
-            tempStrFile = tempStrFile.Replace("{0}", modelSpaceName);
-            tempStrFile = tempStrFile.Replace("{1}", viewClassName);
-            tempStrFile = tempStrFile.Replace("{2}", strTotalProps.ToString());
-            tempStrFile = tempStrFile.Replace("{3}", strTotalGetComs.ToString());
+            // Tips：暂时不支持使用命名空间
+            // tempStrFile = tempStrFile.Replace("{0}", modelSpaceName);
+            // tempStrFile = tempStrFile.Replace("{1}", viewClassName);
+            // tempStrFile = tempStrFile.Replace("{2}", strTotalProps.ToString());
+            // tempStrFile = tempStrFile.Replace("{3}", strTotalGetComs.ToString());
+
+            tempStrFile = tempStrFile.Replace("{0}", viewClassName);
+            tempStrFile = tempStrFile.Replace("{1}", strTotalProps.ToString());
+            tempStrFile = tempStrFile.Replace("{2}", strTotalGetComs.ToString());
 
             string filePath = targetPath + viewClassName + ".cs";
 
@@ -68,13 +73,13 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
             }
         }
 
-        public void SaveFile(string str, string filePath)
+        private static void SaveFile(string str, string filePath)
         {
             if (File.Exists(filePath)) File.Delete(filePath);
 
-            using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate))
+            using (var fs = new FileStream(filePath, FileMode.OpenOrCreate))
             {
-                using (StreamWriter sw = new StreamWriter(fs, Encoding.UTF8))
+                using (var sw = new StreamWriter(fs, Encoding.UTF8))
                 {
                     sw.Write(str);
                 }
@@ -139,7 +144,7 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
                 var firstIndex = child.name.IndexOf('_');
                 try
                 {
-                    finalPropName = child.name[..firstIndex].ToLower();
+                    finalPropName =  child.name[..firstIndex].ToLower();
                     finalPropName += child.name[(firstIndex + 1)..];
                 }
                 catch (Exception e)
@@ -162,7 +167,7 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
 
             var strTempProp = $"\tpublic {info.comName} {finalPropName};\n";
 
-            var path = GetPath(child);
+            var path       = GetPath(child);
             var strTempCom = $"\t\t{finalPropName} = go.transform.Find(\"{path}\").GetComponent<{info.comName}>();\n";
 
             if (_allPropsDic.TryGetValue(finalPropName, out var view))
@@ -172,7 +177,7 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
 
             var viewPropAndCom = new ViewPropAndCom()
             {
-                strProp = strTempProp,
+                strProp   = strTempProp,
                 strGetCom = strTempCom,
             };
             _allPropsDic.Add(finalPropName, viewPropAndCom);
@@ -184,7 +189,7 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
             while (transform.parent != _uiRootGo.transform)
             {
                 transform = transform.parent;
-                path = transform.name + "/" + path;
+                path      = transform.name + "/" + path;
             }
 
             return path;

@@ -1,0 +1,16 @@
+<color=yellow><b><size=12> Excel表规则说明： </size></b></color>
+<color=green> 1. Excel表需后缀格式为xlsm,xlsx </color>
+<color=green> 2. 只取每个Excel表的第一个sheet </color>
+<color=green> 3. 第4行为属性名，需要取有意义的名字，最好是英文。每个表必须定义Id属性。如果以‘#’号开头，表示不导出. </color>
+<color=green> 4. 第5行是注释 </color>
+<color=green> 5. 第6行是类型，目前支持的类型有："string", "int", "float", "bool" </color>
+<color=green> 6. 第7行以下是数据 </color>
+<color=green> 7. 数组数据的分隔符顺序（从低到高）： ','  '|'  ';' 
+    int[] ","表示一维数组，如：a,b,c
+    int[][] "|"表示二维数组，如：a,b,c|d,e,f
+    int[][][] ";"表示三维数组，如：a,b,c;d,e,f;g,h,i
+</color>
+<color=green> 8. 目前仅支持到三维数组，根据逻辑需要可以代码中扩展，支持的数组类型int,float,bool,string,double </color>
+
+<color=yellow><b><size=12> 校验格式方法： </size></b></color>
+<color=green> 打开Unity工程，选择ByTools/🧩 表格转换Json工具,点击导出所有表格，若查看错误信息：看控制台输出的错误信息 </color>

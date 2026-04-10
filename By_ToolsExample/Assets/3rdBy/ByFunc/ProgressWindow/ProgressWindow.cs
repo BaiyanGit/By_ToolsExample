@@ -26,8 +26,9 @@ namespace _3rdBy.ByFunc.ProgressWindow
 
         private const string Title = "<color=red>进程信息</color>\n<color=green>Tips: 按住Shift+F1 显示/隐藏窗口</color>  " +
                                      "<color=green>若没有显示你所需要的进程信息，请把当前软件设置为管理员身份运行。\n(软件右键菜单-> 属性 -> 兼容性 -> 以管理员身份运行)</color>";
-
+#if UNITY_ProgressWindow
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+#endif
         private static void Init()
         {
             Debug.LogWarning("ProgressWindow Start");

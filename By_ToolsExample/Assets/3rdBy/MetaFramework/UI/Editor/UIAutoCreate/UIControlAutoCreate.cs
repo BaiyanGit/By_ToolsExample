@@ -12,15 +12,21 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
             var tempTxt = AssetDatabase.LoadAssetAtPath<TextAsset>(templatePath);
             var tempStr = tempTxt.text;
 
-            var nameSpace = "UI.UI" + uiName;
+            // var nameSpace = "UIMetaFramework" + uiName;
             var className = "UI" + uiName;
             var modelClassName = "UIModel" + uiName;
             var viewClassName = "UIView" + uiName;
-
-            tempStr = tempStr.Replace("{0}", nameSpace);
-            tempStr = tempStr.Replace("{1}", className);
-            tempStr = tempStr.Replace("{2}", modelClassName);
-            tempStr = tempStr.Replace("{3}", viewClassName);
+            
+            // Tips：暂时不支持使用命名空间
+            // tempStr = tempStr.Replace("{0}", nameSpace);
+            // tempStr = tempStr.Replace("{1}", className);
+            // tempStr = tempStr.Replace("{2}", modelClassName);
+            // tempStr = tempStr.Replace("{3}", viewClassName);
+            
+           
+            tempStr = tempStr.Replace("{0}", className);
+            tempStr = tempStr.Replace("{1}", modelClassName);
+            tempStr = tempStr.Replace("{2}", viewClassName);
 
             var filePath = targetPath + className + ".cs";
 

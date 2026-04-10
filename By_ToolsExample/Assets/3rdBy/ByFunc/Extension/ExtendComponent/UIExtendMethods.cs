@@ -85,6 +85,44 @@
         #region Dropdown
 
         /// <summary>
+        /// 获取Dropdown下拉列表打开时的Content容器。如果列表未打开，返回null。
+        /// WR: 注意如果用户自定义了Dropdown的结构，可能会导致该方法失效。
+        /// </summary>
+        public static Transform GetDropdownContent(this Dropdown dropdown)
+        {
+            if (dropdown == null) return null;
+
+            // 下拉列表打开时，它通常被创建为名字是 "Dropdown List" 的根对象
+            var listRoot = dropdown.transform.Find("Dropdown List/Viewport/Content");
+            return listRoot;
+        }
+
+        /// <summary>
+        /// 获取Dropdown下拉列表中的选项对象列表。如果列表未打开，返回空列表。
+        /// </summary>
+        /// <param name="dropdown"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static List<Toggle> GetDropdownOptions(this Dropdown dropdown)
+        {
+            if (dropdown == null) throw new System.Exception("Dropdown不能为空！");
+
+            var content = dropdown.transform.Find("Dropdown List/Viewport/Content");
+            if (content == null)
+            {
+                throw new System.Exception("检查是否自定义了Dropdown结构，这可能会导致该方法失效！！");
+            }
+
+            var options = content.GetComponentsInChildren<Toggle>().ToList();
+            foreach (var option in options)
+            {
+                Debug.LogError(option.name);
+            }
+
+            return options;
+        }
+
+        /// <summary>
         /// Dropdown的下拉事件
         /// </summary>
         /// <param name="dropdown"></param>
@@ -94,7 +132,6 @@
             dropdown.onValueChanged.RemoveAllListeners();
             dropdown.onValueChanged.AddListener((optionIndex) => { selectEventHandler(dropdown, optionIndex); });
         }
-
 
         /// <summary>
         /// 当前对象下的所有Dropdown
@@ -151,10 +188,7 @@
             for (var i = 0; i < dropdownList.Count; i++)
             {
                 var index = i;
-                dropdownList[i].OnValueChanged((dropdown, optionIndex) =>
-                {
-                    selectEventHandler(index, dropdown, optionIndex);
-                });
+                dropdownList[i].OnValueChanged((dropdown, optionIndex) => { selectEventHandler(index, dropdown, optionIndex); });
             }
         }
 
@@ -197,7 +231,7 @@
         /// <param name="color"></param>
         public static void SetInteractable(this Button button, bool value, Color color)
         {
-            button.interactable = value;
+            button.interactable                         = value;
             button.GetComponentInChildren<Text>().color = color;
         }
 

@@ -234,7 +234,6 @@
             }
         }
 
-
         /// <summary>
         /// 绘制Excel描述
         /// </summary>
@@ -308,12 +307,17 @@
                         _outputFolder = folder;
                     }
 
+                    if (GUILayout.Button("打开文件夹路径",GUILayout.Width(100)))
+                    {
+                        EditorUtility.OpenWithDefaultApp(_outputFolder);
+                    }
+
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
-            if (GUILayout.Button("添加文件📍"))
+            if (GUILayout.Button("添加文件", GUILayout.Width(80)))
             {
                 var path   = string.IsNullOrEmpty(_selectedFilePath) ? CheckDirectoryHelper() : _selectedFilePath;
                 var folder = Path.GetDirectoryName(path);
@@ -388,7 +392,7 @@
             }
 
             // 绘制帮助按钮
-            if (GUILayout.Button("帮助❔"))
+            if (GUILayout.Button("?", GUILayout.Width(20)))
             {
                 _showHelp = !_showHelp;
             }
@@ -499,7 +503,6 @@
 
             GUILayout.EndScrollView();
         }
-
 
         private void OnEnable()
         {
@@ -619,37 +622,6 @@
 
             Debug.Log($"Json转Excel完成: {fullSavePath}");
             AssetDatabase.Refresh();
-        }
-
-        #endregion
-
-        #region 辅助
-
-        // 检查目录
-        private static string CheckDirectoryHelper()
-        {
-            var dataPath   = Application.dataPath;
-            var folderPath = GetUpperDirectoryHelper(dataPath, 2);
-            if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
-            return folderPath;
-        }
-
-        // 获取上级目录
-        private static string GetUpperDirectoryHelper(string path, int level, string lastFold = "")
-        {
-            var currentPath = path;
-
-            for (var i = 0; i < level; i++)
-            {
-                currentPath = Path.GetDirectoryName(currentPath);
-
-                if (string.IsNullOrEmpty(currentPath))
-                    return null;
-            }
-
-            lastFold    = string.IsNullOrEmpty(lastFold) ? lastFold : $"{lastFold}/";
-            currentPath = $"{currentPath.Replace('\\', '/')}/{lastFold}";
-            return currentPath;
         }
 
         /// <summary>
@@ -828,6 +800,37 @@
                 fallback.Add(item.ToString());
 
             return string.Join(",", fallback);
+        }
+
+        #endregion
+
+        #region 辅助
+
+        // 检查目录
+        private static string CheckDirectoryHelper()
+        {
+            var dataPath   = Application.dataPath;
+            var folderPath = GetUpperDirectoryHelper(dataPath, 2);
+            if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+            return folderPath;
+        }
+
+        // 获取上级目录
+        private static string GetUpperDirectoryHelper(string path, int level, string lastFold = "")
+        {
+            var currentPath = path;
+
+            for (var i = 0; i < level; i++)
+            {
+                currentPath = Path.GetDirectoryName(currentPath);
+
+                if (string.IsNullOrEmpty(currentPath))
+                    return null;
+            }
+
+            lastFold    = string.IsNullOrEmpty(lastFold) ? lastFold : $"{lastFold}/";
+            currentPath = $"{currentPath.Replace('\\', '/')}/{lastFold}";
+            return currentPath;
         }
 
         #endregion

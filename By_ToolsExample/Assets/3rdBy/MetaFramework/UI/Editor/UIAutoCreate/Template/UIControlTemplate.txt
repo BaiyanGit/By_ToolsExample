@@ -1,34 +1,31 @@
-namespace {0}
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using _3rdBy.MetaFramework.UI;
+
+/// <summary>
+/// 负责接收用户界面UI元素的操作逻辑
+/// </summary>
+public class {0} : UIBase<{1}, {2}>
 {
-    using System.Collections;
-    using System.Collections.Generic;
-    using UnityEngine;
-    using UnityEngine.UI;
-    using MetaFramework.UI;
-    
-    /// <summary>
-    /// 负责接收用户界面UI元素的操作逻辑
-    /// </summary>
-    public class {1} : UIBase<{2}, {3}>
+    public override UILayer GetLayer()
     {
-        public override UILayer GetLayer()
-        {
-            return UILayer.Center;
-        }
-    
-        public override void OnInit()
-        {
-            
-        }
-    
-        public override void OnEnter(params object[] args)
-        {
-            
-        }
-    
-        public override void OnExit()
-        {
-            
-        }
+        return UILayer.Center;
+    }
+
+    public override void OnInit()
+    {
+        
+    }
+
+    public override void OnEnter(params object[] args)
+    {
+        
+    }
+
+    public override void OnExit()
+    {
+        
     }
 }

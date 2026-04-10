@@ -1,6 +1,7 @@
 namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
 {
     using System.IO;
+    using System.Linq;
     using UnityEditor;
     using UnityEngine;
 
@@ -18,8 +19,8 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
         static void ShowEditor()
         {
             var window = GetWindow<UIScriptAutoCreateEditorWindow>();
-            window.minSize = windowSize;
-            window.maxSize = windowSize;
+            window.minSize           = windowSize;
+            window.maxSize           = windowSize;
             window.titleContent.text = "UI自动生成器";
 
             var readMe = AssetDatabase.LoadAssetAtPath<TextAsset>(UIAutoCreatePathSetting.ReadMeFilePath);
@@ -74,14 +75,16 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
 
             GUILayout.EndHorizontal();
 
+
             //=======================================================================
 
             //============================说明==============================
             GUILayout.Space(20);
             var width = GUILayout.Width(200);
             GUILayout.Label("命令规则如下：", DescTitleStyle());
+            EditorGUILayout.ObjectField(AssetDatabase.LoadAssetAtPath<Object>(UIAutoCreatePathSetting.UIViewAutoCreateConfigPath), typeof(Object), false, GUILayout.Width(400));
             GUILayout.Space(10);
-            
+
             GUILayout.BeginHorizontal();
             GUILayout.Label("[ Ts_ ] = Transform", ContentStyle(), width);
             GUILayout.Label("[ Sr_ ] = ScrollRect", ContentStyle(), width);
@@ -124,9 +127,9 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
             if (string.IsNullOrEmpty(_newUIName)) throw new System.Exception("请输入UI名字");
 
             const string strPrefab = ".prefab";
-            const string strMeta = ".meta";
+            const string strMeta   = ".meta";
 
-            var newPrefabEditorPath = UIAutoCreatePathSetting.PrefabCreatePath + _newUIName + strPrefab;
+            var newPrefabEditorPath    = UIAutoCreatePathSetting.PrefabCreatePath + _newUIName + strPrefab;
             var newPrefabResourcesPath = Application.dataPath + UIAutoCreatePathSetting.PrefabCreatePath;
             newPrefabResourcesPath = newPrefabResourcesPath.Replace("/AssetsAssets", "/Assets");
             Debug.Log(newPrefabResourcesPath);
@@ -140,7 +143,7 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
 
             //copy meta
             var originMetaFullPath = originPrefabFullPath + strMeta;
-            var newMetaFullPath = newPrefabFullPath + strMeta;
+            var newMetaFullPath    = newPrefabFullPath + strMeta;
 
             var result = false;
             if (File.Exists(newPrefabFullPath))
@@ -180,8 +183,8 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
         {
             if (_uiRootGo == null) throw new System.Exception("请拖入需要生成的UI预制体");
 
-            string uiName = GetUIName();
-            string tempPath = UIAutoCreatePathSetting.TemplateFilePath + UIAutoCreatePathSetting.ViewTemplateName;
+            string uiName     = GetUIName();
+            string tempPath   = UIAutoCreatePathSetting.TemplateFilePath + UIAutoCreatePathSetting.ViewTemplateName;
             string targetPath = GetTargetGeneratePath(uiName);
             CheckTargetPath(targetPath);
             new UIViewAutoCreate().Create(uiName, _uiRootGo, tempPath, targetPath);
@@ -191,8 +194,8 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
         {
             if (_uiRootGo == null) throw new System.Exception("请拖入需要生成的UI预制体");
 
-            var uiName = GetUIName();
-            var tempPath = UIAutoCreatePathSetting.TemplateFilePath + UIAutoCreatePathSetting.ControlTemplateName;
+            var uiName     = GetUIName();
+            var tempPath   = UIAutoCreatePathSetting.TemplateFilePath + UIAutoCreatePathSetting.ControlTemplateName;
             var targetPath = GetTargetGeneratePath(uiName);
             CheckTargetPath(targetPath);
             new UIControlAutoCreate().Create(uiName, tempPath, targetPath);
@@ -202,8 +205,8 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
         {
             if (_uiRootGo == null) throw new System.Exception("请拖入需要生成的UI预制体");
 
-            var uiName = GetUIName();
-            var tempPath = UIAutoCreatePathSetting.TemplateFilePath + UIAutoCreatePathSetting.ModelTemplateName;
+            var uiName     = GetUIName();
+            var tempPath   = UIAutoCreatePathSetting.TemplateFilePath + UIAutoCreatePathSetting.ModelTemplateName;
             var targetPath = GetTargetGeneratePath(uiName);
             CheckTargetPath(targetPath);
             UIModelAutoCreate.Create(uiName, tempPath, targetPath);
@@ -236,10 +239,10 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
         {
             var labelStyle = new GUIStyle
             {
-                fontSize = 20,
+                fontSize  = 20,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = Color.white }
+                normal    = { textColor = Color.white }
             };
             return labelStyle;
         }
@@ -252,10 +255,10 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
         {
             var labelStyle = new GUIStyle
             {
-                fontSize = 12,
+                fontSize  = 12,
                 fontStyle = FontStyle.Normal,
                 alignment = TextAnchor.MiddleLeft,
-                normal = { textColor = Color.green }
+                normal    = { textColor = Color.green }
             };
             return labelStyle;
         }
@@ -269,10 +272,10 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
         {
             var labelStyle = new GUIStyle
             {
-                fontSize = 12,
+                fontSize  = 12,
                 fontStyle = FontStyle.Normal,
                 alignment = TextAnchor.MiddleLeft,
-                normal = { textColor = Color.red }
+                normal    = { textColor = Color.red }
             };
             return labelStyle;
         }
@@ -285,10 +288,10 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
         {
             var labelStyle = new GUIStyle
             {
-                fontSize = 12,
+                fontSize  = 12,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleLeft,
-                normal = { textColor = Color.white }
+                normal    = { textColor = Color.white }
             };
             return labelStyle;
         }

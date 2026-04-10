@@ -16,15 +16,18 @@
         private static Loom _current;
         private int _count;
         public static Loom Current => _current;
-
+#if UNITY_LOOM
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+
+#endif
+
         private static void Init()
         {
             maxThreads = Environment.ProcessorCount;
             Debug.LogWarning($"Loom 线程数量, {maxThreads}");
 
             var go = new GameObject();
-            go.name = "Loom";
+            go.name  = "Loom";
             _current = go.AddComponent<Loom>();
             DontDestroyOnLoad(go);
         }
@@ -98,7 +101,6 @@
             {
                 Interlocked.Decrement(ref numThreads);
             }
-
         }
 
         private List<Action> curActions = new List<Action>();

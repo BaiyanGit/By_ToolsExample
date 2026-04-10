@@ -1,20 +1,17 @@
-namespace {0}
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using _3rdBy.MetaFramework.UI;
+using TMPro;
+
+/// <summary>
+/// 用户界面UI元素
+/// </summary>
+public class {0} : IUIView
 {
-    using System.Collections;
-    using System.Collections.Generic;
-    using UnityEngine;
-    using UnityEngine.UI;
-    using MetaFramework.UI;
-    using TMPro;
-    
-    /// <summary>
-    /// 用户界面UI元素
-    /// </summary>
-    public class {1} : IUIView
+{1}
+    public void Init(GameObject go)
     {
-    {2}
-        public void Init(GameObject go)
-        {
-    {3}        }
-    }
+{2}    }
 }

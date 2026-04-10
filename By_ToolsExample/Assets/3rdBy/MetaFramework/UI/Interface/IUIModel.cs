@@ -1,4 +1,4 @@
-namespace _3rdBy.MetaFramework.UI.Interface
+namespace _3rdBy.MetaFramework.UI
 {
     public interface IUIModel
     {

@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using UnityEngine;
 
 public class CrossPlatformScreenRecorder : MonoBehaviour
@@ -19,7 +20,6 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 
     #endregion
 
-
     #region 录制音频相关
 
     [Header("音频采集模式")] public RecorderAudioMode audioMode = RecorderAudioMode.SystemAudio;
@@ -27,8 +27,8 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     [Header("音频采样率")] public int audioSampleRate = 48000;
     [Header("音频声道数")] public int audioChannels = 2;
 
-    [Header("Windows 系统音频设备名称（如 Stereo Mix / virtual-audio-capture）")]
-    public string windowsSystemAudioDeviceName = "立体声混音 (Realtek(R) Audio)";
+    [Header("Windows 系统音频设备名称（留空则自动检测，也可手填 alternative name）")]
+    public string windowsSystemAudioDeviceName = "";
 
     [Header("Linux PulseAudio 音频源名称（如 default 或 xxx.monitor）")]
     public string linuxSystemAudioSourceName = "default";
@@ -53,58 +53,35 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 
     [Header("是否已初始化")] private bool isInitialized;
 
-    /// <summary>
-    /// 当显示器列表刷新完成时触发。
-    /// </summary>
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+    [Serializable]
+    private class WindowsAudioDeviceInfo
+    {
+        public string displayName;
+        public string alternativeName;
+    }
+#endif
+
     public event Action<List<RecorderDisplayInfo>> OnDisplayListChanged;
-
-    /// <summary>
-    /// 当录制状态发生变化时触发。
-    /// </summary>
     public event Action<bool> OnRecordingStateChanged;
-
-    /// <summary>
-    /// 当录制开始时触发。
-    /// </summary>
     public event Action<string> OnRecordStarted;
-
-    /// <summary>
-    /// 当录制停止时触发。
-    /// </summary>
     public event Action<string> OnRecordStopped;
 
-    /// <summary>
-    /// 当前是否正在录制。
-    /// </summary>
     public bool IsRecording => processRunner != null && processRunner.IsRunning;
-
-    /// <summary>
-    /// 当前输出文件路径。
-    /// </summary>
     public string CurrentOutputFilePath => currentOutputFilePath;
 
-    /// <summary>
-    /// 初始化运行器。
-    /// </summary>
     private void Awake()
     {
         processRunner = new FFmpegProcessRunner();
     }
 
-    /// <summary>
-    /// 启动时自动初始化。
-    /// </summary>
     private void Start()
     {
         Initialize();
     }
 
-    /// <summary>
-    /// 初始化录屏器。
-    /// </summary>
     public void Initialize()
     {
-        // 防止重复初始化
         if (isInitialized) return;
 
         if (activateAllUnityDisplays)
@@ -124,30 +101,18 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
         isInitialized = true;
     }
 
-    /// <summary>
-    /// 获取当前显示器列表。
-    /// </summary>
-    /// <returns>显示器列表副本。</returns>
     public List<RecorderDisplayInfo> GetDisplays()
     {
         return new List<RecorderDisplayInfo>(displays);
     }
 
-    /// <summary>
-    /// 刷新显示器列表。
-    /// </summary>
     public void RefreshDisplayList()
     {
         displays.Clear();
         displays.AddRange(RecorderDisplayProvider.GetDisplays());
-
         OnDisplayListChanged?.Invoke(new List<RecorderDisplayInfo>(displays));
     }
 
-    /// <summary>
-    /// 开始录制指定索引的显示器。
-    /// </summary>
-    /// <param name="displayIndex">目标显示器索引。</param>
     public void StartRecording(int displayIndex)
     {
         if (!isInitialized)
@@ -156,7 +121,6 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
             if (!isInitialized) return;
         }
 
-        // ffmpeg不存在或进程正在运行，则不允许再开始录制
         if (processRunner == null || processRunner.IsRunning) return;
 
         if (displays.Count == 0)
@@ -165,13 +129,36 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
             return;
         }
 
-        // 验证 Windows 系统声音设备配置是否合理
-        ValidateWindowsAudioDevice();
+        int safeIndex = Mathf.Clamp(displayIndex, 0, displays.Count - 1);
+        var target = displays[safeIndex];
 
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+        WindowsAudioDeviceInfo resolvedWindowsAudioDevice = null;
 
-        int    safeIndex = Mathf.Clamp(displayIndex, 0, displays.Count - 1);
-        var    target    = displays[safeIndex];
+        if (audioMode == RecorderAudioMode.SystemAudio)
+        {
+            if (!TryResolveWindowsSystemAudioDevice(out resolvedWindowsAudioDevice, out string audioError))
+            {
+                Debug.LogError(audioError);
+                Debug.LogError("本次录制已取消：当前选择的是“系统音频”，但没有找到可用的 Windows 系统音频设备。");
+                return;
+            }
+        }
+        else if (audioMode == RecorderAudioMode.UnityAudioReserved)
+        {
+            Debug.LogWarning("当前版本尚未实现 Unity 音频采集，将只录制视频。");
+        }
+
+        string arguments = BuildFFmpegArguments(target, resolvedWindowsAudioDevice);
+#else
         string arguments = BuildFFmpegArguments(target);
+#endif
+
+        if (string.IsNullOrWhiteSpace(arguments))
+        {
+            Debug.LogError("生成 ffmpeg 参数失败。");
+            return;
+        }
 
         Debug.Log($"启动 ffmpeg: {ffmpegExecutablePath} {arguments}");
 
@@ -199,9 +186,6 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 停止当前录制。
-    /// </summary>
     public void StopRecording()
     {
         if (processRunner == null || !processRunner.IsRunning)
@@ -224,11 +208,6 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 读取 ffmpeg 可执行文件路径。
-    /// </summary>
-    /// <param name="executablePath">输出的 ffmpeg 路径。</param>
-    /// <returns>是否读取成功。</returns>
     private bool TryLoadFFmpegPath(out string executablePath)
     {
         executablePath = string.Empty;
@@ -266,296 +245,325 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
         }
     }
 
-    /*/// <summary>
-    /// 构建 ffmpeg 录制参数。
-    /// </summary>
-    /// <param name="target">目标显示器信息。</param>
-    /// <returns>ffmpeg 参数字符串。</returns>
-    private string BuildFFmpegArguments(RecorderDisplayInfo target)
-    {
-        string realOutputDirectory = string.IsNullOrWhiteSpace(outputDirectory)
-                                         ? Application.streamingAssetsPath
-                                         : outputDirectory;
-
-        Directory.CreateDirectory(realOutputDirectory);
-
-        currentOutputFilePath = Path.Combine(realOutputDirectory,
-            // $"{outputFilePrefix}_{target.name}_{DateTime.Now:yyyyMMdd_HHmmss}.mp4"
-            $"{outputFilePrefix}_{DateTime.Now:yyyyMMdd_HHmmss}.mp4"
-        );
-
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        return
-            $"-f gdigrab " +
-            $"-offset_x {target.offsetX} " +
-            $"-offset_y {target.offsetY} " +
-            $"-video_size {target.width}x{target.height} " +
-            $"-i desktop " +
-            $"-y " +
-            $"-c:v {videoCodec} " +
-            $"-preset {videoPreset} " +
-            $"\"{currentOutputFilePath}\"";
-#elif UNITY_STANDALONE_LINUX || UNITY_EDITOR_LINUX
-        return
-            $"-f x11grab " +
-            $"-video_size {target.width}x{target.height} " +
-            $"-i :0.0+{target.offsetX},{target.offsetY} " +
-            $"-y " +
-            $"-c:v {videoCodec} " +
-            $"-preset {videoPreset} " +
-            $"\"{currentOutputFilePath}\"";
-#else
-        return string.Empty;
-#endif
-    }*/
 
-    /// <summary>
-    /// 检查 Windows 系统声音设备配置是否合理。
-    /// </summary>
-    private void ValidateWindowsAudioDevice()
+    private bool TryResolveWindowsSystemAudioDevice(out WindowsAudioDeviceInfo resolvedDevice, out string errorMessage)
     {
-#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        if (audioMode != RecorderAudioMode.SystemAudio)
+        resolvedDevice = null;
+        errorMessage = string.Empty;
+
+        List<WindowsAudioDeviceInfo> devices = GetWindowsDShowAudioDevices(out string rawOutput);
+        LogWindowsAudioDevices(devices, rawOutput);
+
+        if (devices.Count == 0)
         {
-            return;
+            errorMessage =
+                "FFmpeg 没有枚举到任何 DirectShow 音频输入设备，无法录制系统音频。\n" +
+                "请确认 ffmpeg 可正常执行，且系统中存在立体声混音或其他回环设备。";
+            return false;
         }
 
-        if (string.IsNullOrWhiteSpace(windowsSystemAudioDeviceName))
+        string manualName = windowsSystemAudioDeviceName == null ? string.Empty : windowsSystemAudioDeviceName.Trim();
+
+        // 手动指定：允许填写 displayName，也允许直接填 alternative name
+        if (!string.IsNullOrWhiteSpace(manualName))
         {
-            Debug.LogError("未配置 Windows 系统声音采集设备，将只录制视频。");
-            return;
-        }
-
-        string lowerName = windowsSystemAudioDeviceName.ToLowerInvariant();
-        if (lowerName.Contains("microphone") || lowerName.Contains("mic") || lowerName.Contains("麦克风"))
-        {
-            Debug.LogError($"当前配置的音频设备看起来像麦克风：{windowsSystemAudioDeviceName}。若要录系统声音，请改为 Stereo Mix、立体声混音或虚拟回环设备。");
-        }
-#endif
-    }
-
-    /*
-    /// <summary>
-    /// 构建 ffmpeg 录制参数。
-    /// </summary>
-    /// <param name="target">目标显示器信息。</param>
-    /// <returns>ffmpeg 参数字符串。</returns>
-    private string BuildFFmpegArguments(RecorderDisplayInfo target)
-    {
-        string realOutputDirectory = string.IsNullOrWhiteSpace(outputDirectory)
-                                         ? Application.streamingAssetsPath
-                                         : outputDirectory;
-
-        Directory.CreateDirectory(realOutputDirectory);
-
-        // currentOutputFilePath = Path.Combine(realOutputDirectory, $"{outputFilePrefix}_{target.name}_{DateTime.Now:yyyyMMdd_HHmmss}.mp4");
-        currentOutputFilePath = Path.Combine(realOutputDirectory, $"ReocderVideo/{outputFilePrefix}_{DateTime.Now:yyyyMMdd_HHmmss}.mp4");
-
-#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        bool useSystemAudio = audioMode == RecorderAudioMode.SystemAudio && !string.IsNullOrWhiteSpace(windowsSystemAudioDeviceName);
-
-        /*
-        if (useSystemAudio)
-        {
-            return
-                $"-f gdigrab " +
-                $"-framerate 30 " +
-                $"-offset_x {target.offsetX} " +
-                $"-offset_y {target.offsetY} " +
-                $"-video_size {target.width}x{target.height} " +
-                $"-i desktop " +
-                $"-thread_queue_size 512 " +
-                $"-f dshow " +
-                $"-i audio=\"{windowsSystemAudioDeviceName}\" " +
-                $"-map 0:v:0 " +
-                $"-map 1:a:0 " +
-                $"-y " +
-                $"-c:v {videoCodec} " +
-                $"-preset {videoPreset} " +
-                $"-c:a {audioCodec} " +
-                $"-ar {audioSampleRate} " +
-                $"-ac {audioChannels} " +
-                $"\"{currentOutputFilePath}\"";
-        }
-        else
-        {
-            return
-                $"-f gdigrab " +
-                $"-framerate 30 " +
-                $"-offset_x {target.offsetX} " +
-                $"-offset_y {target.offsetY} " +
-                $"-video_size {target.width}x{target.height} " +
-                $"-i desktop " +
-                $"-y " +
-                $"-c:v {videoCodec} " +
-                $"-preset {videoPreset} " +
-                $"\"{currentOutputFilePath}\"";
-        }#1#
-
-        if (useSystemAudio)
-        {
-            return
-                $"-f gdigrab " +
-                $"-framerate 30 " +
-                $"-offset_x {target.offsetX} " +
-                $"-offset_y {target.offsetY} " +
-                $"-video_size {target.width}x{target.height} " +
-                $"-i desktop " +
-                $"-thread_queue_size 512 " +
-                $"-f dshow " +
-                $"-i audio=\"{windowsSystemAudioDeviceName}\" " +
-                $"-map 0:v:0 " +
-                $"-map 1:a:0 " +
-                $"-y " +
-                $"-c:v {videoCodec} " +
-                $"-preset {videoPreset} " +
-                $"-c:a {audioCodec} " +
-                $"-ar {audioSampleRate} " +
-                $"-ac {audioChannels} " +
-                $"\"{currentOutputFilePath}\"";
-        }
-
-        return
-            $"-f gdigrab " +
-            $"-framerate 30 " +
-            $"-offset_x {target.offsetX} " +
-            $"-offset_y {target.offsetY} " +
-            $"-video_size {target.width}x{target.height} " +
-            $"-i desktop " +
-            $"-y " +
-            $"-c:v {videoCodec} " +
-            $"-preset {videoPreset} " +
-            $"\"{currentOutputFilePath}\"";
-
-#elif UNITY_STANDALONE_LINUX || UNITY_EDITOR_LINUX
-    bool useSystemAudio = audioMode == RecorderAudioMode.SystemAudio
-                          && !string.IsNullOrWhiteSpace(linuxSystemAudioSourceName );
-
-    if (useSystemAudio)
-    {
-        return
-            $"-f x11grab " +
-            $"-framerate 30 " +
-            $"-video_size {target.width}x{target.height} " +
-            $"-i :0.0+{target.offsetX},{target.offsetY} " +
-            $"-thread_queue_size 512 " +
-            $"-f pulse " +
-            $"-i \"{linuxSystemAudioSourceName }\" " +
-            $"-map 0:v:0 " +
-            $"-map 1:a:0 " +
-            $"-y " +
-            $"-c:v {videoCodec} " +
-            $"-preset {videoPreset} " +
-            $"-c:a {audioCodec} " +
-            $"-ar {audioSampleRate} " +
-            $"-ac {audioChannels} " +
-            $"\"{currentOutputFilePath}\"";
-    }
-    else
-    {
-        return
-            $"-f x11grab " +
-            $"-framerate 30 " +
-            $"-video_size {target.width}x{target.height} " +
-            $"-i :0.0+{target.offsetX},{target.offsetY} " +
-            $"-y " +
-            $"-c:v {videoCodec} " +
-            $"-preset {videoPreset} " +
-            $"\"{currentOutputFilePath}\"";
-    }
-#else
-    return string.Empty;
-#endif
-    }
-    */
-    
-    [Header("音频")] public AudioCapture audioCapture;
-    
-    /// <summary>
-    /// 获取用于录制系统声音的音频设备名称（自动查找）。
-    /// </summary>
-    private string GetSystemAudioDeviceName()
-    {
-        // 如果用户已经手动配置，优先使用
-        if (!string.IsNullOrWhiteSpace(windowsSystemAudioDeviceName))
-        {
-            return windowsSystemAudioDeviceName;
-        }
-
-        // 自动查找系统声音设备
-        try
-        {
-            System.Diagnostics.Process process = new System.Diagnostics.Process();
-            process.StartInfo.FileName              = ffmpegExecutablePath;
-            process.StartInfo.Arguments             = "-list_devices true -f dshow -i dummy";
-            process.StartInfo.UseShellExecute       = false;
-            process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.CreateNoWindow        = true;
-            process.Start();
-
-            string output = process.StandardError.ReadToEnd();
-            process.WaitForExit();
-
-            // 解析输出，寻找系统声音设备
-            // 常见的设备名有 "立体声混音", "Stereo Mix", "virtual-audio-capturer" 等
-            string[] lines = output.Split('\n');
-            foreach (string line in lines)
+            foreach (var device in devices)
             {
-                // 匹配格式: "立体声混音 (Realtek(R) Audio)" (audio)
-                if (line.Contains("(audio)") &&
-                    (line.Contains("立体声混音") ||
-                     line.Contains("Stereo Mix") ||
-                     line.Contains("virtual-audio-capturer")))
+                if (StringEqualsIgnoreCase(device.displayName, manualName) ||
+                    StringEqualsIgnoreCase(device.alternativeName, manualName) ||
+                    StringContainsIgnoreCase(device.displayName, manualName) ||
+                    StringContainsIgnoreCase(device.alternativeName, manualName))
                 {
-                    // 提取设备名称
-                    int start = line.IndexOf('"') + 1;
-                    int end   = line.IndexOf('"', start);
-                    if (start > 0 && end > start)
-                    {
-                        string deviceName = line.Substring(start, end - start);
-                        Debug.Log($"自动检测到系统声音设备: {deviceName}");
-                        return deviceName;
-                    }
+                    resolvedDevice = device;
+                    Debug.Log($"使用手动指定匹配到的 Windows 系统音频设备: display=[{device.displayName}] alt=[{device.alternativeName}]");
+                    return true;
                 }
             }
 
-            Debug.LogWarning("未自动检测到系统声音设备，请确保已启用'立体声混音'或安装虚拟音频设备。");
+            // 如果用户直接填了完整 alternative name，但枚举比对仍未命中，也继续尝试
+            resolvedDevice = new WindowsAudioDeviceInfo
+            {
+                displayName = manualName,
+                alternativeName = manualName.StartsWith("@device_", StringComparison.OrdinalIgnoreCase) ? manualName : string.Empty
+            };
+
+            Debug.LogWarning($"手动填写的设备名未在枚举列表中命中，将直接尝试打开：{manualName}");
+            return true;
+        }
+
+        // 自动优先选择更像系统回环的设备
+        foreach (var device in devices)
+        {
+            if (IsLikelySystemAudioLoopbackDevice(device.displayName))
+            {
+                resolvedDevice = device;
+                Debug.Log($"自动检测到 Windows 系统音频设备: display=[{device.displayName}] alt=[{device.alternativeName}]");
+                return true;
+            }
+        }
+
+        // 如果没命中关键词，但存在 alternative name，优先选第二个音频设备（很多机器上第一个是耳机/麦克风，第二个是 Stereo Mix）
+        if (devices.Count >= 2)
+        {
+            resolvedDevice = devices[1];
+            Debug.LogWarning($"未命中特征关键词，已回退选择第 2 个音频设备: display=[{resolvedDevice.displayName}] alt=[{resolvedDevice.alternativeName}]");
+            return true;
+        }
+
+        // 最后兜底选第一个
+        resolvedDevice = devices[0];
+        Debug.LogWarning($"未命中特征关键词，已回退选择第 1 个音频设备: display=[{resolvedDevice.displayName}] alt=[{resolvedDevice.alternativeName}]");
+        return true;
+    }
+
+    private List<WindowsAudioDeviceInfo> GetWindowsDShowAudioDevices(out string rawOutput)
+    {
+        rawOutput = string.Empty;
+        List<WindowsAudioDeviceInfo> devices = new List<WindowsAudioDeviceInfo>();
+
+        try
+        {
+            using (System.Diagnostics.Process process = new System.Diagnostics.Process())
+            {
+                process.StartInfo.FileName = ffmpegExecutablePath;
+                process.StartInfo.Arguments = "-hide_banner -list_devices true -f dshow -i dummy";
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.CreateNoWindow = true;
+                process.Start();
+
+                string stdOut = process.StandardOutput.ReadToEnd();
+                string stdErr = process.StandardError.ReadToEnd();
+
+                if (!process.WaitForExit(5000))
+                {
+                    try { process.Kill(); } catch { }
+                }
+
+                rawOutput = (stdErr + Environment.NewLine + stdOut).Trim();
+            }
+
+            string[] lines = rawOutput.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+            WindowsAudioDeviceInfo pendingDevice = null;
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i].Trim();
+
+                // 设备显示名行：只要包含 (audio) 就解析，不再依赖 “DirectShow audio devices” 标题
+                if (line.Contains("(audio)"))
+                {
+                    string displayName = ExtractQuotedContent(line);
+                    if (!string.IsNullOrWhiteSpace(displayName))
+                    {
+                        pendingDevice = new WindowsAudioDeviceInfo
+                        {
+                            displayName = displayName.Trim(),
+                            alternativeName = string.Empty
+                        };
+                        devices.Add(pendingDevice);
+                    }
+
+                    continue;
+                }
+
+                // alternative name 紧跟在设备行后面
+                if (pendingDevice != null && line.Contains("Alternative name"))
+                {
+                    string altName = ExtractQuotedContent(line);
+
+                    if (!string.IsNullOrWhiteSpace(altName))
+                    {
+                        pendingDevice.alternativeName = altName.Trim();
+                        continue;
+                    }
+
+                    // 少数输出格式里 alternative name 可能拆到下一行
+                    if (i + 1 < lines.Length)
+                    {
+                        string nextLine = lines[i + 1].Trim();
+                        string nextQuoted = ExtractQuotedContent(nextLine);
+                        if (!string.IsNullOrWhiteSpace(nextQuoted))
+                        {
+                            pendingDevice.alternativeName = nextQuoted.Trim();
+                            i++;
+                            continue;
+                        }
+                    }
+                }
+            }
         }
         catch (Exception e)
         {
-            Debug.LogError($"检测音频设备时出错: {e.Message}");
+            rawOutput = e.ToString();
+            Debug.LogError("枚举 Windows DirectShow 音频设备失败: " + e.Message);
         }
 
-        return string.Empty;
+        return devices;
     }
 
-    /// <summary>
-    /// 构建 ffmpeg 录制参数。
-    /// </summary>
-    /// <param name="target">目标显示器信息。</param>
-    /// <returns>ffmpeg 参数字符串。</returns>
+    private void LogWindowsAudioDevices(List<WindowsAudioDeviceInfo> devices, string rawOutput)
+    {
+        if (devices == null || devices.Count == 0)
+        {
+            Debug.LogWarning("FFmpeg 未识别到任何 Windows 音频输入设备。原始输出如下：\n" + rawOutput);
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("Windows DirectShow 音频设备列表：");
+
+        for (int i = 0; i < devices.Count; i++)
+        {
+            sb.AppendLine($"  [{i}] display = {devices[i].displayName}");
+            sb.AppendLine($"      alt     = {devices[i].alternativeName}");
+        }
+
+        Debug.Log(sb.ToString());
+    }
+
+    private bool IsLikelySystemAudioLoopbackDevice(string deviceName)
+    {
+        if (string.IsNullOrWhiteSpace(deviceName))
+        {
+            return false;
+        }
+
+        string lower = deviceName.ToLowerInvariant();
+
+        // 排除典型麦克风/耳机输入
+        if (lower.Contains("microphone") ||
+            lower.Contains("mic") ||
+            lower.Contains("麦克风") ||
+            lower.Contains("headset mic") ||
+            lower.Contains("阵列") ||
+            lower.Contains("array"))
+        {
+            return false;
+        }
+
+        // 正常名称
+        if (lower.Contains("stereo mix") ||
+            lower.Contains("立体声混音") ||
+            lower.Contains("virtual-audio-capturer") ||
+            lower.Contains("virtual audio capturer") ||
+            lower.Contains("what u hear") ||
+            lower.Contains("wave out") ||
+            lower.Contains("loopback") ||
+            lower.Contains("monitor"))
+        {
+            return true;
+        }
+
+        // 兼容你当前日志里的“立体声混音”乱码
+        if (lower.Contains("绔嬩綋澹版贩闊"))
+        {
+            return true;
+        }
+
+        // Realtek 的 Stereo Mix 经常带这个关键字
+        if (lower.Contains("realtek"))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private string GetBestDShowAudioInputName(WindowsAudioDeviceInfo device)
+    {
+        if (device == null)
+        {
+            return string.Empty;
+        }
+
+        if (!string.IsNullOrWhiteSpace(device.alternativeName))
+        {
+            return device.alternativeName;
+        }
+
+        return device.displayName ?? string.Empty;
+    }
+
+    private string ExtractQuotedContent(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return string.Empty;
+        }
+
+        int firstQuote = line.IndexOf('"');
+        if (firstQuote < 0) return string.Empty;
+
+        int secondQuote = line.IndexOf('"', firstQuote + 1);
+        if (secondQuote <= firstQuote) return string.Empty;
+
+        return line.Substring(firstQuote + 1, secondQuote - firstQuote - 1);
+    }
+
+    private bool StringEqualsIgnoreCase(string a, string b)
+    {
+        return !string.IsNullOrWhiteSpace(a) &&
+               !string.IsNullOrWhiteSpace(b) &&
+               string.Equals(a.Trim(), b.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool StringContainsIgnoreCase(string a, string b)
+    {
+        return !string.IsNullOrWhiteSpace(a) &&
+               !string.IsNullOrWhiteSpace(b) &&
+               a.IndexOf(b, StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    private string EscapeForDShowDevice(string deviceName)
+    {
+        return string.IsNullOrEmpty(deviceName) ? string.Empty : deviceName.Replace("\"", "\\\"");
+    }
+
+#endif
+
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+    private string BuildFFmpegArguments(RecorderDisplayInfo target, WindowsAudioDeviceInfo resolvedWindowsAudioDevice)
+#else
     private string BuildFFmpegArguments(RecorderDisplayInfo target)
+#endif
     {
         string realOutputDirectory = string.IsNullOrWhiteSpace(outputDirectory)
-                                         ? Application.streamingAssetsPath
-                                         : outputDirectory;
+            ? Application.streamingAssetsPath
+            : outputDirectory;
+
         Directory.CreateDirectory(realOutputDirectory);
 
-        // 确保输出目录存在
-        string outputDir = Path.Combine(realOutputDirectory, "ReocderVideo");
-        if (!Directory.Exists(outputDir)) Directory.CreateDirectory(outputDir);
+        string outputDir = Path.Combine(realOutputDirectory, "RecorderVideo");
+        if (!Directory.Exists(outputDir))
+        {
+            Directory.CreateDirectory(outputDir);
+        }
+
         currentOutputFilePath = Path.Combine(outputDir, $"{outputFilePrefix}_{DateTime.Now:yyyyMMdd_HHmmss}.mp4");
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        // 🎧 核心修改：尝试获取系统声音设备名称
-        string systemAudioDevice = GetSystemAudioDeviceName();
-
-        // 如果找到系统声音设备，则启用音频录制
-        bool useSystemAudio = !string.IsNullOrWhiteSpace(systemAudioDevice) && audioMode == RecorderAudioMode.SystemAudio;
+        bool useSystemAudio = audioMode == RecorderAudioMode.SystemAudio &&
+                              resolvedWindowsAudioDevice != null;
 
         if (useSystemAudio)
         {
-            Debug.Log($"✅ 正在使用系统声音设备: {systemAudioDevice}");
+            string audioInputName = GetBestDShowAudioInputName(resolvedWindowsAudioDevice);
+
+            if (string.IsNullOrWhiteSpace(audioInputName))
+            {
+                Debug.LogError("Windows 系统音频设备名为空，无法构建音频输入参数。");
+                return string.Empty;
+            }
+
+            string escapedAudioInputName = EscapeForDShowDevice(audioInputName);
+
+            Debug.Log($"Windows 系统音频录制设备已确定：display=[{resolvedWindowsAudioDevice.displayName}] alt=[{resolvedWindowsAudioDevice.alternativeName}]");
+            Debug.Log($"最终传给 ffmpeg 的音频输入名：{audioInputName}");
+
             return $"-f gdigrab " +
                    $"-framerate 30 " +
                    $"-offset_x {target.offsetX} " +
@@ -564,7 +572,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
                    $"-i desktop " +
                    $"-thread_queue_size 512 " +
                    $"-f dshow " +
-                   $"-i audio=\"{systemAudioDevice}\" " +
+                   $"-i audio=\"{escapedAudioInputName}\" " +
                    $"-map 0:v:0 " +
                    $"-map 1:a:0 " +
                    $"-y " +
@@ -576,8 +584,6 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
                    $"\"{currentOutputFilePath}\"";
         }
 
-        // ⚠️ 如果没有找到系统声音设备，则只录制视频，并给出警告
-        Debug.LogWarning("未找到系统声音设备，将只录制视频。请检查系统中是否启用了'立体声混音'设备。");
         return $"-f gdigrab " +
                $"-framerate 30 " +
                $"-offset_x {target.offsetX} " +
@@ -590,45 +596,42 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
                $"\"{currentOutputFilePath}\"";
 
 #elif UNITY_STANDALONE_LINUX || UNITY_EDITOR_LINUX
-    // Linux下的实现逻辑
-    bool useSystemAudio = audioMode == RecorderAudioMode.SystemAudio && !string.IsNullOrWhiteSpace(linuxSystemAudioSourceName);
+        bool useSystemAudio = audioMode == RecorderAudioMode.SystemAudio &&
+                              !string.IsNullOrWhiteSpace(linuxSystemAudioSourceName);
 
-    if (useSystemAudio)
-    {
+        if (useSystemAudio)
+        {
+            return $"-f x11grab " +
+                   $"-framerate 30 " +
+                   $"-video_size {target.width}x{target.height} " +
+                   $"-i :0.0+{target.offsetX},{target.offsetY} " +
+                   $"-thread_queue_size 512 " +
+                   $"-f pulse " +
+                   $"-i \"{linuxSystemAudioSourceName}\" " +
+                   $"-map 0:v:0 " +
+                   $"-map 1:a:0 " +
+                   $"-y " +
+                   $"-c:v {videoCodec} " +
+                   $"-preset {videoPreset} " +
+                   $"-c:a {audioCodec} " +
+                   $"-ar {audioSampleRate} " +
+                   $"-ac {audioChannels} " +
+                   $"\"{currentOutputFilePath}\"";
+        }
+
         return $"-f x11grab " +
                $"-framerate 30 " +
                $"-video_size {target.width}x{target.height} " +
                $"-i :0.0+{target.offsetX},{target.offsetY} " +
-               $"-thread_queue_size 512 " +
-               $"-f pulse " +
-               $"-i \"{linuxSystemAudioSourceName}\" " +
-               $"-map 0:v:0 " +
-               $"-map 1:a:0 " +
                $"-y " +
                $"-c:v {videoCodec} " +
                $"-preset {videoPreset} " +
-               $"-c:a {audioCodec} " +
-               $"-ar {audioSampleRate} " +
-               $"-ac {audioChannels} " +
                $"\"{currentOutputFilePath}\"";
-    }
-
-    return $"-f x11grab " +
-           $"-framerate 30 " +
-           $"-video_size {target.width}x{target.height} " +
-           $"-i :0.0+{target.offsetX},{target.offsetY} " +
-           $"-y " +
-           $"-c:v {videoCodec} " +
-           $"-preset {videoPreset} " +
-           $"\"{currentOutputFilePath}\"";
 #else
-    return string.Empty;
+        return string.Empty;
 #endif
     }
 
-    /// <summary>
-    /// 销毁对象时释放进程资源。
-    /// </summary>
     private void OnDestroy()
     {
         processRunner?.Dispose();

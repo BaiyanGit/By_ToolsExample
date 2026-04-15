@@ -1,7 +1,5 @@
 //=====================================================
 // 文件名称: FFmpegProcessRunner
-// 创 建 者: wangbaiyan
-// 创建日期: 2026-4-13
 // 描    述: FFmpeg 进程运行器，用于启动、停止并管理 ffmpeg 录屏进程。
 //=====================================================
 
@@ -21,11 +19,6 @@ public class FFmpegProcessRunner : IDisposable
     /// <summary>
     /// 启动 ffmpeg 进程。
     /// </summary>
-    /// <param name="executablePath">ffmpeg 可执行文件路径。</param>
-    /// <param name="arguments">ffmpeg 启动参数。</param>
-    /// <param name="onStdOut">标准输出回调。</param>
-    /// <param name="onStdErr">标准错误回调。</param>
-    /// <returns>是否启动成功。</returns>
     public bool Start(
         string executablePath,
         string arguments,
@@ -81,7 +74,7 @@ public class FFmpegProcessRunner : IDisposable
     /// 停止 ffmpeg 进程。
     /// </summary>
     /// <param name="waitMilliseconds">等待退出的超时时间，单位毫秒。</param>
-    public void Stop(int waitMilliseconds = 3000)
+    public void Stop(int waitMilliseconds = 10000)
     {
         if (!IsRunning)
         {
@@ -91,12 +84,17 @@ public class FFmpegProcessRunner : IDisposable
 
         try
         {
-            _ffmpegProcess.StandardInput.Write('q');
-            _ffmpegProcess.StandardInput.Flush();
+            if (_ffmpegProcess.StartInfo.RedirectStandardInput)
+            {
+                _ffmpegProcess.StandardInput.WriteLine("q");
+                _ffmpegProcess.StandardInput.Flush();
+                _ffmpegProcess.StandardInput.Close();
+            }
 
             if (!_ffmpegProcess.WaitForExit(waitMilliseconds))
             {
                 _ffmpegProcess.Kill();
+                _ffmpegProcess.WaitForExit();
             }
         }
         finally
@@ -136,7 +134,6 @@ public class FFmpegProcessRunner : IDisposable
         }
         catch
         {
-            // ignored
         }
 
         try
@@ -145,7 +142,6 @@ public class FFmpegProcessRunner : IDisposable
         }
         catch
         {
-            // ignored
         }
 
         _ffmpegProcess = null;

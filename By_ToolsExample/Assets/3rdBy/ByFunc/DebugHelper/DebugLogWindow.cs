@@ -176,8 +176,16 @@ namespace _3rdBy.ByFunc.DebugHelper
 
         private const float LogListDragThreshold = 4f;
         private const float EntryDoubleClickInterval = 0.35f;
+        private const float AutoScrollBottomTolerance = 8f;
         private string _lastClickedEntryKey = string.Empty;
         private float _lastEntryClickTime;
+
+        [Header("日志列表上一次已知内容高度")] private float _lastLogListContentHeight;
+        [Header("日志列表上一次已知视口高度")] private float _lastLogListViewportHeight;
+        [Header("是否等待用户先离开底部后，才允许重新自动开启自动滚动")] private bool _waitLeaveBottomBeforeRestoreAutoScroll;
+        [Header("日志列表上一次已知显示区域")] private Rect _lastLogListViewRect;
+        [Header("是否正在操作日志列表右侧滚动条")] private bool _isInteractingLogListScrollBar;
+        [Header("开始操作日志列表右侧滚动条时是否位于底部")] private bool _scrollBarInteractionStartedAtBottom;
 
         [Header("缓存的UI缩放比例")] private float _cachedUiScale = -1f;
 
@@ -571,13 +579,16 @@ namespace _3rdBy.ByFunc.DebugHelper
 
         /// <summary>
         /// 绘制日志列表。
-        /// 如果鼠标滚轮事件发生在日志列表区域内，则视为用户主动查看历史日志，并关闭自动滚动。
-        /// 这里直接判断滚轮事件本身，不依赖滚动位置是否变化，避免在底部继续向下滚时漏判。
+        /// 鼠标滚轮、日志项拖拽、右侧滚动条操作都会被视为用户主动查看历史日志，并关闭自动滚动。
+        /// 同时记录日志内容高度与视口高度，用于判断用户是否已经滚动到最底部。
         /// </summary>
         private void DrawLogList()
         {
+            TryBeginLogListScrollBarInteraction();
             TryDisableAutoScrollByMouseWheelInLogList();
 
+            Vector2 scrollPositionBeforeView = _scrollPosition;
+            _lastLogListContentHeight = 0f;
             _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, GUILayout.ExpandHeight(true));
 
             if (_collapse)
@@ -596,6 +607,16 @@ namespace _3rdBy.ByFunc.DebugHelper
             }
 
             GUILayout.EndScrollView();
+
+            HandleLogListScrollBarInteractionAfterScrollView(scrollPositionBeforeView);
+
+            if (Event.current != null && Event.current.type == EventType.Repaint)
+            {
+                Rect scrollViewRect = GUILayoutUtility.GetLastRect();
+                _lastLogListViewRect = scrollViewRect;
+                _lastLogListViewportHeight = Mathf.Max(0f, scrollViewRect.height);
+                RestoreAutoScrollIfScrolledToBottom();
+            }
         }
 
         /// <summary>
@@ -655,6 +676,7 @@ namespace _3rdBy.ByFunc.DebugHelper
 
             // GUILayout 组结束后再取最后一个 Rect，避免 BeginGroup 后立即 GetLastRect 的 IMGUI 错误。
             Rect entryRect = GUILayoutUtility.GetLastRect();
+            RecordLogEntryBottom(entryRect);
             TryBeginLogListDrag(entryRect);
 
             GUILayout.Space(2f);
@@ -717,6 +739,7 @@ namespace _3rdBy.ByFunc.DebugHelper
 
             // GUILayout 组结束后再取最后一个 Rect，避免 BeginGroup 后立即 GetLastRect 的 IMGUI 错误。
             Rect entryRect = GUILayoutUtility.GetLastRect();
+            RecordLogEntryBottom(entryRect);
             TryBeginLogListDrag(entryRect);
 
             GUILayout.Space(2f);
@@ -1103,8 +1126,14 @@ namespace _3rdBy.ByFunc.DebugHelper
             _filteredLogs.Clear();
             _collapsedLogs.Clear();
             _expandedStackKeys.Clear();
-            _scrollPosition = Vector2.zero;
-            _isDirty        = true;
+            _scrollPosition                         = Vector2.zero;
+            _lastLogListContentHeight               = 0f;
+            _lastLogListViewportHeight              = 0f;
+            _lastLogListViewRect                    = Rect.zero;
+            _waitLeaveBottomBeforeRestoreAutoScroll = false;
+            _isInteractingLogListScrollBar          = false;
+            _scrollBarInteractionStartedAtBottom    = false;
+            _isDirty                                = true;
 
             _logCount       = 0;
             _warningCount   = 0;
@@ -1259,7 +1288,7 @@ namespace _3rdBy.ByFunc.DebugHelper
         /// </summary>
         private void UpdateGlobalWindowInteraction()
         {
-            if (!_isDraggingWindow && !_isResizing && !_isDraggingLogList && !_isPreparingLogListDrag)
+            if (!_isDraggingWindow && !_isResizing && !_isDraggingLogList && !_isPreparingLogListDrag && !_isInteractingLogListScrollBar)
             {
                 return;
             }
@@ -1302,6 +1331,7 @@ namespace _3rdBy.ByFunc.DebugHelper
                 {
                     _scrollPosition.x = Mathf.Max(0f, _logListDragStartScrollPosition.x - delta.x);
                     _scrollPosition.y = Mathf.Max(0f, _logListDragStartScrollPosition.y - delta.y);
+                    RestoreAutoScrollIfScrolledToBottom();
                 }
             }
 
@@ -1320,9 +1350,94 @@ namespace _3rdBy.ByFunc.DebugHelper
 
             _isDraggingWindow       = false;
             _isResizing             = false;
-            _isDraggingLogList      = false;
-            _isPreparingLogListDrag = false;
-            _hasLogListDragMoved    = false;
+            _isDraggingLogList                    = false;
+            _isPreparingLogListDrag               = false;
+            _hasLogListDragMoved                  = false;
+            _isInteractingLogListScrollBar        = false;
+            _scrollBarInteractionStartedAtBottom  = false;
+        }
+
+        /// <summary>
+        /// 如果用户在右侧滚动条区域按下鼠标，则记录滚动条交互状态，并关闭自动滚动。
+        /// 使用上一帧 Repaint 记录的日志列表区域做命中判断，避免改动原有 GUILayout 滚动视图结构。
+        /// </summary>
+        private void TryBeginLogListScrollBarInteraction()
+        {
+            var currentEvent = Event.current;
+            if (currentEvent == null || currentEvent.type != EventType.MouseDown || currentEvent.button != 0)
+            {
+                return;
+            }
+
+            if (!IsMouseInsideLastLogListVerticalScrollBar(currentEvent.mousePosition))
+            {
+                return;
+            }
+
+            _isInteractingLogListScrollBar       = true;
+            _scrollBarInteractionStartedAtBottom = IsLogListScrolledToBottom(_scrollPosition.y);
+            DisableAutoScrollByUserScroll("已检测到右侧滚动条操作，自动滚动已关闭。", _scrollBarInteractionStartedAtBottom);
+        }
+
+        /// <summary>
+        /// 右侧滚动条处理完成后，根据滚动条造成的滚动位置变化判断是否需要关闭或恢复自动滚动。
+        /// </summary>
+        private void HandleLogListScrollBarInteractionAfterScrollView(Vector2 scrollPositionBeforeView)
+        {
+            if (!_isInteractingLogListScrollBar)
+            {
+                return;
+            }
+
+            bool verticalScrollChanged = !Mathf.Approximately(scrollPositionBeforeView.y, _scrollPosition.y);
+            if (verticalScrollChanged)
+            {
+                DisableAutoScrollByUserScroll("已检测到右侧滚动条拖动，自动滚动已关闭。", _scrollBarInteractionStartedAtBottom);
+                RestoreAutoScrollIfScrolledToBottom();
+            }
+
+            var currentEvent = Event.current;
+            if (!Input.GetMouseButton(0) || currentEvent != null && currentEvent.type == EventType.MouseUp)
+            {
+                _isInteractingLogListScrollBar       = false;
+                _scrollBarInteractionStartedAtBottom = false;
+                RestoreAutoScrollIfScrolledToBottom();
+            }
+        }
+
+        /// <summary>
+        /// 判断鼠标是否位于日志列表上一次记录到的右侧滚动条区域内。
+        /// </summary>
+        private bool IsMouseInsideLastLogListVerticalScrollBar(Vector2 mousePosition)
+        {
+            if (_lastLogListViewRect.width <= 0f || _lastLogListViewRect.height <= 0f)
+            {
+                return false;
+            }
+
+            if (_lastLogListContentHeight <= _lastLogListViewportHeight + AutoScrollBottomTolerance)
+            {
+                return false;
+            }
+
+            float scrollbarWidth = GetVerticalScrollBarWidth();
+            var scrollBarRect = new Rect(
+                _lastLogListViewRect.xMax - scrollbarWidth,
+                _lastLogListViewRect.y,
+                scrollbarWidth,
+                _lastLogListViewRect.height
+            );
+
+            return scrollBarRect.Contains(mousePosition);
+        }
+
+        /// <summary>
+        /// 获取当前皮肤下垂直滚动条宽度，避免不同 Unity 皮肤下热区过窄或过宽。
+        /// </summary>
+        private static float GetVerticalScrollBarWidth()
+        {
+            float fixedWidth = GUI.skin != null && GUI.skin.verticalScrollbar != null ? GUI.skin.verticalScrollbar.fixedWidth : 0f;
+            return fixedWidth > 1f ? fixedWidth : 16f;
         }
 
         /// <summary>
@@ -1331,11 +1446,6 @@ namespace _3rdBy.ByFunc.DebugHelper
         /// </summary>
         private void TryDisableAutoScrollByMouseWheelInLogList()
         {
-            if (!_autoScroll)
-            {
-                return;
-            }
-
             var currentEvent = Event.current;
             if (currentEvent == null || currentEvent.type != EventType.ScrollWheel)
             {
@@ -1361,11 +1471,21 @@ namespace _3rdBy.ByFunc.DebugHelper
         }
 
         /// <summary>
-        /// 用户通过拖拽或滚轮主动干预日志滚动时，关闭自动滚动，并清理本帧可能已经排队的自动滚动请求。
+        /// 用户通过拖拽、滚轮或右侧滚动条主动干预日志滚动时，关闭自动滚动，并清理本帧可能已经排队的自动滚动请求。
+        /// 如果关闭前已经在底部，则要求用户先离开底部，再回到底部时才重新自动开启，避免底部继续向下滚轮或拖动滚动条时刚关闭又立刻开启。
         /// </summary>
         private void DisableAutoScrollByUserScroll(string statusMessage)
         {
+            DisableAutoScrollByUserScroll(statusMessage, IsLogListScrolledToBottom());
+        }
+
+        /// <summary>
+        /// 用户通过拖拽、滚轮或右侧滚动条主动干预日志滚动时，关闭自动滚动。
+        /// </summary>
+        private void DisableAutoScrollByUserScroll(string statusMessage, bool wasAtBottomBeforeInteraction)
+        {
             _requestScrollToBottom = false;
+            _waitLeaveBottomBeforeRestoreAutoScroll = wasAtBottomBeforeInteraction;
 
             if (!_autoScroll)
             {
@@ -1374,6 +1494,64 @@ namespace _3rdBy.ByFunc.DebugHelper
 
             _autoScroll = false;
             ShowStatus(statusMessage);
+        }
+
+        /// <summary>
+        /// 记录当前日志项底部位置，用于估算滚动内容总高度。
+        /// </summary>
+        private void RecordLogEntryBottom(Rect entryRect)
+        {
+            _lastLogListContentHeight = Mathf.Max(_lastLogListContentHeight, entryRect.yMax + Scale(2f));
+        }
+
+        /// <summary>
+        /// 如果用户已经滚动到日志列表最底部，则重新开启自动滚动。
+        /// </summary>
+        private void RestoreAutoScrollIfScrolledToBottom()
+        {
+            if (_autoScroll)
+            {
+                _waitLeaveBottomBeforeRestoreAutoScroll = false;
+                return;
+            }
+
+            bool isAtBottom = IsLogListScrolledToBottom();
+            if (!isAtBottom)
+            {
+                _waitLeaveBottomBeforeRestoreAutoScroll = false;
+                return;
+            }
+
+            if (_waitLeaveBottomBeforeRestoreAutoScroll)
+            {
+                return;
+            }
+
+            _autoScroll = true;
+            _requestScrollToBottom = true;
+            ShowStatus("已滚动到最底部，自动滚动已开启。");
+        }
+
+        /// <summary>
+        /// 判断当前日志列表是否已经处于最底部。
+        /// </summary>
+        private bool IsLogListScrolledToBottom()
+        {
+            return IsLogListScrolledToBottom(_scrollPosition.y);
+        }
+
+        /// <summary>
+        /// 判断指定滚动位置是否已经处于最底部。
+        /// </summary>
+        private bool IsLogListScrolledToBottom(float scrollPositionY)
+        {
+            if (_lastLogListViewportHeight <= 0f || _lastLogListContentHeight <= 0f)
+            {
+                return true;
+            }
+
+            float maxScrollY = Mathf.Max(0f, _lastLogListContentHeight - _lastLogListViewportHeight);
+            return scrollPositionY >= maxScrollY - AutoScrollBottomTolerance;
         }
 
         /// <summary>

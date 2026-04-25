@@ -60,32 +60,8 @@ public class RecorderQualityDropdownUI : MonoBehaviour
         }
     };
 
-    public bool isUpdate;
-    public float updateTime;
-
-    private void Update()
-    {
-        if (!isUpdate) return;
-        if (updateTime > 0)
-        {
-            updateTime -= Time.deltaTime;
-        }
-
-        if (updateTime <= 0)
-        {
-            Debug.Log("(Update)普通日志");
-            updateTime = 1;
-        }
-    }
-
     private void Start()
     {
-        Debug.Log("普通日志");
-        Debug.LogWarning("警告日志");
-        Debug.LogError("错误日志");
-        Debug.LogException(new Exception("异常日志"));
-        Debug.Assert(false, "断言日志");
-
         if (recorder == null)
         {
             Debug.LogError("RecorderQualityDropdownUI 未指定 CrossPlatformScreenRecorder。");

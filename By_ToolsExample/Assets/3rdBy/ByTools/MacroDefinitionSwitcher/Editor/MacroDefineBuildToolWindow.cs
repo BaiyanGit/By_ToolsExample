@@ -26,7 +26,7 @@ namespace MacroDefineBuildToolEditor
         /// <summary>
         /// 打开窗口菜单。
         /// </summary>
-        [MenuItem("ByTools/🔖宏定义切换与打包工具")]
+        [MenuItem("ByTools/🔖 宏定义切换与打包工具")]
         public static void OpenWindow()
         {
             var window = GetWindow<MacroDefineBuildToolWindow>("宏定义切换与打包工具");

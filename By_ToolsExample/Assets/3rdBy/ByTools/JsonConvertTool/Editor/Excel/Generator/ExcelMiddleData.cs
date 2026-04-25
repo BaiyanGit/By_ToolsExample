@@ -19,11 +19,11 @@
         [Header("实际列")] public List<int> realColumns;
         [Header("数据")] private List<SortedDictionary<string, string>> _excelMiddleDatas;
 
-        [Header("开始行")] private const int ExcelRowIndexStart = 3;
-        [Header("注释行")] private const int ExcelRowIndexNote = 4;
-        [Header("类型行")] private const int ExcelRowIndexType = 5;
-        [Header("内容开始行")] private const int ExcelRowIndexContentStart = 6;
-        [Header("开始列")] private const int ExcelColumnIndexStart = 1;
+        [Header("开始行")] private const int EXCEL_ROW_INDEX_START = 3;
+        [Header("注释行")] private const int EXCEL_ROW_INDEX_NOTE = 4;
+        [Header("类型行")] private const int EXCEL_ROW_INDEX_TYPE = 5;
+        [Header("内容开始行")] private const int EXCEL_ROW_INDEX_CONTENT_START = 6;
+        [Header("开始列")] private const int EXCEL_COLUMN_INDEX_START = 1;
 
         public void Init(DataTable sheet, string excelFilePath)
         {
@@ -42,17 +42,17 @@
             // 初始化标题
             for (var i = 0; i < _realColumnCount; i++)
             {
-                var prop = sheet.Rows[ExcelRowIndexStart][i].ToString();
+                var prop = sheet.Rows[EXCEL_ROW_INDEX_START][i].ToString();
                 if (string.IsNullOrEmpty(prop)) continue;
                 if (prop.StartsWith("#")) continue;
                 if (prop.ToLower().Equals("id")) haveIdProp = true;
 
-                var note      = sheet.Rows[ExcelRowIndexNote][i].ToString();
+                var note      = sheet.Rows[EXCEL_ROW_INDEX_NOTE][i].ToString();
                 var noteArray = note.Split('\n');
 
-                var type = sheet.Rows[ExcelRowIndexType][i].ToString();
+                var type = sheet.Rows[EXCEL_ROW_INDEX_TYPE][i].ToString();
                 if (string.IsNullOrEmpty(type))
-                    throw new Exception("type is null:【" + prop + "】检测到" + (ExcelRowIndexType + 1) + "行类型为空（可以通知程序加上）, path: " + excelFilePath);
+                    throw new Exception("type is null:【" + prop + "】检测到" + (EXCEL_ROW_INDEX_TYPE + 1) + "行类型为空（可以通知程序加上）, path: " + excelFilePath);
                 if (!CheckTypeValid(type))
                     throw new Exception("type error:【" + type + "】检测到类型未定义, path: " + excelFilePath);
 
@@ -67,9 +67,9 @@
             if (!haveIdProp) throw new Exception("id not define,未包含Id字段, path:" + excelFilePath);
 
             // 转换数据
-            for (var i = ExcelRowIndexContentStart; i < _realRowCount; i++)
+            for (var i = EXCEL_ROW_INDEX_CONTENT_START; i < _realRowCount; i++)
             {
-                if (string.IsNullOrEmpty(sheet.Rows[i][ExcelColumnIndexStart].ToString())) continue;
+                if (string.IsNullOrEmpty(sheet.Rows[i][EXCEL_COLUMN_INDEX_START].ToString())) continue;
 
                 var dic = new SortedDictionary<string, string>();
                 for (var j = 0; j < realColumns.Count; j++)

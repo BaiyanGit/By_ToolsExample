@@ -10,13 +10,9 @@ using UnityEngine.UI;
 public class RecorderQualityDropdownUI : MonoBehaviour
 {
     [Header("录屏核心控制器")] public CrossPlatformScreenRecorder recorder;
-
     [Header("清晰度下拉框")] public Dropdown qualityDropdown;
-
     [Header("启动时自动填充选项")] public bool populateOptionsOnStart = true;
-
     [Header("启动时自动应用默认档位")] public bool applyDefaultPresetOnStart = true;
-
     [Header("默认档位索引")] public int defaultPresetIndex = 1;
 
     /// <summary>
@@ -26,21 +22,16 @@ public class RecorderQualityDropdownUI : MonoBehaviour
     public class QualityPreset
     {
         [Header("显示名称")] public string displayName = "均衡";
-
         [Header("录制帧率")] public int captureFrameRate = 25;
-
         [Header("输出缩放比例")] [Range(0.25f, 1f)] public float outputScale = 0.75f;
-
         [Header("CRF，越小越清晰")] [Range(16, 35)] public int videoCrf = 23;
-
         [Header("编码预设")] public string videoPreset = "ultrafast";
-
         [Header("音频码率")] public string audioBitrate = "128k";
     }
 
-    [Header("清晰度预设列表")] public List<QualityPreset> presets = new List<QualityPreset>()
+    [Header("清晰度预设列表")] public List<QualityPreset> presets = new()
     {
-        new QualityPreset()
+        new QualityPreset
         {
             displayName      = "高质量",
             captureFrameRate = 30,
@@ -49,7 +40,7 @@ public class RecorderQualityDropdownUI : MonoBehaviour
             videoPreset      = "veryfast",
             audioBitrate     = "192k"
         },
-        new QualityPreset()
+        new QualityPreset
         {
             displayName      = "均衡",
             captureFrameRate = 25,
@@ -58,7 +49,7 @@ public class RecorderQualityDropdownUI : MonoBehaviour
             videoPreset      = "ultrafast",
             audioBitrate     = "128k"
         },
-        new QualityPreset()
+        new QualityPreset
         {
             displayName      = "长时间录制",
             captureFrameRate = 20,
@@ -69,8 +60,32 @@ public class RecorderQualityDropdownUI : MonoBehaviour
         }
     };
 
+    public bool isUpdate;
+    public float updateTime;
+
+    private void Update()
+    {
+        if (!isUpdate) return;
+        if (updateTime > 0)
+        {
+            updateTime -= Time.deltaTime;
+        }
+
+        if (updateTime <= 0)
+        {
+            Debug.Log("(Update)普通日志");
+            updateTime = 1;
+        }
+    }
+
     private void Start()
     {
+        Debug.Log("普通日志");
+        Debug.LogWarning("警告日志");
+        Debug.LogError("错误日志");
+        Debug.LogException(new Exception("异常日志"));
+        Debug.Assert(false, "断言日志");
+
         if (recorder == null)
         {
             Debug.LogError("RecorderQualityDropdownUI 未指定 CrossPlatformScreenRecorder。");
@@ -117,7 +132,7 @@ public class RecorderQualityDropdownUI : MonoBehaviour
     /// <summary>
     /// 刷新下拉框显示项。
     /// </summary>
-    public void RefreshDropdownOptions()
+    private void RefreshDropdownOptions()
     {
         if (qualityDropdown == null)
         {
@@ -126,8 +141,8 @@ public class RecorderQualityDropdownUI : MonoBehaviour
 
         qualityDropdown.ClearOptions();
 
-        List<string> options = new List<string>();
-        foreach (QualityPreset preset in presets)
+        var options = new List<string>();
+        foreach (var preset in presets)
         {
             options.Add(preset.displayName);
         }
@@ -148,7 +163,7 @@ public class RecorderQualityDropdownUI : MonoBehaviour
     /// 应用指定索引的清晰度预设。
     /// </summary>
     /// <param name="index">预设索引。</param>
-    public void ApplyPreset(int index)
+    private void ApplyPreset(int index)
     {
         if (recorder == null)
         {
@@ -162,7 +177,7 @@ public class RecorderQualityDropdownUI : MonoBehaviour
             return;
         }
 
-        QualityPreset preset = presets[index];
+        var preset = presets[index];
 
         recorder.captureFrameRate = Mathf.Clamp(preset.captureFrameRate, 10, 60);
         recorder.outputScale      = Mathf.Clamp(preset.outputScale, 0.25f, 1f);
@@ -207,7 +222,7 @@ public class RecorderQualityDropdownUI : MonoBehaviour
     /// 按名称应用预设。
     /// </summary>
     /// <param name="presetName">预设名称。</param>
-    public void ApplyPresetByName(string presetName)
+    private void ApplyPresetByName(string presetName)
     {
         if (string.IsNullOrWhiteSpace(presetName))
         {

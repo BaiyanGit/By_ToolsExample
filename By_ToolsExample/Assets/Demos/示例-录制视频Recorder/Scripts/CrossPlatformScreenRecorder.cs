@@ -29,7 +29,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 
     [Header("是否激活全部 Unity 显示器")] public bool activateAllUnityDisplays = true;
 
-    [Header("显示器列表缓存")] private readonly List<RecorderDisplayInfo> displays = new();
+    [Header("显示器列表缓存")] private readonly List<RecorderDisplayInfo> _displays = new();
 
     #endregion
 
@@ -57,6 +57,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     [Header("输出缩放比例，1 为原始分辨率，0.5 为半分辨率")] [Range(0.25f, 1f)]
     public float outputScale = 1f;
 
+
     [Header("x264 CRF，数值越小越清晰，文件越大")] [Range(16, 35)]
     public int videoCrf = 23;
 
@@ -74,15 +75,15 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 
     [Header("ffmpeg 配置文件名称")] public string configFileName = "Config.txt";
 
-    [Header("ffmpeg 进程运行器")] private FFmpegProcessRunner processRunner;
+    [Header("ffmpeg 进程运行器")] private FFmpegProcessRunner _processRunner;
 
-    [Header("ffmpeg 可执行文件路径")] private string ffmpegExecutablePath;
+    [Header("ffmpeg 可执行文件路径")] private string _ffmpegExecutablePath;
 
     [Header("停止录制等待 ffmpeg 退出超时（毫秒）")] public int stopVideoTimeoutMs = 15000;
 
     [Header("等待临时文件释放超时（毫秒）")] public int waitTempFileReadyTimeoutMs = 8000;
 
-    [Header("后台合并音视频等待超时（毫秒），<=0 表示不限时")] public int mergeTimeoutMs = 0;
+    [Header("后台合并音视频等待超时（毫秒），<=0 表示不限时")] public int mergeTimeoutMs;
 
     [Header("是否在后台合并完成后删除临时文件")] public bool deleteTempFilesAfterMerge = true;
 
@@ -91,33 +92,33 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     [Header("录屏输出目录，为空则使用 StreamingAssets")]
     public string outputDirectory = "";
 
-    [Header("是否已初始化")] private bool isInitialized;
+    [Header("是否已初始化")] private bool _isInitialized;
 
     /// <summary>
     /// 是否正在异步启动录制。
     /// </summary>
-    private bool isStarting;
+    private bool _isStarting;
 
     /// <summary>
     /// 是否正在异步停止录制。
     /// </summary>
-    private bool isStopping;
+    private bool _isStopping;
 
     /// <summary>
     /// 当前录制会话。
     /// </summary>
-    private CaptureSession currentSession;
+    private CaptureSession _currentSession;
 
     /// <summary>
     /// 当前后台合并任务数量。
     /// </summary>
-    private int activeMergeJobs;
+    private int _activeMergeJobs;
 
     /// <summary>
     /// 主线程回调队列。
     /// 后台线程完成后，将需要触发 Unity 事件或更新 UI 的逻辑投递回来。
     /// </summary>
-    private readonly ConcurrentQueue<Action> mainThreadActions = new();
+    private readonly ConcurrentQueue<Action> _mainThreadActions = new();
 
     /// <summary>
     /// 当显示器列表刷新完成时触发。
@@ -146,17 +147,17 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// <summary>
     /// 当前是否正在录制、启动中或停止中。
     /// </summary>
-    public bool IsRecording => isStarting || isStopping || (processRunner != null && processRunner.IsRunning);
+    public bool IsRecording => _isStarting || _isStopping || (_processRunner != null && _processRunner.IsRunning);
 
     /// <summary>
     /// 当前是否还有后台合并任务。
     /// </summary>
-    public bool IsMerging => activeMergeJobs > 0;
+    public bool IsMerging => _activeMergeJobs > 0;
 
     /// <summary>
     /// 当前输出文件路径。
     /// </summary>
-    public string CurrentOutputFilePath => currentSession != null ? currentSession.FinalOutputPath : string.Empty;
+    public string CurrentOutputFilePath => _currentSession != null ? _currentSession.finalOutputPath : string.Empty;
 
     /// <summary>
     /// 一次录制会话的临时路径与状态。
@@ -164,10 +165,10 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     [Serializable]
     private class CaptureSession
     {
-        public string FinalOutputPath;
-        public string VideoTempPath;
-        public string AudioTempPath;
-        public bool ContainsSystemAudio;
+        [Header("最终输出路径")] public string finalOutputPath;
+        [Header("视频临时路径")] public string videoTempPath;
+        [Header("音频临时路径")] public string audioTempPath;
+        [Header("包含系统音频")] public bool containsSystemAudio;
     }
 
     /// <summary>
@@ -175,7 +176,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// </summary>
     private void Awake()
     {
-        processRunner = new FFmpegProcessRunner();
+        _processRunner = new FFmpegProcessRunner();
     }
 
     /// <summary>
@@ -191,7 +192,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// </summary>
     private void Update()
     {
-        while (mainThreadActions.TryDequeue(out Action action))
+        while (_mainThreadActions.TryDequeue(out var action))
         {
             try
             {
@@ -209,7 +210,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// </summary>
     public void Initialize()
     {
-        if (isInitialized)
+        if (_isInitialized)
         {
             return;
         }
@@ -222,13 +223,13 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
             }
         }
 
-        if (!TryLoadFFmpegPath(out ffmpegExecutablePath))
+        if (!TryLoadFFmpegPath(out _ffmpegExecutablePath))
         {
             return;
         }
 
         RefreshDisplayList();
-        isInitialized = true;
+        _isInitialized = true;
     }
 
     /// <summary>
@@ -236,7 +237,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// </summary>
     public List<RecorderDisplayInfo> GetDisplays()
     {
-        return new List<RecorderDisplayInfo>(displays);
+        return new List<RecorderDisplayInfo>(_displays);
     }
 
     /// <summary>
@@ -244,10 +245,10 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// </summary>
     public void RefreshDisplayList()
     {
-        displays.Clear();
-        displays.AddRange(RecorderDisplayProvider.GetDisplays());
+        _displays.Clear();
+        _displays.AddRange(RecorderDisplayProvider.GetDisplays());
 
-        OnDisplayListChanged?.Invoke(new List<RecorderDisplayInfo>(displays));
+        OnDisplayListChanged?.Invoke(new List<RecorderDisplayInfo>(_displays));
     }
 
     /// <summary>
@@ -257,35 +258,35 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// <param name="displayIndex">目标显示器索引。</param>
     public async void StartRecording(int displayIndex)
     {
-        if (!isInitialized)
+        if (!_isInitialized)
         {
             Initialize();
-            if (!isInitialized)
+            if (!_isInitialized)
             {
                 return;
             }
         }
 
-        if (processRunner == null || processRunner.IsRunning || isStarting || isStopping || currentSession != null)
+        if (_processRunner == null || _processRunner.IsRunning || _isStarting || _isStopping || _currentSession != null)
         {
             Debug.LogWarning("录制已在进行中、正在启动、或正在停止收尾，忽略重复开始。");
             return;
         }
 
-        if (displays.Count == 0)
+        if (_displays.Count == 0)
         {
             Debug.LogError("当前没有可录制的显示器。");
             return;
         }
 
-        int                 safeIndex = Mathf.Clamp(displayIndex, 0, displays.Count - 1);
-        RecorderDisplayInfo target    = displays[safeIndex];
+        int safeIndex = Mathf.Clamp(displayIndex, 0, _displays.Count - 1);
+        var target    = _displays[safeIndex];
 
-        isStarting = true;
+        _isStarting = true;
         OnRecordingStateChanged?.Invoke(true);
 
-        CaptureSession session = PrepareOutputPaths();
-        session.ContainsSystemAudio = false;
+        var session = PrepareOutputPaths();
+        session.containsSystemAudio = false;
 
         bool   success      = false;
         string errorMessage = string.Empty;
@@ -301,28 +302,29 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
                     if (audioMode == RecorderAudioMode.SystemAudio)
                     {
-                        if (!WindowsLoopbackAudioRecorder.StartRecording(session.AudioTempPath, out string audioError))
+                        if (!WindowsLoopbackAudioRecorder.StartRecording(session.audioTempPath, out string audioError))
                         {
                             throw new Exception("启动 Windows 系统声音录制失败: " + audioError);
                         }
 
-                        session.ContainsSystemAudio = true;
+                        session.containsSystemAudio = true;
                     }
 #endif
 
-                    string arguments = BuildFFmpegCaptureArguments(target, session.VideoTempPath);
+                    string arguments = BuildFFmpegCaptureArguments(target, session.videoTempPath);
                     if (string.IsNullOrWhiteSpace(arguments))
                     {
                         throw new Exception("生成 ffmpeg 参数失败。");
                     }
 
-                    bool started = processRunner.Start(
-                        ffmpegExecutablePath,
+                    bool started = _processRunner.Start(
+                        _ffmpegExecutablePath,
                         arguments,
                         onStdOut: msg => Debug.Log("[ffmpeg] " + msg),
                         onStdErr: msg => Debug.LogWarning("[ffmpeg] " + msg)
                     );
 
+                    Debug.LogError("123123123");
                     if (!started)
                     {
                         throw new Exception("ffmpeg 进程未能启动。");
@@ -338,13 +340,13 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
         }
         finally
         {
-            isStarting = false;
+            _isStarting = false;
         }
 
         if (!success)
         {
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-            if (session.ContainsSystemAudio)
+            if (session.containsSystemAudio)
             {
                 WindowsLoopbackAudioRecorder.StopRecording(out _);
             }
@@ -355,19 +357,19 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
             return;
         }
 
-        currentSession = session;
+        _currentSession = session;
 
         Debug.Log($"开始录制显示器: {target.name}");
-        Debug.Log($"视频临时文件: {session.VideoTempPath}");
-        if (session.ContainsSystemAudio)
+        Debug.Log($"视频临时文件: {session.videoTempPath}");
+        if (session.containsSystemAudio)
         {
-            Debug.Log($"音频临时文件: {session.AudioTempPath}");
+            Debug.Log($"音频临时文件: {session.audioTempPath}");
         }
 
-        Debug.Log($"最终输出文件: {session.FinalOutputPath}");
+        Debug.Log($"最终输出文件: {session.finalOutputPath}");
         Debug.Log($"当前质量设置: 帧率={captureFrameRate}, 缩放={outputScale}, CRF={videoCrf}, 预设={videoPreset}");
 
-        OnRecordStarted?.Invoke(session.FinalOutputPath);
+        OnRecordStarted?.Invoke(session.finalOutputPath);
     }
 
     /// <summary>
@@ -376,22 +378,22 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// </summary>
     public async void StopRecording()
     {
-        if (processRunner == null || !processRunner.IsRunning || currentSession == null)
+        if (_processRunner == null || !_processRunner.IsRunning || _currentSession == null)
         {
             Debug.LogWarning("当前没有正在进行的录制。");
             return;
         }
 
-        if (isStopping || isStarting)
+        if (_isStopping || _isStarting)
         {
             Debug.LogWarning("当前正在启动或停止录制，请勿重复点击。");
             return;
         }
 
-        isStopping = true;
+        _isStopping = true;
 
-        CaptureSession session = currentSession;
-        currentSession = null;
+        var session = _currentSession;
+        _currentSession = null;
 
         Debug.Log("开始停止录制：先停止视频，再停止系统声音。音视频合并将转入后台，不阻塞下一次开始录制。");
 
@@ -415,7 +417,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
         }
         finally
         {
-            isStopping = false;
+            _isStopping = false;
             OnRecordingStateChanged?.Invoke(false);
         }
 
@@ -427,7 +429,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 
         Debug.Log("采集已停止。若有音频，将在后台进行合并。现在可以立即开始下一次录制。");
 
-        Interlocked.Increment(ref activeMergeJobs);
+        Interlocked.Increment(ref _activeMergeJobs);
         _ = Task.Run(() => MergeSessionInBackground(session));
     }
 
@@ -443,11 +445,11 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
         }
 
         Debug.Log("停止视频录制进程...");
-        processRunner.Stop(stopVideoTimeoutMs);
+        _processRunner.Stop(stopVideoTimeoutMs);
         Debug.Log("视频录制进程已停止。");
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        if (session.ContainsSystemAudio)
+        if (session.containsSystemAudio)
         {
             Debug.Log("停止 Windows 系统声音录制...");
             if (!WindowsLoopbackAudioRecorder.StopRecording(out string audioError))
@@ -459,16 +461,16 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
         }
 #endif
 
-        if (!WaitForFileReady(session.VideoTempPath, waitTempFileReadyTimeoutMs))
+        if (!WaitForFileReady(session.videoTempPath, waitTempFileReadyTimeoutMs))
         {
-            throw new Exception("等待临时视频文件释放超时: " + session.VideoTempPath);
+            throw new Exception("等待临时视频文件释放超时: " + session.videoTempPath);
         }
 
-        if (session.ContainsSystemAudio)
+        if (session.containsSystemAudio)
         {
-            if (!WaitForFileReady(session.AudioTempPath, waitTempFileReadyTimeoutMs))
+            if (!WaitForFileReady(session.audioTempPath, waitTempFileReadyTimeoutMs))
             {
-                throw new Exception("等待临时音频文件释放超时: " + session.AudioTempPath);
+                throw new Exception("等待临时音频文件释放超时: " + session.audioTempPath);
             }
         }
     }
@@ -482,28 +484,28 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     {
         try
         {
-            bool hasVideo = File.Exists(session.VideoTempPath) && new FileInfo(session.VideoTempPath).Length > 0;
-            bool hasAudio = session.ContainsSystemAudio &&
-                            File.Exists(session.AudioTempPath) &&
-                            new FileInfo(session.AudioTempPath).Length > 44;
+            bool hasVideo = File.Exists(session.videoTempPath) && new FileInfo(session.videoTempPath).Length > 0;
+            bool hasAudio = session.containsSystemAudio &&
+                            File.Exists(session.audioTempPath) &&
+                            new FileInfo(session.audioTempPath).Length > 44;
 
             if (!hasVideo)
             {
                 throw new Exception("临时视频文件不存在或大小为 0。");
             }
 
-            if (File.Exists(session.FinalOutputPath))
+            if (File.Exists(session.finalOutputPath))
             {
-                File.Delete(session.FinalOutputPath);
+                File.Delete(session.finalOutputPath);
             }
 
             if (hasAudio)
             {
-                MergeVideoAndAudio(session.VideoTempPath, session.AudioTempPath, session.FinalOutputPath);
+                MergeVideoAndAudio(session.videoTempPath, session.audioTempPath, session.finalOutputPath);
             }
             else
             {
-                File.Move(session.VideoTempPath, session.FinalOutputPath);
+                File.Move(session.videoTempPath, session.finalOutputPath);
             }
 
             if (deleteTempFilesAfterMerge)
@@ -513,8 +515,8 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 
             EnqueueMainThread(() =>
             {
-                Debug.Log("后台合并完成。输出文件: " + session.FinalOutputPath);
-                OnRecordStopped?.Invoke(session.FinalOutputPath);
+                Debug.Log("后台合并完成。输出文件: " + session.finalOutputPath);
+                OnRecordStopped?.Invoke(session.finalOutputPath);
             });
         }
         catch (Exception e)
@@ -523,7 +525,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
         }
         finally
         {
-            Interlocked.Decrement(ref activeMergeJobs);
+            Interlocked.Decrement(ref _activeMergeJobs);
         }
     }
 
@@ -590,9 +592,9 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 
         return new CaptureSession
         {
-            FinalOutputPath = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}.mp4"),
-            VideoTempPath   = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}_video_tmp.mp4"),
-            AudioTempPath   = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}_audio_tmp.wav")
+            finalOutputPath = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}.mp4"),
+            videoTempPath   = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}_video_tmp.mp4"),
+            audioTempPath   = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}_audio_tmp.wav")
         };
     }
 
@@ -703,18 +705,18 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
             $"-shortest " +
             $"\"{tempOutput}\"";
 
-        StringBuilder errorBuilder = new StringBuilder();
+        var errorBuilder = new StringBuilder();
 
-        using (Process process = new Process())
+        using (var process = new Process())
         {
-            process.StartInfo.FileName               = ffmpegExecutablePath;
+            process.StartInfo.FileName               = _ffmpegExecutablePath;
             process.StartInfo.Arguments              = arguments;
             process.StartInfo.UseShellExecute        = false;
             process.StartInfo.RedirectStandardError  = true;
             process.StartInfo.RedirectStandardOutput = false;
             process.StartInfo.CreateNoWindow         = true;
 
-            process.ErrorDataReceived += (sender, e) =>
+            process.ErrorDataReceived += (_, e) =>
             {
                 if (!string.IsNullOrWhiteSpace(e.Data))
                 {
@@ -798,7 +800,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
             return false;
         }
 
-        Stopwatch stopwatch = Stopwatch.StartNew();
+        var stopwatch = Stopwatch.StartNew();
 
         while (stopwatch.ElapsedMilliseconds < timeoutMs)
         {
@@ -806,10 +808,8 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
             {
                 if (File.Exists(path))
                 {
-                    using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    {
-                        return true;
-                    }
+                    using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    return true;
                 }
             }
             catch
@@ -836,17 +836,17 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 
         try
         {
-            if (!string.IsNullOrWhiteSpace(session.VideoTempPath) && File.Exists(session.VideoTempPath))
+            if (!string.IsNullOrWhiteSpace(session.videoTempPath) && File.Exists(session.videoTempPath))
             {
-                File.Delete(session.VideoTempPath);
+                File.Delete(session.videoTempPath);
             }
 
-            if (!string.IsNullOrWhiteSpace(session.AudioTempPath) && File.Exists(session.AudioTempPath))
+            if (!string.IsNullOrWhiteSpace(session.audioTempPath) && File.Exists(session.audioTempPath))
             {
-                File.Delete(session.AudioTempPath);
+                File.Delete(session.audioTempPath);
             }
 
-            string tempOutput = session.FinalOutputPath + ".merging.mp4";
+            string tempOutput = session.finalOutputPath + ".merging.mp4";
             if (File.Exists(tempOutput))
             {
                 File.Delete(tempOutput);
@@ -866,7 +866,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     {
         if (action != null)
         {
-            mainThreadActions.Enqueue(action);
+            _mainThreadActions.Enqueue(action);
         }
     }
 
@@ -875,7 +875,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// </summary>
     /// <param name="value">原始值。</param>
     /// <returns>偶数值。</returns>
-    private int MakeEven(int value)
+    private static int MakeEven(int value)
     {
         if (value < 2)
         {
@@ -896,7 +896,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
             WindowsLoopbackAudioRecorder.StopRecording(out _);
         }
 #endif
-        processRunner?.Dispose();
-        processRunner = null;
+        _processRunner?.Dispose();
+        _processRunner = null;
     }
 }

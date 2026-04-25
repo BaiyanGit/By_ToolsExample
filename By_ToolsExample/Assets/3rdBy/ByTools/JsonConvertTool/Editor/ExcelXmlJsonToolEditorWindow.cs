@@ -52,8 +52,8 @@
             [Header("文件路径")] public List<string> values = new();
         }
 
-        private const string SessionKeyExcelXml = "SessionKeyExcelXml";
-        private const string SessionKeyJsonExcel = "SessionKeyJsonExcel";
+        private const string SESSION_KEY_EXCEL_XML = "SessionKeyExcelXml";
+        private const string SESSION_KEY_JSON_EXCEL = "SessionKeyJsonExcel";
 
         [Header("文件列表")] private Dictionary<string, string> _fileListDict = new();
         [Header("Json文件保存路径")] private SaveJsonPathType _saveFilePathType;
@@ -73,8 +73,8 @@
         {
             string sessionKey = _currentTab switch
             {
-                PanelTab.ToJson  => SessionKeyExcelXml,
-                PanelTab.ToExcel => SessionKeyJsonExcel,
+                PanelTab.ToJson  => SESSION_KEY_EXCEL_XML,
+                PanelTab.ToExcel => SESSION_KEY_JSON_EXCEL,
                 _                => throw new ArgumentOutOfRangeException()
             };
 
@@ -105,8 +105,8 @@
         {
             string fileList = _currentTab switch
             {
-                PanelTab.ToJson  => SessionState.GetString(SessionKeyExcelXml, ""),
-                PanelTab.ToExcel => SessionState.GetString(SessionKeyJsonExcel, ""),
+                PanelTab.ToJson  => SessionState.GetString(SESSION_KEY_EXCEL_XML, ""),
+                PanelTab.ToExcel => SessionState.GetString(SESSION_KEY_JSON_EXCEL, ""),
                 _                => throw new ArgumentOutOfRangeException()
             };
 

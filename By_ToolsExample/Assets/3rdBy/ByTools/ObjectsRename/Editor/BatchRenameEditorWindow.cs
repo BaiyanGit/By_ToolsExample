@@ -69,7 +69,7 @@
         [Header("序号格式")] private IndexFormat _indexOnlyFormat = IndexFormat.Arabic;
 
 
-        private const string RenameDesc = "<color=yellow><size=14><b> [ 从 Scene 或 Project 窗口拖拽对象到此处区域(支持混合拖拽) ] </b></size></color>\n" +
+        private const string RENAME_DESC = "<color=yellow><size=14><b> [ 从 Scene 或 Project 窗口拖拽对象到此处区域(支持混合拖拽) ] </b></size></color>\n" +
                                           "<color=green> 1、 选择重命名模式 • 名称替换：直接替换为新名称 • 追加文本：在名称 前-中-后 追加文本 • 自动序号：根据序号规则生成名称</color>\n" +
                                           "<color=green> 2、 自动序号支持阿拉伯数字、中文数字、英文字母，序号顺序与列表顺序一致</color>\n" +
                                           "<color=green> 3、 Scene 对象支持撤销(Undo)，Project 资源不可撤销(Undo)</color>";
@@ -124,7 +124,7 @@
         private void DrawDropArea()
         {
             var rect = GUILayoutUtility.GetRect(0, 70, GUILayout.ExpandWidth(true));
-            GUI.Box(rect, RenameDesc, _helpBoxStyle);
+            GUI.Box(rect, RENAME_DESC, _helpBoxStyle);
 
             var e = Event.current;
             if (!rect.Contains(e.mousePosition)) return;

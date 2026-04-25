@@ -11,18 +11,18 @@ using UnityEngine;
 public static class WindowsLoopbackAudioRecorder
 {
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-    private const string DllName = "WASAPILoopbackRecorder";
+    private const string DLL_NAME = "WASAPILoopbackRecorder";
 
-    [DllImport(DllName, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DLL_NAME, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
     private static extern bool StartLoopbackRecord(string wavPath);
 
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
     private static extern bool StopLoopbackRecord();
 
-    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
     private static extern bool IsLoopbackRecording();
 
-    [DllImport(DllName, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(DLL_NAME, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
     private static extern void GetLoopbackLastError(System.Text.StringBuilder buffer, int bufferLen);
 #endif
 

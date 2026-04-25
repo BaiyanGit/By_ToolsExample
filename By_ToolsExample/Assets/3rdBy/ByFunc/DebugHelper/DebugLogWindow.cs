@@ -99,8 +99,6 @@ namespace _3rdBy.ByFunc.DebugHelper
         [Header("默认显示：启动时是否自动滚动到最新日志")] [SerializeField]
         private bool _defaultAutoScroll = true;
 
-        [Header("默认排序：是否默认让最新日志显示在最上方")] [SerializeField]
-        private bool _defaultNewestFirst = true;
 
         [Header("窗口尺寸：日志窗口允许的最小尺寸")] [SerializeField]
         private Vector2 _minWindowSize = new(760f, 420f);
@@ -147,7 +145,6 @@ namespace _3rdBy.ByFunc.DebugHelper
         [Header("是否折叠显示")] private bool _collapse;
         [Header("是否自动滚动到底部")] private bool _autoScroll;
         [Header("是否暂停收集日志")] private bool _pauseCollection;
-        [Header("是否按最新日志排序")] private bool _sortNewestFirst;
 
         [Header("展开的堆栈键集合")] private readonly HashSet<string> _expandedStackKeys = new();
 
@@ -171,8 +168,16 @@ namespace _3rdBy.ByFunc.DebugHelper
         [Header("调整大小开始时窗口的大小")] private Vector2 _resizeStartWindowSize;
 
         [Header("是否正在拖动日志列表")] private bool _isDraggingLogList;
+        [Header("是否正在准备拖动日志列表")] private bool _isPreparingLogListDrag;
+        [Header("日志列表拖动是否已经超过点击容错距离")] private bool _hasLogListDragMoved;
+        [Header("是否需要忽略一次日志点击，避免拖拽结束时误触发复制或展开")] private bool _suppressNextLogEntryClick;
         [Header("拖动日志列表开始时鼠标在屏幕上的位置")] private Vector2 _logListDragStartMouseScreenPosition;
         [Header("拖动日志列表开始时的滚动位置")] private Vector2 _logListDragStartScrollPosition;
+
+        private const float LogListDragThreshold = 4f;
+        private const float EntryDoubleClickInterval = 0.35f;
+        private string _lastClickedEntryKey = string.Empty;
+        private float _lastEntryClickTime;
 
         [Header("缓存的UI缩放比例")] private float _cachedUiScale = -1f;
 
@@ -224,7 +229,6 @@ namespace _3rdBy.ByFunc.DebugHelper
             _showStackTrace  = _defaultShowStackTrace;
             _collapse        = _defaultCollapse;
             _autoScroll      = _defaultAutoScroll;
-            _sortNewestFirst = _defaultNewestFirst;
 
             _maxLogCount     = Mathf.Max(100, _maxLogCount);
             _minWindowSize.x = Mathf.Max(420f, _minWindowSize.x);
@@ -468,13 +472,6 @@ namespace _3rdBy.ByFunc.DebugHelper
             }
 
 
-            bool newSortNewestFirst = GUILayout.Toggle(_sortNewestFirst, _sortNewestFirst ? "🆕最新在上" : "⏰最早在上", _toolbarToggleStyle, GUILayout.Height(Scale(30f)));
-            if (newSortNewestFirst != _sortNewestFirst)
-            {
-                _sortNewestFirst = newSortNewestFirst;
-                _isDirty         = true;
-            }
-
             if (_showClearConfirm)
             {
                 GUILayout.Label("💡确认清空?", _metaTextStyle, GUILayout.Width(Scale(78f)));
@@ -574,9 +571,13 @@ namespace _3rdBy.ByFunc.DebugHelper
 
         /// <summary>
         /// 绘制日志列表。
+        /// 如果鼠标滚轮事件发生在日志列表区域内，则视为用户主动查看历史日志，并关闭自动滚动。
+        /// 这里直接判断滚轮事件本身，不依赖滚动位置是否变化，避免在底部继续向下滚时漏判。
         /// </summary>
         private void DrawLogList()
         {
+            TryDisableAutoScrollByMouseWheelInLogList();
+
             _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, GUILayout.ExpandHeight(true));
 
             if (_collapse)
@@ -584,13 +585,6 @@ namespace _3rdBy.ByFunc.DebugHelper
                 for (int i = 0; i < _collapsedLogs.Count; i++)
                 {
                     DrawCollapsedLogEntry(_collapsedLogs[i], i);
-                }
-            }
-            else if (_sortNewestFirst)
-            {
-                for (int i = _filteredLogs.Count - 1; i >= 0; i--)
-                {
-                    DrawLogEntry(_filteredLogs[i], _filteredLogs.Count - 1 - i);
                 }
             }
             else
@@ -607,7 +601,7 @@ namespace _3rdBy.ByFunc.DebugHelper
         /// <summary>
         /// 绘制单条普通日志。
         /// 点击日志正文可直接复制内容。
-        /// 左侧手柄支持拖拽滚动日志列表。
+        /// 日志项内部任意位置按住拖拽，都可以滚动日志列表。
         /// </summary>
         private void DrawLogEntry(LogEntry entry, int index)
         {
@@ -623,9 +617,8 @@ namespace _3rdBy.ByFunc.DebugHelper
 
             // 绘制日志头部
             GUILayout.BeginHorizontal();
-            var dragHandleRect = GUILayoutUtility.GetRect(new GUIContent(""), _entryDragHandleStyle, GUILayout.Width(Scale(30f)), GUILayout.Height(Scale(24f)));
-            GUI.Label(dragHandleRect, GetTypeHeadIcon(entry.type), _entryDragHandleStyle);
-            TryBeginLogListDrag(dragHandleRect);
+            var typeIconRect = GUILayoutUtility.GetRect(new GUIContent(""), _entryDragHandleStyle, GUILayout.Width(Scale(30f)), GUILayout.Height(Scale(24f)));
+            GUI.Label(typeIconRect, GetTypeHeadIcon(entry.type), _entryDragHandleStyle);
 
             // 绘制日志时间
             GUILayout.Label($"[{entry.time:HH:mm:ss}] {GetTypeIcon(entry.type)} ( {GetTypeLabel(entry.type)} )", _entryHeaderStyle);
@@ -659,13 +652,18 @@ namespace _3rdBy.ByFunc.DebugHelper
             }
 
             GUILayout.EndVertical();
+
+            // GUILayout 组结束后再取最后一个 Rect，避免 BeginGroup 后立即 GetLastRect 的 IMGUI 错误。
+            Rect entryRect = GUILayoutUtility.GetLastRect();
+            TryBeginLogListDrag(entryRect);
+
             GUILayout.Space(2f);
         }
 
         /// <summary>
         /// 绘制折叠日志。
         /// 点击日志正文可直接复制内容。
-        /// 左侧手柄支持拖拽滚动日志列表。
+        /// 日志项内部任意位置按住拖拽，都可以滚动日志列表。
         /// </summary>
         private void DrawCollapsedLogEntry(CollapsedLogEntry entry, int index)
         {
@@ -681,9 +679,8 @@ namespace _3rdBy.ByFunc.DebugHelper
 
             // 绘制日志头部
             GUILayout.BeginHorizontal();
-            var dragHandleRect = GUILayoutUtility.GetRect(new GUIContent(""), _entryDragHandleStyle, GUILayout.Width(Scale(30f)), GUILayout.Height(Scale(24f)));
-            GUI.Label(dragHandleRect, GetTypeHeadIcon(entry.type), _entryDragHandleStyle);
-            TryBeginLogListDrag(dragHandleRect);
+            var typeIconRect = GUILayoutUtility.GetRect(new GUIContent(""), _entryDragHandleStyle, GUILayout.Width(Scale(30f)), GUILayout.Height(Scale(24f)));
+            GUI.Label(typeIconRect, GetTypeHeadIcon(entry.type), _entryDragHandleStyle);
 
             // 绘制日志时间
             GUILayout.Label($"[{entry.lastTime:HH:mm:ss}] {GetTypeIcon(entry.type)} ( {GetTypeLabel(entry.type)} *{entry.count} )", _entryHeaderStyle);
@@ -717,6 +714,11 @@ namespace _3rdBy.ByFunc.DebugHelper
             }
 
             GUILayout.EndVertical();
+
+            // GUILayout 组结束后再取最后一个 Rect，避免 BeginGroup 后立即 GetLastRect 的 IMGUI 错误。
+            Rect entryRect = GUILayoutUtility.GetLastRect();
+            TryBeginLogListDrag(entryRect);
+
             GUILayout.Space(2f);
         }
 
@@ -810,9 +812,7 @@ namespace _3rdBy.ByFunc.DebugHelper
 
             if (_collapse)
             {
-                _collapsedLogs.Sort((left, right) => _sortNewestFirst
-                                                         ? right.lastTime.CompareTo(left.lastTime)
-                                                         : left.lastTime.CompareTo(right.lastTime));
+                _collapsedLogs.Sort((left, right) => left.lastTime.CompareTo(right.lastTime));
             }
         }
 
@@ -897,6 +897,7 @@ namespace _3rdBy.ByFunc.DebugHelper
 
         /// <summary>
         /// 处理单条日志交互：单击复制正文，双击展开或收起堆栈。
+        /// 使用 MouseUp 触发点击，避免按住日志项拖拽滚动时误触发复制。
         /// </summary>
         private void HandleEntryInteraction(Rect rect, string entryKey, string message, bool hasStackTrace)
         {
@@ -906,19 +907,34 @@ namespace _3rdBy.ByFunc.DebugHelper
                 return;
             }
 
-            if (currentEvent.type == EventType.MouseDown && currentEvent.button == 0 && rect.Contains(currentEvent.mousePosition))
+            if (currentEvent.type != EventType.MouseUp || currentEvent.button != 0 || !rect.Contains(currentEvent.mousePosition))
             {
-                if (currentEvent.clickCount >= 2 && hasStackTrace)
-                {
-                    ToggleEntryExpanded(entryKey);
-                }
-                else
-                {
-                    CopyToClipboard(message, "已复制日志内容。");
-                }
-
-                currentEvent.Use();
+                return;
             }
+
+            if (_suppressNextLogEntryClick)
+            {
+                _suppressNextLogEntryClick = false;
+                currentEvent.Use();
+                return;
+            }
+
+            float now = Time.unscaledTime;
+            bool isDoubleClick = string.Equals(_lastClickedEntryKey, entryKey, StringComparison.Ordinal) && now - _lastEntryClickTime <= EntryDoubleClickInterval;
+            _lastClickedEntryKey = entryKey;
+            _lastEntryClickTime  = now;
+
+            if (isDoubleClick && hasStackTrace)
+            {
+                _lastClickedEntryKey = string.Empty;
+                ToggleEntryExpanded(entryKey);
+            }
+            else
+            {
+                CopyToClipboard(message, "已复制日志内容。");
+            }
+
+            currentEvent.Use();
         }
 
         /// <summary>
@@ -977,7 +993,7 @@ namespace _3rdBy.ByFunc.DebugHelper
                 builder.AppendLine("当前场景: " + SceneManager.GetActiveScene().name);
                 builder.AppendLine("缓存日志数: " + _logs.Count);
                 builder.AppendLine("当前可见数: " + GetVisibleCount());
-                builder.AppendLine("排序方式: " + (_sortNewestFirst ? "最新在上" : "最早在上"));
+                builder.AppendLine("排序方式: 最早在上");
                 builder.AppendLine("折叠模式: " + (_collapse ? "是" : "否"));
                 builder.AppendLine("显示堆栈: " + (_showStackTrace ? "是" : "否"));
                 builder.AppendLine("搜索关键字: " + (string.IsNullOrEmpty(_searchKeyword) ? "<空>" : _searchKeyword));
@@ -991,22 +1007,6 @@ namespace _3rdBy.ByFunc.DebugHelper
                     {
                         var entry = _collapsedLogs[i];
                         builder.AppendLine($"[{entry.lastTime:HH:mm:ss}] {GetTypeIcon(entry.type)} [{GetTypeLabel(entry.type)}] x{entry.count}");
-                        builder.AppendLine(entry.message);
-
-                        if ((_showStackTrace || _expandedStackKeys.Contains(GetEntryDisplayKey(entry))) && !string.IsNullOrEmpty(entry.stackTrace))
-                        {
-                            builder.AppendLine(entry.stackTrace);
-                        }
-
-                        builder.AppendLine();
-                    }
-                }
-                else if (_sortNewestFirst)
-                {
-                    for (int i = _filteredLogs.Count - 1; i >= 0; i--)
-                    {
-                        var entry = _filteredLogs[i];
-                        builder.AppendLine($"[{entry.time:HH:mm:ss}] {GetTypeIcon(entry.type)} [{GetTypeLabel(entry.type)}]");
                         builder.AppendLine(entry.message);
 
                         if ((_showStackTrace || _expandedStackKeys.Contains(GetEntryDisplayKey(entry))) && !string.IsNullOrEmpty(entry.stackTrace))
@@ -1130,7 +1130,7 @@ namespace _3rdBy.ByFunc.DebugHelper
         private string GetDefaultStatusText()
         {
             string savePath = string.IsNullOrEmpty(_lastSavePath) ? GetSaveDirectory() : _lastSavePath;
-            return "F2 开关窗口 | 单击复制 | 双击展开堆栈 | 顶部可拖拽 | 右下角可缩放 | 日志左侧手柄可拖拽滚动 \n保存路径: " + savePath;
+            return "F2 开关窗口 | 单击复制 | 双击展开堆栈 | 顶部可拖拽 | 右下角可缩放 | 日志项内按住可拖拽滚动 \n保存路径: " + savePath;
         }
 
         /// <summary>
@@ -1230,9 +1230,10 @@ namespace _3rdBy.ByFunc.DebugHelper
         }
 
         /// <summary>
-        /// 通过单条日志左侧拖拽手柄开始滚动日志列表，避免与复制、双击展开产生冲突。
+        /// 在日志项内部任意位置按下鼠标后，准备拖拽滚动日志列表。
+        /// 只有鼠标移动超过阈值后才真正进入拖拽状态，避免影响单击复制与双击展开。
         /// </summary>
-        private void TryBeginLogListDrag(Rect dragHandleRect)
+        private void TryBeginLogListDrag(Rect logEntryRect)
         {
             var currentEvent = Event.current;
             if (currentEvent == null)
@@ -1240,16 +1241,17 @@ namespace _3rdBy.ByFunc.DebugHelper
                 return;
             }
 
-            bool canStartDragList = currentEvent.type == EventType.MouseDown && currentEvent.button == 0 && dragHandleRect.Contains(currentEvent.mousePosition);
-            if (!canStartDragList)
+            bool canPrepareDragList = currentEvent.type == EventType.MouseDown && currentEvent.button == 0 && logEntryRect.Contains(currentEvent.mousePosition);
+            if (!canPrepareDragList)
             {
                 return;
             }
 
-            _isDraggingLogList                   = true;
+            _isPreparingLogListDrag              = true;
+            _isDraggingLogList                   = false;
+            _hasLogListDragMoved                 = false;
             _logListDragStartMouseScreenPosition = GetMouseScreenPosition();
             _logListDragStartScrollPosition      = _scrollPosition;
-            currentEvent.Use();
         }
 
         /// <summary>
@@ -1257,7 +1259,7 @@ namespace _3rdBy.ByFunc.DebugHelper
         /// </summary>
         private void UpdateGlobalWindowInteraction()
         {
-            if (!_isDraggingWindow && !_isResizing && !_isDraggingLogList)
+            if (!_isDraggingWindow && !_isResizing && !_isDraggingLogList && !_isPreparingLogListDrag)
             {
                 return;
             }
@@ -1283,11 +1285,24 @@ namespace _3rdBy.ByFunc.DebugHelper
                 _windowRect.height = Mathf.Clamp(_resizeStartWindowSize.y + delta.y, _minWindowSize.y, Screen.height);
             }
 
-            if (_isDraggingLogList)
+            if (_isPreparingLogListDrag || _isDraggingLogList)
             {
                 var delta = currentMouseScreenPosition - _logListDragStartMouseScreenPosition;
-                _scrollPosition.x = Mathf.Max(0f, _logListDragStartScrollPosition.x - delta.x);
-                _scrollPosition.y = Mathf.Max(0f, _logListDragStartScrollPosition.y - delta.y);
+
+                if (!_isDraggingLogList && delta.sqrMagnitude >= LogListDragThreshold * LogListDragThreshold)
+                {
+                    _isPreparingLogListDrag = false;
+                    _isDraggingLogList      = true;
+                    _hasLogListDragMoved    = true;
+
+                    DisableAutoScrollByUserScroll("已检测到日志项拖拽，自动滚动已关闭。");
+                }
+
+                if (_isDraggingLogList)
+                {
+                    _scrollPosition.x = Mathf.Max(0f, _logListDragStartScrollPosition.x - delta.x);
+                    _scrollPosition.y = Mathf.Max(0f, _logListDragStartScrollPosition.y - delta.y);
+                }
             }
 
             ClampWindowRect();
@@ -1298,9 +1313,67 @@ namespace _3rdBy.ByFunc.DebugHelper
         /// </summary>
         private void StopWindowInteraction()
         {
-            _isDraggingWindow  = false;
-            _isResizing        = false;
-            _isDraggingLogList = false;
+            if (_isDraggingLogList && _hasLogListDragMoved)
+            {
+                _suppressNextLogEntryClick = true;
+            }
+
+            _isDraggingWindow       = false;
+            _isResizing             = false;
+            _isDraggingLogList      = false;
+            _isPreparingLogListDrag = false;
+            _hasLogListDragMoved    = false;
+        }
+
+        /// <summary>
+        /// 当鼠标滚轮事件发生在日志列表区域内时，关闭自动滚动。
+        /// 使用事件本身判断，而不是比较滚动位置变化；这样即使已经在底部继续向下滚，仍然会关闭自动滚动。
+        /// </summary>
+        private void TryDisableAutoScrollByMouseWheelInLogList()
+        {
+            if (!_autoScroll)
+            {
+                return;
+            }
+
+            var currentEvent = Event.current;
+            if (currentEvent == null || currentEvent.type != EventType.ScrollWheel)
+            {
+                return;
+            }
+
+            // DrawLogList 在 DisplayBar 之后调用，此时 LastRect 是上一条布局控件。
+            // 通过它的底部估算日志列表开始区域，避免滚动工具栏、搜索框或字号滑条时误关自动滚动。
+            Rect previousRect = GUILayoutUtility.GetLastRect();
+            float logListTop  = previousRect.yMax;
+            var   mouse       = currentEvent.mousePosition;
+
+            bool isInsideLogListArea = mouse.x >= 0f &&
+                                       mouse.x <= _windowRect.width &&
+                                       mouse.y >= logListTop &&
+                                       mouse.y <= _windowRect.height;
+            if (!isInsideLogListArea)
+            {
+                return;
+            }
+
+            DisableAutoScrollByUserScroll("已检测到鼠标滚轮滚动，自动滚动已关闭。");
+        }
+
+        /// <summary>
+        /// 用户通过拖拽或滚轮主动干预日志滚动时，关闭自动滚动，并清理本帧可能已经排队的自动滚动请求。
+        /// </summary>
+        private void DisableAutoScrollByUserScroll(string statusMessage)
+        {
+            _requestScrollToBottom = false;
+
+            if (!_autoScroll)
+            {
+                return;
+            }
+
+            _autoScroll = false;
+            ShowStatus(statusMessage);
         }
 
         /// <summary>

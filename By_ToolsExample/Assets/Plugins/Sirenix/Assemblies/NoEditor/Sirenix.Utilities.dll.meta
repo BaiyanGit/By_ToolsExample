@@ -40,6 +40,9 @@ PluginImporter:
       enabled: 0
       settings:
         DefaultValueInitialized: true
+    Linux64:
+      enabled: 1
+      settings: {}
     PS4:
       enabled: 1
       settings: {}

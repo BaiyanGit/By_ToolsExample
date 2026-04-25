@@ -9,7 +9,6 @@ using UnityEngine;
 
 public enum RecorderAudioMode
 {
-    [InspectorName("无音频")] None,
-    [InspectorName("系统音频")] SystemAudio,
-    [InspectorName("Unity音频")] UnityAudioReserved
+    [InspectorName("静音录制")] None,
+    [InspectorName("系统音频")] SystemAudio
 }

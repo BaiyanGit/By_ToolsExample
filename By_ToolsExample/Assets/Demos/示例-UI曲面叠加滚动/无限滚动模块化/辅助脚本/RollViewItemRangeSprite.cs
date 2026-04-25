@@ -1,7 +1,9 @@
 namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化.辅助脚本
 {
     using System.Collections.Generic;
+#if UNITY_EDITOR
     using UnityEditor;
+#endif
     using UnityEngine;
     using UnityEngine.UI;
 
@@ -34,7 +36,7 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化.辅助脚本
             imgBg.color = Random.ColorHSV();
         }
     }
-
+#if UNITY_EDITOR
     [CustomEditor(typeof(RollViewItemRangeSprite))]
     public class EditorRollViewItemRangeSprite : Editor
     {
@@ -60,4 +62,5 @@ namespace Demos.示例_UI曲面叠加滚动.无限滚动模块化.辅助脚本
             }
         }
     }
+#endif
 }

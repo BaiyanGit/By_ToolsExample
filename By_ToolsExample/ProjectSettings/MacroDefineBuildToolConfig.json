@@ -1,0 +1,76 @@
+{
+    "modes": [
+        {
+            "id": "f3f6990dda6543dbb453268e5108da94",
+            "modeName": "日志窗口模式",
+            "platform": 2,
+            "isExpanded": true,
+            "defines": [
+                {
+                    "symbol": "UNITASK_DOTWEEN_SUPPORT",
+                    "description": ""
+                },
+                {
+                    "symbol": "ODIN_INSPECTOR",
+                    "description": ""
+                },
+                {
+                    "symbol": "ODIN_INSPECTOR_3",
+                    "description": ""
+                },
+                {
+                    "symbol": "ODIN_INSPECTOR_3_1",
+                    "description": ""
+                },
+                {
+                    "symbol": "DEVELOP_DEBUG",
+                    "description": "日志输出窗口"
+                }
+            ]
+        }
+    ],
+    "buildSettings": {
+        "outputRoot": "E:/UnityProjectsE/Example/By_ToolsExample/By_ToolsExample",
+        "buildName": "By_ToolsExample",
+        "buildVersion": "1.0.1",
+        "syncVersionToPlayerSettings": true,
+        "includeTimestamp": false,
+        "includePlatformPrefix": false,
+        "autoRunAfterBuild": false,
+        "buildImmediatelyAfterApply": false
+    },
+    "currentEditingModeId": "",
+    "currentEditingModeName": "未使用任何模板",
+    "currentEditingPlatform": 2,
+    "currentDefinesFoldout": false,
+    "currentDefines": [
+        {
+            "symbol": "UNITASK_DOTWEEN_SUPPORT",
+            "description": ""
+        },
+        {
+            "symbol": "ODIN_INSPECTOR",
+            "description": ""
+        },
+        {
+            "symbol": "ODIN_INSPECTOR_3",
+            "description": ""
+        },
+        {
+            "symbol": "ODIN_INSPECTOR_3_1",
+            "description": ""
+        },
+        {
+            "symbol": "DEVELOP_LOGFILE",
+            "description": ""
+        }
+    ],
+    "pendingAction": {
+        "hasPendingAction": false,
+        "step": 0,
+        "platform": 0,
+        "defineSymbols": "",
+        "buildAfterApply": false,
+        "sourceName": ""
+    }
+}

@@ -44,7 +44,7 @@ PluginImporter:
       settings:
         DefaultValueInitialized: true
     Linux64:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: 
     OSXUniversal:

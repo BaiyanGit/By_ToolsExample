@@ -401,14 +401,9 @@ namespace MacroDefineBuildToolEditor
                 return;
             }
 
-            MacroDefineBuildToolUtility.StartApplyPipeline(
-                _config,
-                _config.currentEditingPlatform,
-                _config.currentDefines,
-                true,
-                "当前设置（立即打包）");
+            MacroDefineBuildToolUtility.StartApplyPipeline(_config, _config.currentEditingPlatform, _config.currentDefines, true, "当前设置（立即打包）");
 
-            EditorUtility.DisplayDialog("已开始处理", "已开始执行：切换平台 / 应用宏定义 / 编译完成后打包。", "确定");
+            // EditorUtility.DisplayDialog("已开始处理", "已开始执行：切换平台 / 应用宏定义 / 编译完成后打包。", "确定");
         }
 
         private void DeleteMode(MacroDefineMode mode)

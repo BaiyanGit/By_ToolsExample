@@ -135,8 +135,14 @@ namespace MacroDefineBuildToolEditor
             if (success)
             {
                 // Debug.Log($"[宏定义打包工具] {message}");
-                /*var isOpenFolder =*/
-                EditorUtility.DisplayDialog("打包完成", message, "确定", "取消");
+                var isOpenFolder = EditorUtility.DisplayDialog("打包完成", message, "确定", "取消");
+                if (isOpenFolder)
+                {
+                    // TODO: 打开文件夹
+                    // MacroDefineBuildToolUtility.OpenFolder(config.outputPath);
+                    //
+                    // EditorUtility.OpenFilePanel("选择文件夹", "", "");
+                }
             }
             else
             {

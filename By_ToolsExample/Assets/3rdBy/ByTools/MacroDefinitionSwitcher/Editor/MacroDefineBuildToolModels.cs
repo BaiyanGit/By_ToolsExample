@@ -780,16 +780,10 @@ namespace MacroDefineBuildToolEditor
         {
             settings ??= new MacroBuildSettings();
 
-            // string root = string.IsNullOrWhiteSpace(settings.outputRoot)
-            //                   ? Path.Combine(Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath, "Builds")
-            //                   : settings.outputRoot.Trim();
-
-            string root = settings.outputRoot = string.IsNullOrWhiteSpace(settings.outputRoot)
-                                                    ? Path.Combine(Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath, "Builds")
-                                                    : settings.outputRoot.Trim();
-
             string baseName = ComposeBuildBaseName(settings, platform);
-
+            string root = settings.outputRoot = string.IsNullOrWhiteSpace(settings.outputRoot)
+                                                    ? Path.Combine(Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath, $"Builds\\{baseName}")
+                                                    : settings.outputRoot.Trim();
             return platform switch
             {
                 MacroBuildPlatform.Windows => Path.Combine(root, baseName + ".exe"),

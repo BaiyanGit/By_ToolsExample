@@ -16,6 +16,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
     /// 2. 鼠标悬停时显示 Unity toolbarButton.hover 背景色。
     /// 3. 鼠标按下时显示 Unity toolbarButton.active 背景色。
     /// 4. 文字颜色跟随 Unity toolbarButton。
+    /// 5. 支持 selectedIndex = -1，用于“按钮显示当前实际场景，但菜单里不勾选任何项”的状态。
     /// </summary>
     public static class VisualElementFactory
     {
@@ -25,16 +26,23 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
         /// </summary>
         public sealed class NativeToolbarDropdown : ToolbarMenu
         {
-            [Header("下拉菜单中的所有选项")] private readonly List<string> _choices = new();
+            [Header("下拉菜单中的所有选项")]
+            private readonly List<string> _choices = new();
 
             [Header("显示在当前选项前面的前缀，例如 Source 或 Scene")]
             private readonly string _prefix;
 
-            [Header("鼠标是否正在悬停在当前控件上")] private bool _isHover;
+            [Header("没有选中任何选项时显示的文本")]
+            private string _emptySelectionText;
 
-            [Header("鼠标是否正在按下当前控件")] private bool _isPressed;
+            [Header("鼠标是否正在悬停在当前控件上")]
+            private bool _isHover;
 
-            [Header("当前选中的选项索引")] private int _index = -1;
+            [Header("鼠标是否正在按下当前控件")]
+            private bool _isPressed;
+
+            [Header("当前选中的选项索引，-1 表示没有选中任何选项")]
+            private int _index = -1;
 
             /// <summary>
             /// 当前选择项变化时触发。
@@ -43,7 +51,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             public event Action<int> IndexChanged;
 
             /// <summary>
-            /// 当前选中的选项索引。
+            /// 当前选中的选项索引。-1 表示没有选中任何选项。
             /// </summary>
             public int Index => _index;
 
@@ -55,20 +63,21 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             /// <summary>
             /// 创建一个 Toolbar 下拉菜单。
             /// </summary>
-            public NativeToolbarDropdown(string prefix, IList<string> options, int index, float minWidth)
+            public NativeToolbarDropdown(string prefix, IList<string> options, int index, float minWidth, string emptySelectionText = "<未选择>")
             {
                 _prefix = string.IsNullOrWhiteSpace(prefix) ? string.Empty : prefix.Trim();
+                _emptySelectionText = string.IsNullOrWhiteSpace(emptySelectionText) ? "<未选择>" : emptySelectionText.Trim();
 
                 tooltip = _prefix;
 
-                style.minWidth       = minWidth;
-                style.height         = 22;
-                style.marginLeft     = 1;
-                style.marginRight    = 2;
-                style.paddingLeft    = 6;
-                style.paddingRight   = 6;
+                style.minWidth = minWidth;
+                style.height = 22;
+                style.marginLeft = 1;
+                style.marginRight = 2;
+                style.paddingLeft = 6;
+                style.paddingRight = 6;
                 style.unityTextAlign = TextAnchor.MiddleLeft;
-                style.flexShrink     = 0;
+                style.flexShrink = 0;
 
                 SetChoices(options, index, false);
 
@@ -81,10 +90,28 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             }
 
             /// <summary>
+            /// 设置“没有选中任何项”时按钮上显示的文字。
+            /// 
+            /// 这个工具里用于：
+            /// 当前 Unity 实际打开的场景不在当前 Source 列表中时，
+            /// Scene 按钮仍显示当前实际场景名，但下拉菜单不勾选任何项。
+            /// </summary>
+            public void SetEmptySelectionText(string emptySelectionText)
+            {
+                _emptySelectionText = string.IsNullOrWhiteSpace(emptySelectionText) ? "<未选择>" : emptySelectionText.Trim();
+
+                if (_index < 0)
+                {
+                    UpdateDisplayedText();
+                    ApplyDropdownVisualState();
+                }
+            }
+
+            /// <summary>
             /// 设置下拉菜单选项。
             /// </summary>
             /// <param name="options">新的选项列表。</param>
-            /// <param name="index">选中索引。</param>
+            /// <param name="index">选中索引，-1 表示不选中任何项。</param>
             /// <param name="notify">是否触发 IndexChanged 回调。</param>
             public void SetChoices(IList<string> options, int index, bool notify = false)
             {
@@ -98,30 +125,36 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
                     }
                 }
 
-                if (_choices.Count == 0)
-                {
-                    _choices.Add("<无可用项>");
-                }
-
-                RebuildMenu();
-                SetIndex(index, notify);
+                // 先更新 _index 和按钮文字，再重建菜单，保证 Checked 状态同步。
+                SetIndexInternal(index, notify, rebuildMenu: true);
             }
 
             /// <summary>
             /// 设置当前选中的索引。
+            /// index = -1 表示按钮显示 emptySelectionText，但下拉菜单中不勾选任何项。
             /// </summary>
             public void SetIndex(int index, bool notify = true)
             {
-                index = Mathf.Clamp(index, 0, _choices.Count - 1);
+                SetIndexInternal(index, notify, rebuildMenu: true);
+            }
+
+            /// <summary>
+            /// 设置当前索引和显示文字。
+            /// </summary>
+            private void SetIndexInternal(int index, bool notify, bool rebuildMenu)
+            {
+                index = NormalizeIndex(index);
 
                 bool changed = _index != index;
                 _index = index;
 
-                string selectedText = _choices[_index];
-                text    = string.IsNullOrEmpty(_prefix) ? selectedText : $"{_prefix}: {selectedText}";
-                tooltip = text;
+                UpdateDisplayedText();
 
-                RebuildMenu();
+                if (rebuildMenu)
+                {
+                    RebuildMenu();
+                }
+
                 ApplyDropdownVisualState();
 
                 if (notify && changed)
@@ -131,28 +164,75 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             }
 
             /// <summary>
+            /// 修正索引范围。
+            /// </summary>
+            private int NormalizeIndex(int index)
+            {
+                if (_choices.Count == 0)
+                {
+                    return -1;
+                }
+
+                if (index < -1)
+                {
+                    return -1;
+                }
+
+                if (index >= _choices.Count)
+                {
+                    return _choices.Count - 1;
+                }
+
+                return index;
+            }
+
+            /// <summary>
+            /// 刷新按钮上显示的文字。
+            /// </summary>
+            private void UpdateDisplayedText()
+            {
+                string selectedText = _index >= 0 && _index < _choices.Count
+                    ? _choices[_index]
+                    : _emptySelectionText;
+
+                text = string.IsNullOrEmpty(_prefix) ? selectedText : $"{_prefix}: {selectedText}";
+                tooltip = text;
+            }
+
+            /// <summary>
             /// 重新构建 ToolbarMenu 的下拉菜单项。
             /// </summary>
             private void RebuildMenu()
             {
                 menu.ClearItems();
 
+                if (_choices.Count == 0)
+                {
+                    menu.AppendAction(
+                        _emptySelectionText,
+                        _ => { },
+                        _ => DropdownMenuAction.Status.Disabled);
+                    return;
+                }
+
                 for (int i = 0; i < _choices.Count; i++)
                 {
-                    int    capturedIndex = i;
-                    string choice        = _choices[i];
+                    int capturedIndex = i;
+                    string choice = _choices[i];
 
                     menu.AppendAction(
                         choice,
                         _ =>
                         {
-                            SetIndex(capturedIndex, true);
+                            SetIndexInternal(capturedIndex, true, rebuildMenu: true);
                             _isPressed = false;
                             ApplyDropdownVisualState();
                         },
+                        // 状态回调在菜单展开时由 Unity 重新求值。
+                        // _index = -1 时不会勾选任何项。
                         _ => capturedIndex == _index
-                                 ? DropdownMenuAction.Status.Checked
-                                 : DropdownMenuAction.Status.Normal);
+                            ? DropdownMenuAction.Status.Checked
+                            : DropdownMenuAction.Status.Normal);
                 }
             }
 
@@ -169,7 +249,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
 
                 RegisterCallback<MouseLeaveEvent>(_ =>
                 {
-                    _isHover   = false;
+                    _isHover = false;
                     _isPressed = false;
                     ApplyDropdownVisualState();
                 });
@@ -199,8 +279,8 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             /// </summary>
             private void ApplyDropdownVisualState()
             {
-                var textColor       = GetUnityToolbarTextColor();
-                var backgroundColor = Color.clear;
+                Color textColor = GetUnityToolbarTextColor();
+                Color backgroundColor = Color.clear;
 
                 if (_isPressed)
                 {
@@ -219,9 +299,9 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
         /// <summary>
         /// 创建一个原生 Toolbar 风格的下拉菜单。
         /// </summary>
-        public static NativeToolbarDropdown CreateToolbarDropdown(string prefix, IList<string> options, int index, float minWidth = 140f)
+        public static NativeToolbarDropdown CreateToolbarDropdown(string prefix, IList<string> options, int index, float minWidth = 140f, string emptySelectionText = "<未选择>")
         {
-            return new NativeToolbarDropdown(prefix, options, index, minWidth);
+            return new NativeToolbarDropdown(prefix, options, index, minWidth, emptySelectionText);
         }
 
         /// <summary>
@@ -235,10 +315,10 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
                 style =
                 {
                     unityFontStyleAndWeight = fontStyle,
-                    unityTextAlign          = TextAnchor.MiddleRight,
-                    marginLeft              = 2,
-                    marginRight             = 3,
-                    fontSize                = 11,
+                    unityTextAlign = TextAnchor.MiddleRight,
+                    marginLeft = 2,
+                    marginRight = 3,
+                    fontSize = 11,
                 }
             };
 
@@ -252,18 +332,18 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
         {
             var button = new ToolbarButton(onClick)
             {
-                text    = text,
+                text = text,
                 tooltip = tooltip ?? string.Empty,
                 style =
                 {
-                    minWidth       = 24,
-                    height         = 22,
-                    marginLeft     = 1,
-                    marginRight    = 1,
-                    paddingLeft    = 4,
-                    paddingRight   = 4,
+                    minWidth = 24,
+                    height = 22,
+                    marginLeft = 1,
+                    marginRight = 1,
+                    paddingLeft = 4,
+                    paddingRight = 4,
                     unityTextAlign = TextAnchor.MiddleCenter,
-                    flexShrink     = 0,
+                    flexShrink = 0,
                 }
             };
 
@@ -282,13 +362,13 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             }
 
             root.style.backgroundColor = backgroundColor;
-            root.style.color           = textColor;
+            root.style.color = textColor;
 
             var children = root.Query<VisualElement>().Build().ToList();
             foreach (var child in children)
             {
                 child.style.backgroundColor = backgroundColor;
-                child.style.color           = textColor;
+                child.style.color = textColor;
             }
         }
 
@@ -297,7 +377,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
         /// </summary>
         private static Color GetUnityToolbarTextColor()
         {
-            var color = EditorStyles.toolbarButton.normal.textColor;
+            Color color = EditorStyles.toolbarButton.normal.textColor;
             if (color.a > 0.01f)
             {
                 color.a = 1f;
@@ -313,7 +393,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
         /// </summary>
         private static Color GetToolbarButtonHoverColor()
         {
-            var sampled = TrySampleStyleBackground(EditorStyles.toolbarButton.hover.background);
+            Color sampled = TrySampleStyleBackground(EditorStyles.toolbarButton.hover.background);
             if (sampled.a > 0.01f)
             {
                 sampled.a = 1f;
@@ -321,8 +401,8 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             }
 
             return EditorGUIUtility.isProSkin
-                       ? new Color(0.30f, 0.30f, 0.30f, 1f)
-                       : new Color(0.68f, 0.68f, 0.68f, 1f);
+                ? new Color(0.30f, 0.30f, 0.30f, 1f)
+                : new Color(0.68f, 0.68f, 0.68f, 1f);
         }
 
         /// <summary>
@@ -331,7 +411,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
         /// </summary>
         private static Color GetToolbarButtonActiveColor()
         {
-            var sampled = TrySampleStyleBackground(EditorStyles.toolbarButton.active.background);
+            Color sampled = TrySampleStyleBackground(EditorStyles.toolbarButton.active.background);
             if (sampled.a > 0.01f)
             {
                 sampled.a = 1f;
@@ -339,8 +419,8 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             }
 
             return EditorGUIUtility.isProSkin
-                       ? new Color(0.17f, 0.17f, 0.17f, 1f)
-                       : new Color(0.58f, 0.58f, 0.58f, 1f);
+                ? new Color(0.17f, 0.17f, 0.17f, 1f)
+                : new Color(0.58f, 0.58f, 0.58f, 1f);
         }
 
         /// <summary>

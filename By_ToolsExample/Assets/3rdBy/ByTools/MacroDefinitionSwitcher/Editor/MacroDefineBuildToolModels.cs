@@ -783,6 +783,19 @@ namespace MacroDefineBuildToolEditor
         }
 
         /// <summary>
+        /// 获取本次设置对应的包目录。
+        /// 例如：D:/Builds/Game_v1.0.0
+        /// </summary>
+        public static string ComposeBuildPackageDirectoryPath(MacroBuildSettings settings, MacroBuildPlatform platform)
+        {
+            settings ??= new MacroBuildSettings();
+
+            string root     = ComposeBuildRootDirectory(settings);
+            string baseName = ComposeBuildBaseName(settings, platform);
+            return Path.Combine(root, baseName);
+        }
+
+        /// <summary>
         /// 生成构建输出路径预览。
         /// 按需求：这里只显示“打包目录”。
         /// 例如：D:/Builds
@@ -793,32 +806,87 @@ namespace MacroDefineBuildToolEditor
         }
 
         /// <summary>
-        /// 生成真正传给 BuildPipeline 的路径。
-        /// 按需求：实际路径 = 打包目录 / 构建名称+版本号 / 构建名称+版本号[.exe]
+        /// 获取“打开目录”按钮应该打开的目录。
+        /// 规则：如果包目录存在，则打开包目录；否则打开打包根目录。
         /// 例如：
-        /// Windows：D:/Builds/Game_v1.0.0/Game_v1.0.0.exe
-        /// WebGL：D:/Builds/Game_v1.0.0/Game_v1.0.0
-        /// Linux：D:/Builds/Game_v1.0.0/Game_v1.0.0
+        /// 已存在 D:/Builds/Game_v1.0.0 时，打开 D:/Builds/Game_v1.0.0
+        /// 不存在 D:/Builds/Game_v1.0.0 时，打开 D:/Builds
+        /// </summary>
+        public static string GetBuildDirectoryToReveal(MacroBuildSettings settings, MacroBuildPlatform platform)
+        {
+            settings ??= new MacroBuildSettings();
+
+            string root       = ComposeBuildRootDirectory(settings);
+            string packageDir = ComposeBuildPackageDirectoryPath(settings, platform);
+
+            return Directory.Exists(packageDir) ? packageDir : root;
+        }
+
+        /// <summary>
+        /// 打开“打包目录”。
+        /// 若包目录存在，则打开包目录；否则打开根目录。根目录不存在时会先创建。
+        /// </summary>
+        public static void RevealBuildDirectory(MacroBuildSettings settings, MacroBuildPlatform platform)
+        {
+            string directory = GetBuildDirectoryToReveal(settings, platform);
+            RevealDirectory(directory);
+        }
+
+        /// <summary>
+        /// 打开指定目录；如果目标目录不存在，则回退到当前打包根目录。
+        /// 主要用于打包完成后打开真实产物所在包目录。
+        /// </summary>
+        public static void RevealBuildDirectoryOrRoot(MacroBuildSettings settings, string targetDirectory)
+        {
+            string root = ComposeBuildRootDirectory(settings);
+            string directory = !string.IsNullOrWhiteSpace(targetDirectory) && Directory.Exists(targetDirectory)
+                                   ? targetDirectory
+                                   : root;
+            RevealDirectory(directory);
+        }
+
+        /// <summary>
+        /// 打开目录。目录不存在时先创建，避免 RevealInFinder 传入空路径或不存在路径。
+        /// </summary>
+        private static void RevealDirectory(string directory)
+        {
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                return;
+            }
+
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            EditorUtility.RevealInFinder(directory);
+        }
+
+        /// <summary>
+        /// 生成真正传给 BuildPipeline 的路径。
+        /// 按需求：实际路径 = 打包目录 / 构建名称+版本号 / 可执行文件名。
+        /// 注意：内部可执行文件名会把点号替换成下划线，避免 Unity 把最后的 .0 当扩展名，导致 _Data 目录名被截断。
+        /// 例如：
+        /// 包目录：D:/Builds/Game_v1.0.0
+        /// Windows：D:/Builds/Game_v1.0.0/Game_v1_0_0.exe
+        /// WebGL：D:/Builds/Game_v1.0.0/Game_v1_0_0
+        /// Linux：D:/Builds/Game_v1.0.0/Game_v1_0_0
         /// </summary>
         private static string ComposeBuildLocationPath(MacroBuildSettings settings, MacroBuildPlatform platform)
         {
             settings ??= new MacroBuildSettings();
 
-            string root       = ComposeBuildRootDirectory(settings);
+            string packageDir = ComposeBuildPackageDirectoryPath(settings, platform);
+            string baseName   = ComposeBuildBaseName(settings, platform);
+            string fileName   = baseName.Replace('.', '_');
 
-            // 包目录名：保留版本号点号
-            string packageDirName = ComposeBuildBaseName(settings, platform);
-            string packageDir     = Path.Combine(root, packageDirName);
-
-            // 可执行文件名：点号替换成下划线，避免 Unity 生成 _Data 时截断
-            string executableBaseName = packageDirName.Replace('.', '_');
-            
             return platform switch
             {
-                MacroBuildPlatform.Windows => Path.Combine(packageDir, executableBaseName  + ".exe"),
-                MacroBuildPlatform.WebGL   => Path.Combine(packageDir, executableBaseName ),
-                MacroBuildPlatform.Linux   => Path.Combine(packageDir, executableBaseName ),
-                _                          => Path.Combine(packageDir, executableBaseName )
+                MacroBuildPlatform.Windows => Path.Combine(packageDir, fileName + ".exe"),
+                MacroBuildPlatform.WebGL   => Path.Combine(packageDir, fileName),
+                MacroBuildPlatform.Linux   => Path.Combine(packageDir, fileName),
+                _                          => Path.Combine(packageDir, fileName)
             };
         }
 
@@ -842,11 +910,22 @@ namespace MacroDefineBuildToolEditor
 
         /// <summary>
         /// 立即执行打包。
+        /// 保留旧签名，避免其他调用处需要强制修改。
         /// </summary>
         public static bool ExecuteBuild(MacroDefineBuildToolConfig config, MacroBuildPlatform platform, out string message)
         {
-            message = string.Empty;
-            config  = MacroDefineBuildToolStorage.FixNullFields(config);
+            return ExecuteBuild(config, platform, out message, out _);
+        }
+
+        /// <summary>
+        /// 立即执行打包，并返回本次真实包目录。
+        /// outputDirectory 示例：D:/Builds/Game_v1.0.0
+        /// </summary>
+        public static bool ExecuteBuild(MacroDefineBuildToolConfig config, MacroBuildPlatform platform, out string message, out string outputDirectory)
+        {
+            message         = string.Empty;
+            outputDirectory = string.Empty;
+            config          = MacroDefineBuildToolStorage.FixNullFields(config);
 
             string[] scenes = GetEnabledBuildScenes();
             if (scenes == null || scenes.Length == 0)
@@ -861,6 +940,7 @@ namespace MacroDefineBuildToolEditor
             config.buildSettings.buildName = buildName;
 
             string locationPath = ComposeBuildLocationPath(config.buildSettings, platform);
+            outputDirectory = GetPackageDirectoryFromLocationPath(locationPath);
             EnsureBuildOutputDirectory(locationPath, platform);
 
             if (config.buildSettings.syncVersionToPlayerSettings)
@@ -888,12 +968,26 @@ namespace MacroDefineBuildToolEditor
             var report = BuildPipeline.BuildPlayer(buildPlayerOptions);
             if (report.summary.result == BuildResult.Succeeded)
             {
-                message = $"打包成功：{locationPath}\n总大小：{EditorUtility.FormatBytes((long)report.summary.totalSize)}";
+                message = $"打包成功：{locationPath}\n打包目录：{outputDirectory}\n总大小：{EditorUtility.FormatBytes((long)report.summary.totalSize)}";
                 return true;
             }
 
             message = $"打包失败：{report.summary.result}\n输出路径：{locationPath}";
             return false;
+        }
+
+        /// <summary>
+        /// 从 BuildPipeline 的 locationPathName 反推出包目录。
+        /// 例如：D:/Builds/Game_v1.0.0/Game_v1_0_0.exe -> D:/Builds/Game_v1.0.0
+        /// </summary>
+        private static string GetPackageDirectoryFromLocationPath(string locationPath)
+        {
+            if (string.IsNullOrWhiteSpace(locationPath))
+            {
+                return string.Empty;
+            }
+
+            return Path.GetDirectoryName(locationPath) ?? string.Empty;
         }
 
         /// <summary>

@@ -282,7 +282,7 @@ namespace MacroDefineBuildToolEditor
 
             if (GUILayout.Button("打开目录", GUILayout.Width(80)))
             {
-                EditorUtility.RevealInFinder(_config.buildSettings.outputRoot);
+                MacroDefineBuildToolUtility.RevealBuildDirectory(_config.buildSettings, _config.currentEditingPlatform);
             }
 
             EditorGUILayout.EndHorizontal();

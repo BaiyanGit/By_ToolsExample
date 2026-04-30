@@ -131,13 +131,13 @@ namespace MacroDefineBuildToolEditor
                 return;
             }
 
-            bool success = MacroDefineBuildToolUtility.ExecuteBuild(config, platform, out string message);
+            bool success = MacroDefineBuildToolUtility.ExecuteBuild(config, platform, out string message, out string outputDirectory);
 
             var notification = ScriptableObject.CreateInstance<NotificationWindow>();
             notification.message  = message;
             notification.duration = 5.0f;
             notification.ShowPopupNotification();
-            EditorUtility.RevealInFinder(config.buildSettings.outputRoot);
+            MacroDefineBuildToolUtility.RevealBuildDirectoryOrRoot(config.buildSettings, outputDirectory);
             // if (success)
             // {
             //     // Debug.Log($"[宏定义打包工具] {message}");

@@ -63,6 +63,23 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 
     [Header("像素格式，兼容性更好时保持 yuv420p")] public string pixelFormat = "yuv420p";
 
+    [Header("是否输出为 WebM（国产机 Unity 内播放更友好）")]
+    public bool outputAsWebM = true;
+
+    [Header("WebM 视频编码器（推荐 VP8：libvpx；如机器较强可改为 libvpx-vp9）")]
+    public string webmVideoCodec = "libvpx";
+
+    [Header("WebM 音频编码器（推荐 libvorbis；也可改为 libopus）")]
+    public string webmAudioCodec = "libvorbis";
+
+    [Header("WebM 视频码率（如 2M / 3M / 4M）")] public string webmVideoBitrate = "3M";
+
+    [Header("WebM 实时编码模式（best / good / realtime）")]
+    public string webmDeadline = "realtime";
+
+    [Header("WebM CPU 使用等级，越大越快，画质略降")] [Range(0, 8)]
+    public int webmCpuUsed = 8;
+
     #endregion
 
     #region 录制参数相关
@@ -285,7 +302,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
         OnRecordingStateChanged?.Invoke(true);
 
         var session = PrepareOutputPaths();
-        session.containsSystemAudio = false;
+        session.containsSystemAudio      = false;
         session.resolvedLinuxAudioSource = string.Empty;
 
         bool   success      = false;
@@ -606,7 +623,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     private bool TryResolveLinuxSystemAudioSource(out string resolvedSourceName, out string errorMessage)
     {
         resolvedSourceName = string.Empty;
-        errorMessage = string.Empty;
+        errorMessage       = string.Empty;
 
         if (!string.IsNullOrWhiteSpace(linuxSystemAudioSourceName))
         {
@@ -669,18 +686,18 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// <returns>是否成功。</returns>
     private bool TryGetLinuxPulseSources(out List<string> sources, out string errorMessage)
     {
-        sources = new List<string>();
+        sources      = new List<string>();
         errorMessage = string.Empty;
 
         try
         {
             using var process = new Process();
-            process.StartInfo.FileName = "pactl";
-            process.StartInfo.Arguments = "list short sources";
-            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.FileName               = "pactl";
+            process.StartInfo.Arguments              = "list short sources";
+            process.StartInfo.UseShellExecute        = false;
             process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.RedirectStandardError  = true;
+            process.StartInfo.CreateNoWindow         = true;
 
             process.Start();
 
@@ -771,19 +788,19 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// </summary>
     private bool TryRunProcess(string fileName, string arguments, out string stdOut, out string stdErr, out int exitCode)
     {
-        stdOut = string.Empty;
-        stdErr = string.Empty;
+        stdOut   = string.Empty;
+        stdErr   = string.Empty;
         exitCode = -1;
 
         try
         {
             using var process = new Process();
-            process.StartInfo.FileName = fileName;
-            process.StartInfo.Arguments = arguments;
-            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.FileName               = fileName;
+            process.StartInfo.Arguments              = arguments;
+            process.StartInfo.UseShellExecute        = false;
             process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.RedirectStandardError  = true;
+            process.StartInfo.CreateNoWindow         = true;
 
             process.Start();
             stdOut = process.StandardOutput.ReadToEnd();
@@ -908,6 +925,16 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     }
 
     /// <summary>
+    /// 获取当前输出视频文件扩展名。
+    /// 当选择 WebM 时返回 .webm，否则返回 .mp4。
+    /// </summary>
+    /// <returns>视频扩展名。</returns>
+    private string GetVideoFileExtension()
+    {
+        return outputAsWebM ? ".webm" : ".mp4";
+    }
+
+    /// <summary>
     /// 准备本次录制输出路径。
     /// 使用毫秒级时间戳，避免连续快速录制时重名。
     /// </summary>
@@ -928,13 +955,14 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
         string outputDir = Path.Combine(realOutputDirectory, "RecorderVideo");
         Directory.CreateDirectory(outputDir);
 
-        string stamp = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
+        string stamp          = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
+        string videoExtension = GetVideoFileExtension();
 
         return new CaptureSession
         {
-            finalOutputPath = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}.mp4"),
-            videoTempPath   = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}_video_tmp.mp4"),
-            audioTempPath   = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}_audio_tmp.wav"),
+            finalOutputPath          = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}{videoExtension}"),
+            videoTempPath            = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}_video_tmp{videoExtension}"),
+            audioTempPath            = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}_audio_tmp.wav"),
             resolvedLinuxAudioSource = string.Empty
         };
     }
@@ -956,6 +984,24 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
                                : string.Empty;
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+        if (outputAsWebM)
+        {
+            return $"-f gdigrab " +
+                   $"-framerate {captureFrameRate} " +
+                   $"-offset_x {target.offsetX} " +
+                   $"-offset_y {target.offsetY} " +
+                   $"-video_size {target.width}x{target.height} " +
+                   $"-i desktop " +
+                   $"-y " +
+                   $"-c:v {webmVideoCodec} " +
+                   $"-b:v {webmVideoBitrate} " +
+                   $"-deadline {webmDeadline} " +
+                   $"-cpu-used {webmCpuUsed} " +
+                   $"-pix_fmt yuv420p " +
+                   $"{scaleArgs}" +
+                   $"\"{outputPath}\"";
+        }
+
         return $"-f gdigrab " +
                $"-framerate {captureFrameRate} " +
                $"-offset_x {target.offsetX} " +
@@ -980,6 +1026,31 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 
         if (useSystemAudio)
         {
+            if (outputAsWebM)
+            {
+                return $"-f x11grab " +
+                       $"-framerate {captureFrameRate} " +
+                       $"-video_size {target.width}x{target.height} " +
+                       $"-i :0.0+{target.offsetX},{target.offsetY} " +
+                       $"-thread_queue_size 512 " +
+                       $"-f pulse " +
+                       $"-i \"{linuxSourceToUse}\" " +
+                       $"-map 0:v:0 " +
+                       $"-map 1:a:0 " +
+                       $"-y " +
+                       $"-c:v {webmVideoCodec} " +
+                       $"-b:v {webmVideoBitrate} " +
+                       $"-deadline {webmDeadline} " +
+                       $"-cpu-used {webmCpuUsed} " +
+                       $"-pix_fmt yuv420p " +
+                       $"{scaleArgs}" +
+                       $"-c:a {webmAudioCodec} " +
+                       $"-b:a {audioBitrate} " +
+                       $"-ar {audioSampleRate} " +
+                       $"-ac {audioChannels} " +
+                       $"\"{outputPath}\"";
+            }
+
             return $"-f x11grab " +
                    $"-framerate {captureFrameRate} " +
                    $"-video_size {target.width}x{target.height} " +
@@ -999,6 +1070,22 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
                    $"-b:a {audioBitrate} " +
                    $"-ar {audioSampleRate} " +
                    $"-ac {audioChannels} " +
+                   $"\"{outputPath}\"";
+        }
+
+        if (outputAsWebM)
+        {
+            return $"-f x11grab " +
+                   $"-framerate {captureFrameRate} " +
+                   $"-video_size {target.width}x{target.height} " +
+                   $"-i :0.0+{target.offsetX},{target.offsetY} " +
+                   $"-y " +
+                   $"-c:v {webmVideoCodec} " +
+                   $"-b:v {webmVideoBitrate} " +
+                   $"-deadline {webmDeadline} " +
+                   $"-cpu-used {webmCpuUsed} " +
+                   $"-pix_fmt yuv420p " +
+                   $"{scaleArgs}" +
                    $"\"{outputPath}\"";
         }
 
@@ -1027,12 +1114,17 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// <param name="outputPath">最终输出文件。</param>
     private void MergeVideoAndAudio(string videoPath, string audioPath, string outputPath)
     {
-        string tempOutput = outputPath + ".merging.mp4";
+        string  extension          = Path.GetExtension(outputPath);
+        string  fileNameWithoutExt = Path.GetFileNameWithoutExtension(outputPath);
+        string? dir                = Path.GetDirectoryName(outputPath);
+        string  tempOutput         = Path.Combine(dir ?? string.Empty, $"{fileNameWithoutExt}.merging{extension}");
 
         if (File.Exists(tempOutput))
         {
             File.Delete(tempOutput);
         }
+
+        string targetAudioCodec = outputAsWebM ? webmAudioCodec : audioCodec;
 
         string arguments =
             $"-y " +
@@ -1043,7 +1135,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
             $"-map 0:v:0 " +
             $"-map 1:a:0 " +
             $"-c:v copy " +
-            $"-c:a {audioCodec} " +
+            $"-c:a {targetAudioCodec} " +
             $"-b:a {audioBitrate} " +
             $"-ar {audioSampleRate} " +
             $"-ac {audioChannels} " +
@@ -1112,8 +1204,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
                 }
 
                 throw new Exception(
-                    "ffmpeg 合并音视频失败，ExitCode=" + process.ExitCode +
-                    (string.IsNullOrWhiteSpace(errorText) ? "" : ("\n" + errorText))
+                    "ffmpeg 合并音视频失败，ExitCode=" + process.ExitCode + (string.IsNullOrWhiteSpace(errorText) ? "" : "" + errorText)
                 );
             }
         }
@@ -1191,7 +1282,10 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
                 File.Delete(session.audioTempPath);
             }
 
-            string tempOutput = session.finalOutputPath + ".merging.mp4";
+            string  extension          = Path.GetExtension(session.finalOutputPath);
+            string  fileNameWithoutExt = Path.GetFileNameWithoutExtension(session.finalOutputPath);
+            string? dir                = Path.GetDirectoryName(session.finalOutputPath);
+            string  tempOutput         = Path.Combine(dir ?? string.Empty, $"{fileNameWithoutExt}.merging{extension}");
             if (File.Exists(tempOutput))
             {
                 File.Delete(tempOutput);

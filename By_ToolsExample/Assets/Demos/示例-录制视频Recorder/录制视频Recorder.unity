@@ -10057,6 +10057,12 @@ MonoBehaviour:
   outputScale: 1
   videoCrf: 23
   pixelFormat: yuv420p
+  outputAsWebM: 1
+  webmVideoCodec: libvpx
+  webmAudioCodec: libvorbis
+  webmVideoBitrate: 3M
+  webmDeadline: realtime
+  webmCpuUsed: 8
   outputFilePrefix: recording
   videoCodec: libx264
   videoPreset: ultrafast

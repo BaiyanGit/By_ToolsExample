@@ -30,9 +30,9 @@
         }
     ],
     "buildSettings": {
-        "outputRoot": "E:\\UnityProjectsE\\Example\\By_ToolsExample\\By_ToolsExample\\Builds\\By_ToolsExample_v1.0.1",
+        "outputRoot": "E:\\UnityProjectsE\\Example\\By_ToolsExample\\By_ToolsExample\\Builds",
         "buildName": "By_ToolsExample",
-        "buildVersion": "1.0.3",
+        "buildVersion": "1.0.2",
         "syncVersionToPlayerSettings": true,
         "includeTimestamp": false,
         "includePlatformPrefix": false,
@@ -42,7 +42,7 @@
     "currentEditingModeId": "f3f6990dda6543dbb453268e5108da94",
     "currentEditingModeName": "日志窗口模式",
     "currentEditingPlatform": 2,
-    "currentDefinesFoldout": true,
+    "currentDefinesFoldout": false,
     "currentDefines": [
         {
             "symbol": "UNITASK_DOTWEEN_SUPPORT",

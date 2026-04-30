@@ -1406,6 +1406,7 @@ GameObject:
   - component: {fileID: 150738264}
   - component: {fileID: 150738263}
   - component: {fileID: 150738262}
+  - component: {fileID: 150738265}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1487,6 +1488,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &150738265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 150738261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bde997b6cb064e4db4b270d8556495ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  keyR: 114
+  keyQ: 113
+  keyScape: 32
+  keyEscape: 27
+  audioSource: {fileID: 2131389298}
 --- !u!1 &164799630
 GameObject:
   m_ObjectHideFlags: 0
@@ -10034,7 +10052,7 @@ MonoBehaviour:
   audioBitrate: 192k
   audioSampleRate: 48000
   audioChannels: 2
-  linuxSystemAudioSourceName: default
+  linuxSystemAudioSourceName: 
   captureFrameRate: 30
   outputScale: 1
   videoCrf: 23
@@ -10042,7 +10060,6 @@ MonoBehaviour:
   outputFilePrefix: recording
   videoCodec: libx264
   videoPreset: ultrafast
-  configFileName: Config.txt
   stopVideoTimeoutMs: 15000
   waitTempFileReadyTimeoutMs: 8000
   mergeTimeoutMs: 0
@@ -10090,7 +10107,7 @@ AudioSource:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2131389294}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 76144bbea9eb7a74b8defd7424810b4a, type: 3}
@@ -10098,7 +10115,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0

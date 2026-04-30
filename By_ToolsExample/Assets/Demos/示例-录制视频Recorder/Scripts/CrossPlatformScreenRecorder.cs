@@ -45,8 +45,8 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 
     [Header("音频声道数（仅合并时输出编码参考）")] public int audioChannels = 2;
 
-    [Header("Linux PulseAudio 音频源名称（如 default 或 xxx.monitor）")]
-    public string linuxSystemAudioSourceName = "default";
+    [Header("Linux PulseAudio 音频源名称（留空则自动探测默认输出设备的 monitor 源）")]
+    public string linuxSystemAudioSourceName = "";
 
     #endregion
 
@@ -72,8 +72,6 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     [Header("视频编码器")] public string videoCodec = "libx264";
 
     [Header("视频编码预设")] public string videoPreset = "ultrafast";
-
-    [Header("ffmpeg 配置文件名称")] public string configFileName = "Config.txt";
 
     [Header("ffmpeg 进程运行器")] private FFmpegProcessRunner _processRunner;
 
@@ -147,7 +145,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// <summary>
     /// 当前是否正在录制、启动中或停止中。
     /// </summary>
-    public bool IsRecording => _isStarting || _isStopping || (_processRunner != null && _processRunner.IsRunning);
+    public bool IsRecording => _isStarting || _isStopping || _processRunner is { IsRunning: true };
 
     /// <summary>
     /// 当前是否还有后台合并任务。
@@ -169,6 +167,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
         [Header("视频临时路径")] public string videoTempPath;
         [Header("音频临时路径")] public string audioTempPath;
         [Header("包含系统音频")] public bool containsSystemAudio;
+        [Header("Linux 已解析音频源")] public string resolvedLinuxAudioSource;
     }
 
     /// <summary>
@@ -287,6 +286,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 
         var session = PrepareOutputPaths();
         session.containsSystemAudio = false;
+        session.resolvedLinuxAudioSource = string.Empty;
 
         bool   success      = false;
         string errorMessage = string.Empty;
@@ -309,9 +309,21 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 
                         session.containsSystemAudio = true;
                     }
+#elif UNITY_STANDALONE_LINUX || UNITY_EDITOR_LINUX
+                    if (audioMode == RecorderAudioMode.SystemAudio)
+                    {
+                        if (!TryResolveLinuxSystemAudioSource(out string resolvedSource, out string resolveError))
+                        {
+                            throw new Exception("解析 Linux 系统音频源失败: " + resolveError);
+                        }
+
+                        session.resolvedLinuxAudioSource = resolvedSource;
+                        session.containsSystemAudio = true;
+                        Debug.Log("Linux 已解析系统音频源: " + resolvedSource);
+                    }
 #endif
 
-                    string arguments = BuildFFmpegCaptureArguments(target, session.videoTempPath);
+                    string arguments = BuildFFmpegCaptureArguments(target, session.videoTempPath, session.resolvedLinuxAudioSource);
                     if (string.IsNullOrWhiteSpace(arguments))
                     {
                         throw new Exception("生成 ffmpeg 参数失败。");
@@ -323,8 +335,6 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
                         onStdOut: msg => Debug.Log("[ffmpeg] " + msg),
                         onStdErr: msg => Debug.LogWarning("[ffmpeg] " + msg)
                     );
-
-                    Debug.LogError("123123123");
                     if (!started)
                     {
                         throw new Exception("ffmpeg 进程未能启动。");
@@ -366,6 +376,12 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
             Debug.Log($"音频临时文件: {session.audioTempPath}");
         }
 
+#if UNITY_STANDALONE_LINUX || UNITY_EDITOR_LINUX
+        if (!string.IsNullOrWhiteSpace(session.resolvedLinuxAudioSource))
+        {
+            Debug.Log($"Linux 本次录制使用音频源: {session.resolvedLinuxAudioSource}");
+        }
+#endif
         Debug.Log($"最终输出文件: {session.finalOutputPath}");
         Debug.Log($"当前质量设置: 帧率={captureFrameRate}, 缩放={outputScale}, CRF={videoCrf}, 预设={videoPreset}");
 
@@ -466,6 +482,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
             throw new Exception("等待临时视频文件释放超时: " + session.videoTempPath);
         }
 
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         if (session.containsSystemAudio)
         {
             if (!WaitForFileReady(session.audioTempPath, waitTempFileReadyTimeoutMs))
@@ -473,6 +490,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
                 throw new Exception("等待临时音频文件释放超时: " + session.audioTempPath);
             }
         }
+#endif
     }
 
     /// <summary>
@@ -499,6 +517,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
                 File.Delete(session.finalOutputPath);
             }
 
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
             if (hasAudio)
             {
                 MergeVideoAndAudio(session.videoTempPath, session.audioTempPath, session.finalOutputPath);
@@ -507,6 +526,9 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
             {
                 File.Move(session.videoTempPath, session.finalOutputPath);
             }
+#else
+            File.Move(session.videoTempPath, session.finalOutputPath);
+#endif
 
             if (deleteTempFilesAfterMerge)
             {
@@ -530,38 +552,36 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     }
 
     /// <summary>
-    /// 读取 ffmpeg 路径。
-    /// 路径来自 StreamingAssets/Config.txt。
+    /// 读取 ffmpeg 可执行文件路径，并在 Linux 下自动检查/补充执行权限。
     /// </summary>
-    /// <param name="executablePath">输出 ffmpeg 可执行文件路径。</param>
-    /// <returns>是否读取成功。</returns>
+    /// <param name="executablePath">输出的 ffmpeg 路径。</param>
+    /// <returns>是否可用。</returns>
     private bool TryLoadFFmpegPath(out string executablePath)
     {
         executablePath = string.Empty;
 
         try
         {
-            string configPath = Path.Combine(Application.streamingAssetsPath, configFileName);
-
-            if (!File.Exists(configPath))
+            executablePath = Application.platform switch
             {
-                Debug.LogError("未找到 Config.txt: " + configPath);
-                return false;
-            }
-
-            executablePath = File.ReadAllText(configPath).Trim();
-
-            if (string.IsNullOrEmpty(executablePath))
-            {
-                Debug.LogError("Config.txt 中未配置 ffmpeg 路径");
-                return false;
-            }
+                RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsEditor => $"{Application.streamingAssetsPath}/FFmpegApp/ffmpeg.exe",
+                RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxEditor     => $"{Application.streamingAssetsPath}/FFmpegApp/ffmpeg",
+                _                                                              => throw new NotSupportedException("不支持的平台: " + Application.platform)
+            };
 
             if (!File.Exists(executablePath))
             {
                 Debug.LogError("ffmpeg 路径不存在: " + executablePath);
                 return false;
             }
+
+#if (UNITY_STANDALONE_LINUX || UNITY_EDITOR_LINUX) && !UNITY_EDITOR_WIN
+            if (!EnsureLinuxExecutablePermission(executablePath, out string permissionError))
+            {
+                Debug.LogError("ffmpeg 执行权限检查失败: " + permissionError);
+                return false;
+            }
+#endif
 
             return true;
         }
@@ -573,12 +593,332 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     }
 
     /// <summary>
+    /// Linux 下自动解析系统音频源。
+    /// 优先级：
+    /// 1. 如果 Inspector 手动填写了 linuxSystemAudioSourceName，则优先使用该值
+    /// 2. 尝试通过 pactl get-default-sink / pactl info 找到默认输出设备
+    /// 3. 在 pactl list short sources 中寻找 “默认输出设备.monitor”
+    /// 4. 如果没找到，回退到第一个 monitor 源
+    /// </summary>
+    /// <param name="resolvedSourceName">最终可用于 ffmpeg -f pulse -i 的音频源。</param>
+    /// <param name="errorMessage">失败原因。</param>
+    /// <returns>是否解析成功。</returns>
+    private bool TryResolveLinuxSystemAudioSource(out string resolvedSourceName, out string errorMessage)
+    {
+        resolvedSourceName = string.Empty;
+        errorMessage = string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(linuxSystemAudioSourceName))
+        {
+            resolvedSourceName = linuxSystemAudioSourceName.Trim();
+            Debug.Log("Linux 使用手动指定的音频源: " + resolvedSourceName);
+            return true;
+        }
+
+        if (!TryGetLinuxPulseSources(out List<string> sources, out string sourcesError))
+        {
+            errorMessage = sourcesError;
+            return false;
+        }
+
+        if (sources.Count == 0)
+        {
+            errorMessage = "未从 pactl 获取到任何 PulseAudio source。";
+            return false;
+        }
+
+        if (TryGetLinuxDefaultSinkName(out string defaultSinkName))
+        {
+            string expectedMonitor = defaultSinkName + ".monitor";
+            foreach (string source in sources)
+            {
+                if (string.Equals(source, expectedMonitor, StringComparison.Ordinal))
+                {
+                    resolvedSourceName = source;
+                    Debug.Log("Linux 自动匹配到默认输出设备对应的 monitor 源: " + resolvedSourceName);
+                    return true;
+                }
+            }
+
+            Debug.LogWarning("未找到默认输出设备对应的 monitor 源，默认输出设备: " + defaultSinkName);
+        }
+
+        foreach (string source in sources)
+        {
+            if (source.EndsWith(".monitor", StringComparison.OrdinalIgnoreCase))
+            {
+                resolvedSourceName = source;
+                Debug.LogWarning("Linux 未定位到默认输出 monitor，已回退使用第一个 monitor 源: " + resolvedSourceName);
+                return true;
+            }
+        }
+
+        errorMessage =
+            "未找到可用于录制系统声音的 PulseAudio monitor 源。\n" +
+            "请在终端执行：pactl list short sources\n" +
+            "然后把类似 alsa_output.xxx.monitor 的完整名称填写到 linuxSystemAudioSourceName。";
+        return false;
+    }
+
+    /// <summary>
+    /// 获取 Linux 下所有 PulseAudio source 名称。
+    /// 使用 pactl list short sources，解析第二列的 source 名。
+    /// </summary>
+    /// <param name="sources">解析结果。</param>
+    /// <param name="errorMessage">失败原因。</param>
+    /// <returns>是否成功。</returns>
+    private bool TryGetLinuxPulseSources(out List<string> sources, out string errorMessage)
+    {
+        sources = new List<string>();
+        errorMessage = string.Empty;
+
+        try
+        {
+            using var process = new Process();
+            process.StartInfo.FileName = "pactl";
+            process.StartInfo.Arguments = "list short sources";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.CreateNoWindow = true;
+
+            process.Start();
+
+            string stdOut = process.StandardOutput.ReadToEnd();
+            string stdErr = process.StandardError.ReadToEnd();
+
+            process.WaitForExit();
+
+            if (!string.IsNullOrWhiteSpace(stdErr))
+            {
+                Debug.LogWarning("[pactl] " + stdErr);
+            }
+
+            if (process.ExitCode != 0)
+            {
+                errorMessage = "执行 pactl list short sources 失败，ExitCode=" + process.ExitCode;
+                return false;
+            }
+
+            string[] lines = stdOut.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string line in lines)
+            {
+                string[] parts = line.Split('\t');
+                if (parts.Length >= 2)
+                {
+                    string sourceName = parts[1].Trim();
+                    if (!string.IsNullOrWhiteSpace(sourceName))
+                    {
+                        sources.Add(sourceName);
+                    }
+                }
+            }
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            errorMessage = "获取 Linux PulseAudio sources 失败: " + e.Message;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 获取 Linux 默认输出设备（Default Sink）名称。
+    /// 优先用 pactl get-default-sink；如果失败，再回退到 pactl info 解析 Default Sink。
+    /// </summary>
+    /// <param name="defaultSinkName">默认 sink 名称。</param>
+    /// <returns>是否成功获取。</returns>
+    private bool TryGetLinuxDefaultSinkName(out string defaultSinkName)
+    {
+        defaultSinkName = string.Empty;
+
+        if (TryRunProcess("pactl", "get-default-sink", out string stdOut1, out _, out int exitCode1) &&
+            exitCode1 == 0)
+        {
+            string value = stdOut1.Trim();
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                defaultSinkName = value;
+                return true;
+            }
+        }
+
+        if (TryRunProcess("pactl", "info", out string stdOut2, out _, out int exitCode2) &&
+            exitCode2 == 0)
+        {
+            string[] lines = stdOut2.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string line in lines)
+            {
+                const string prefix = "Default Sink:";
+                if (line.TrimStart().StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    string value = line.Substring(line.IndexOf(prefix, StringComparison.OrdinalIgnoreCase) + prefix.Length).Trim();
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        defaultSinkName = value;
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 通用子进程运行工具。
+    /// </summary>
+    private bool TryRunProcess(string fileName, string arguments, out string stdOut, out string stdErr, out int exitCode)
+    {
+        stdOut = string.Empty;
+        stdErr = string.Empty;
+        exitCode = -1;
+
+        try
+        {
+            using var process = new Process();
+            process.StartInfo.FileName = fileName;
+            process.StartInfo.Arguments = arguments;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.CreateNoWindow = true;
+
+            process.Start();
+            stdOut = process.StandardOutput.ReadToEnd();
+            stdErr = process.StandardError.ReadToEnd();
+            process.WaitForExit();
+            exitCode = process.ExitCode;
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            stdErr = e.Message;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Linux 下检查 ffmpeg 是否可执行；如果不可执行，则自动尝试 chmod +x。
+    /// </summary>
+    /// <param name="filePath">ffmpeg 本地路径。</param>
+    /// <param name="errorMessage">失败原因。</param>
+    /// <returns>最终是否可执行。</returns>
+    private bool EnsureLinuxExecutablePermission(string filePath, out string errorMessage)
+    {
+        errorMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            errorMessage = "文件路径为空。";
+            return false;
+        }
+
+        // 先检查是否已经可执行
+        if (IsLinuxFileExecutable(filePath))
+        {
+            Debug.Log("ffmpeg 已具备执行权限: " + filePath);
+            return true;
+        }
+
+        Debug.LogWarning("ffmpeg 当前没有执行权限，尝试自动执行 chmod +x: " + filePath);
+
+        try
+        {
+            using var chmodProcess = new Process();
+            chmodProcess.StartInfo.FileName               = "/bin/chmod";
+            chmodProcess.StartInfo.Arguments              = $"+x \"{filePath}\"";
+            chmodProcess.StartInfo.UseShellExecute        = false;
+            chmodProcess.StartInfo.RedirectStandardOutput = true;
+            chmodProcess.StartInfo.RedirectStandardError  = true;
+            chmodProcess.StartInfo.CreateNoWindow         = true;
+
+            chmodProcess.Start();
+
+            string stdOut = chmodProcess.StandardOutput.ReadToEnd();
+            string stdErr = chmodProcess.StandardError.ReadToEnd();
+
+            chmodProcess.WaitForExit();
+
+            if (!string.IsNullOrWhiteSpace(stdOut))
+            {
+                Debug.Log("[chmod] " + stdOut);
+            }
+
+            if (!string.IsNullOrWhiteSpace(stdErr))
+            {
+                Debug.LogWarning("[chmod] " + stdErr);
+            }
+
+            if (chmodProcess.ExitCode != 0)
+            {
+                errorMessage = $"chmod +x 执行失败，ExitCode={chmodProcess.ExitCode}";
+                return false;
+            }
+        }
+        catch (Exception e)
+        {
+            errorMessage = "执行 chmod +x 时出错: " + e.Message;
+            return false;
+        }
+
+        // 再检查一次是否真的可执行
+        if (!IsLinuxFileExecutable(filePath))
+        {
+            errorMessage =
+                "chmod +x 执行后，文件仍不可执行。可能原因：\n" +
+                "1. 所在目录或挂载点为 noexec\n" +
+                "2. 文件系统权限受限\n" +
+                "3. 不是有效的 Linux 可执行文件";
+            return false;
+        }
+
+        Debug.Log("已成功为 ffmpeg 补充执行权限: " + filePath);
+        return true;
+    }
+
+    /// <summary>
+    /// Linux 下判断文件是否具备执行权限。
+    /// 通过 /bin/test -x 来判断，兼容 Unity 常见运行环境。
+    /// </summary>
+    /// <param name="filePath">文件路径。</param>
+    /// <returns>是否可执行。</returns>
+    private bool IsLinuxFileExecutable(string filePath)
+    {
+        try
+        {
+            using var testProcess = new Process();
+            testProcess.StartInfo.FileName        = "/bin/test";
+            testProcess.StartInfo.Arguments       = $"-x \"{filePath}\"";
+            testProcess.StartInfo.UseShellExecute = false;
+            testProcess.StartInfo.CreateNoWindow  = true;
+
+            testProcess.Start();
+            testProcess.WaitForExit();
+
+            return testProcess.ExitCode == 0;
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("检查 Linux 文件执行权限失败: " + e.Message);
+            return false;
+        }
+    }
+
+    /// <summary>
     /// 准备本次录制输出路径。
     /// 使用毫秒级时间戳，避免连续快速录制时重名。
     /// </summary>
     /// <returns>新建的录制会话。</returns>
     private CaptureSession PrepareOutputPaths()
     {
+        if (Application.platform == RuntimePlatform.LinuxPlayer)
+        {
+            outputDirectory = "";
+        }
+
         string realOutputDirectory = string.IsNullOrWhiteSpace(outputDirectory)
                                          ? Application.streamingAssetsPath
                                          : outputDirectory;
@@ -594,7 +934,8 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
         {
             finalOutputPath = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}.mp4"),
             videoTempPath   = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}_video_tmp.mp4"),
-            audioTempPath   = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}_audio_tmp.wav")
+            audioTempPath   = Path.Combine(outputDir, $"{outputFilePrefix}_{stamp}_audio_tmp.wav"),
+            resolvedLinuxAudioSource = string.Empty
         };
     }
 
@@ -605,7 +946,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// <param name="target">目标显示器。</param>
     /// <param name="outputPath">输出视频临时文件路径。</param>
     /// <returns>ffmpeg 参数字符串。</returns>
-    private string BuildFFmpegCaptureArguments(RecorderDisplayInfo target, string outputPath)
+    private string BuildFFmpegCaptureArguments(RecorderDisplayInfo target, string outputPath, string resolvedLinuxAudioSource = "")
     {
         int scaledWidth  = MakeEven(Mathf.RoundToInt(target.width * Mathf.Clamp(outputScale, 0.25f, 1f)));
         int scaledHeight = MakeEven(Mathf.RoundToInt(target.height * Mathf.Clamp(outputScale, 0.25f, 1f)));
@@ -630,8 +971,12 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
                $"\"{outputPath}\"";
 
 #elif UNITY_STANDALONE_LINUX || UNITY_EDITOR_LINUX
+        string linuxSourceToUse = !string.IsNullOrWhiteSpace(resolvedLinuxAudioSource)
+            ? resolvedLinuxAudioSource
+            : linuxSystemAudioSourceName;
+
         bool useSystemAudio = audioMode == RecorderAudioMode.SystemAudio &&
-                              !string.IsNullOrWhiteSpace(linuxSystemAudioSourceName);
+                              !string.IsNullOrWhiteSpace(linuxSourceToUse);
 
         if (useSystemAudio)
         {
@@ -641,7 +986,7 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
                    $"-i :0.0+{target.offsetX},{target.offsetY} " +
                    $"-thread_queue_size 512 " +
                    $"-f pulse " +
-                   $"-i \"{linuxSystemAudioSourceName}\" " +
+                   $"-i \"{linuxSourceToUse}\" " +
                    $"-map 0:v:0 " +
                    $"-map 1:a:0 " +
                    $"-y " +

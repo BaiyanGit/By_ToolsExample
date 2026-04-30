@@ -765,31 +765,60 @@ namespace MacroDefineBuildToolEditor
         }
 
         /// <summary>
+        /// 获取打包根目录。
+        /// 这里只表示用户选择的“打包目录”，不拼接构建名称、版本号、平台、时间戳或扩展名。
+        /// 例如：D:/Builds
+        /// </summary>
+        private static string ComposeBuildRootDirectory(MacroBuildSettings settings)
+        {
+            settings ??= new MacroBuildSettings();
+
+            if (!string.IsNullOrWhiteSpace(settings.outputRoot))
+            {
+                return settings.outputRoot.Trim();
+            }
+
+            string projectRoot = Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath;
+            return Path.Combine(projectRoot, "Builds");
+        }
+
+        /// <summary>
         /// 生成构建输出路径预览。
+        /// 按需求：这里只显示“打包目录”。
+        /// 例如：D:/Builds
         /// </summary>
         public static string ComposeBuildPreviewPath(MacroBuildSettings settings, MacroBuildPlatform platform)
         {
-            settings ??= new MacroBuildSettings();
-            return ComposeBuildLocationPath(settings, platform);
+            return ComposeBuildRootDirectory(settings);
         }
 
         /// <summary>
         /// 生成真正传给 BuildPipeline 的路径。
+        /// 按需求：实际路径 = 打包目录 / 构建名称+版本号 / 构建名称+版本号[.exe]
+        /// 例如：
+        /// Windows：D:/Builds/Game_v1.0.0/Game_v1.0.0.exe
+        /// WebGL：D:/Builds/Game_v1.0.0/Game_v1.0.0
+        /// Linux：D:/Builds/Game_v1.0.0/Game_v1.0.0
         /// </summary>
         private static string ComposeBuildLocationPath(MacroBuildSettings settings, MacroBuildPlatform platform)
         {
             settings ??= new MacroBuildSettings();
 
-            string baseName = ComposeBuildBaseName(settings, platform);
-            string root = settings.outputRoot = string.IsNullOrWhiteSpace(settings.outputRoot)
-                                                    ? Path.Combine(Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath, $"Builds\\{baseName}")
-                                                    : settings.outputRoot.Trim();
+            string root       = ComposeBuildRootDirectory(settings);
+
+            // 包目录名：保留版本号点号
+            string packageDirName = ComposeBuildBaseName(settings, platform);
+            string packageDir     = Path.Combine(root, packageDirName);
+
+            // 可执行文件名：点号替换成下划线，避免 Unity 生成 _Data 时截断
+            string executableBaseName = packageDirName.Replace('.', '_');
+            
             return platform switch
             {
-                MacroBuildPlatform.Windows => Path.Combine(root, baseName + ".exe"),
-                MacroBuildPlatform.WebGL   => Path.Combine(root, baseName),
-                MacroBuildPlatform.Linux   => Path.Combine(root, baseName),
-                _                          => Path.Combine(root, baseName)
+                MacroBuildPlatform.Windows => Path.Combine(packageDir, executableBaseName  + ".exe"),
+                MacroBuildPlatform.WebGL   => Path.Combine(packageDir, executableBaseName ),
+                MacroBuildPlatform.Linux   => Path.Combine(packageDir, executableBaseName ),
+                _                          => Path.Combine(packageDir, executableBaseName )
             };
         }
 

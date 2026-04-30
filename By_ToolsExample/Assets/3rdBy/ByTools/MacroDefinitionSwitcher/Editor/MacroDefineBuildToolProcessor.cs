@@ -132,23 +132,57 @@ namespace MacroDefineBuildToolEditor
             }
 
             bool success = MacroDefineBuildToolUtility.ExecuteBuild(config, platform, out string message);
-            if (success)
+
+            var notification = ScriptableObject.CreateInstance<NotificationWindow>();
+            notification.message  = message;
+            notification.duration = 5.0f;
+            notification.ShowPopupNotification();
+            EditorUtility.RevealInFinder(config.buildSettings.outputRoot);
+            // if (success)
+            // {
+            //     // Debug.Log($"[宏定义打包工具] {message}");
+            //     var isOpenFolder = EditorUtility.DisplayDialog("打包完成", message, "确定", "取消");
+            //     if (isOpenFolder)
+            //     {
+            //         // TODO: 打开文件夹
+            //         EditorUtility.RevealInFinder(config.buildSettings.outputRoot);
+            //     }
+            // }
+            // else
+            // {
+            //     // Debug.LogError($"[宏定义打包工具] {message}");
+            //     EditorUtility.DisplayDialog("打包失败", message, "确定");
+            // }
+        }
+    }
+
+    // 辅助窗口类
+    public class NotificationWindow : EditorWindow
+    {
+        public string message;
+        public float duration;
+        private double _startTime;
+
+        public void ShowPopupNotification()
+        {
+            _startTime = EditorApplication.timeSinceStartup;
+            position   = new Rect(Screen.width - 300, Screen.height - 80, 280, 50);
+            ShowPopup();
+            EditorApplication.update += UpdateAutoClose;
+        }
+
+        private void UpdateAutoClose()
+        {
+            if (EditorApplication.timeSinceStartup - _startTime >= duration)
             {
-                // Debug.Log($"[宏定义打包工具] {message}");
-                var isOpenFolder = EditorUtility.DisplayDialog("打包完成", message, "确定", "取消");
-                if (isOpenFolder)
-                {
-                    // TODO: 打开文件夹
-                    // MacroDefineBuildToolUtility.OpenFolder(config.outputPath);
-                    //
-                    // EditorUtility.OpenFilePanel("选择文件夹", "", "");
-                }
+                Close();
+                EditorApplication.update -= UpdateAutoClose;
             }
-            else
-            {
-                // Debug.LogError($"[宏定义打包工具] {message}");
-                EditorUtility.DisplayDialog("打包失败", message, "确定");
-            }
+        }
+
+        private void OnGUI()
+        {
+            EditorGUI.HelpBox(new Rect(5, 5, position.width - 10, position.height - 10), message, MessageType.Info);
         }
     }
 }

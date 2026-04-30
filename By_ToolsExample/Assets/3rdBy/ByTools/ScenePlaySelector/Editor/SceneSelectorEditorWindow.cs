@@ -1,387 +1,372 @@
-﻿namespace _3rdBy.ByTools.ScenePlaySelector.Editor
+namespace _3rdBy.ByTools.ScenePlaySelector.Editor
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Text;
     using UnityEditor;
+    using UnityEditor.SceneManagement;
     using UnityEngine;
-
-    // 可序列化的类，用于JSON保存/加载
-    [Serializable]
-    public class SceneDataJson
-    {
-        public int index;
-        public string name;
-        public string path;
-        public bool show;
-    }
-
-    // 用于序列化列表的包装类
-    [Serializable]
-    public class SceneDataListWrapper
-    {
-        public List<SceneDataJson> sceneDataList;
-    }
+    using UnityEngine.SceneManagement;
 
     /// <summary>
-    /// ToolBar中选择场景配置窗口
+    /// Toolbar 场景显示配置器窗口。
+    /// 用于控制哪些场景显示在 Toolbar 的 Scene 下拉菜单里。
     /// </summary>
     public class SceneSelectorEditorWindow : EditorWindow
     {
-        private class SceneData
+        /// <summary>
+        /// 配置窗口中显示的一行场景数据。
+        /// </summary>
+        private class SceneRow
         {
-            public int        index { get; set; }
-            public string     path  { get; set; }
-            public SceneAsset asset { get; set; }
-            public bool       show  { get; set; }
+            [Header("场景在当前列表中的索引")]
+            public int index;
 
-            public SceneData(int index, string path, SceneAsset asset, bool show)
-            {
-                this.index = index;
-                this.path  = path;
-                this.asset = asset;
-                this.show  = show;
-            }
+            [Header("场景名称")]
+            public string name;
+
+            [Header("场景资源路径")]
+            public string path;
+
+            [Header("是否显示在 Toolbar 场景下拉菜单中")]
+            public bool show;
+
+            [Header("场景资源对象")]
+            public SceneAsset asset;
         }
 
-        private enum SceneSource
-        {
-            BuildSettings,
-            Project,
-            // All
-        }
+        [Header("配置窗口顶部说明文本")]
+        private const string HelpBoxMessage =
+            "场景显示配置器说明\n" +
+            "1. BuildSettings：读取 Build Settings 中的场景，默认只显示 enabled 场景。\n" +
+            "2. ProjectAssets：读取项目 Assets/Packages 中所有 Scene 资源，默认全部显示。\n" +
+            "3. 保存后会立即刷新 Toolbar。配置保存在 ProjectSettings/ScenePlaySelectorConfig.json。";
 
-        private int _sourceIndex = 0;
-        private readonly string[] _sourceNames = { "BuildSettings", "ProjectAssets" };
-        private Vector2 _sceneListScrollPos;
-        private readonly List<SceneData> _sceneDataLists = new();
-        private static string _fileFullPath;
+        [Header("配置窗口默认尺寸")]
+        private static readonly Vector2 WindowSize = new(860, 620);
 
-        private double _lastRefreshTime;
-        private const double RefreshInterval = 1;
-        private const string PrefSourceIndexKey = "SourceIndexKey";
-        private const string PrefKeyFoldPath = "ScenePlaySelector_FoldPath";
+        [Header("当前正在编辑的场景来源")]
+        private ScenePlaySource _source;
 
-        private const string HelpBoxMessage = "场景显示配置器说明\n" +
-                                              "1. 场景来源：BuildSettings：编译设置中的所有场景  |  ProjectAssets：项目中的所有场景  \n" +
-                                              "2. 更新：项目有新增或删除场景文件时使用\n" +
-                                              "3. 保存：设置显示和隐藏场景在Toolbar栏中\n";
+        [Header("场景列表滚动位置")]
+        private Vector2 _scroll;
 
-        [Header("窗口大小")] private static readonly Vector2 windowSize = new(800, 600);
+        [Header("场景搜索关键字")]
+        private string _searchText = string.Empty;
 
-        #region 自动刷新
+        [Header("当前窗口中的场景行数据")]
+        private readonly List<SceneRow> _rows = new();
 
-        private void OnEnable()
-        {
-            _sourceIndex = EditorPrefs.GetInt(PrefSourceIndexKey, 0);
-            GetScenesWay();
-            EditorApplication.update += OnEditorUpdate;
-        }
-
-        private void OnDisable()
-        {
-            EditorApplication.update -= OnEditorUpdate;
-        }
-
-        private void OnEditorUpdate()
-        {
-            // 自动刷新
-            /*var now = EditorApplication.timeSinceStartup;
-            if (now - _lastRefreshTime >= RefreshInterval)
-            {
-                _lastRefreshTime = now;
-                GetScenes((SceneSource)_sourceIndex);
-            }*/
-        }
-
-        #endregion
-
-        #region 创建GUI样式
-
-        private GUIStyle _sceneTitleStyle;
-
-        private void CreateGUIStyle()
-        {
-            _sceneTitleStyle ??= new GUIStyle()
-            {
-                fontSize  = 12,
-                fontStyle = FontStyle.Bold,
-                normal =
-                {
-                    textColor = Color.white
-                },
-            };
-        }
-
-        #endregion
-
+        /// <summary>
+        /// 打开配置窗口。
+        /// </summary>
         [MenuItem("ByTools/🖼️ 场景显示配置器")]
         public static void ShowWindow()
         {
             var window = GetWindow<SceneSelectorEditorWindow>("场景显示配置器");
-            window.minSize = windowSize;
-            window.maxSize = windowSize;
+            window.minSize = WindowSize;
             window.Show();
         }
 
+        /// <summary>
+        /// 窗口启用时读取当前配置。
+        /// </summary>
+        private void OnEnable()
+        {
+            _source = ScenePlaySelectorStorage.GetSelectedSource();
+            ReloadRows();
+        }
+
+        /// <summary>
+        /// 绘制窗口 GUI。
+        /// </summary>
         private void OnGUI()
         {
             EditorGUILayout.HelpBox(HelpBoxMessage, MessageType.Info);
-            DeleteJsonFile();
-            CreateGUIStyle();
-            OnSelectionSource();
-
-            DrawScenesList();
+            DrawToolbar();
+            GUILayout.Space(6);
+            DrawSummary();
+            GUILayout.Space(4);
+            DrawSceneList();
         }
 
-        private void DeleteJsonFile()
+        /// <summary>
+        /// 绘制顶部操作栏。
+        /// </summary>
+        private void DrawToolbar()
         {
-            if (!string.IsNullOrEmpty(_fileFullPath))
-            {
-                var configFile = Path.GetFileNameWithoutExtension(_fileFullPath);
-                if (File.Exists(_fileFullPath))
-                {
-                    if (GUILayout.Button($"删除当前配置文件 [ {configFile}.json ]"))
-                    {
-                        if (File.Exists(_fileFullPath))
-                        {
-                            File.Delete(_fileFullPath);
-                            AssetDatabase.Refresh();
-                        }
-                        else
-                        {
-                            Debug.LogError("文件不存在");
-                        }
+            EditorGUILayout.BeginVertical("box");
 
-                        ScenePlaySelector.RefreshToolbar();
-                    }
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("场景来源：", GUILayout.Width(72));
+
+            int newSourceIndex = EditorGUILayout.Popup(
+                (int)_source,
+                ScenePlaySelectorStorage.SourceDisplayNames,
+                GUILayout.Width(180));
+
+            if (newSourceIndex != (int)_source)
+            {
+                _source = ScenePlaySelectorStorage.SourceFromIndex(newSourceIndex);
+                ScenePlaySelectorStorage.SaveSelectedSource(_source);
+                ReloadRows();
+                ScenePlaySelector.RefreshToolbar();
+            }
+
+            _searchText = EditorGUILayout.TextField("搜索", _searchText ?? string.Empty);
+
+            if (GUILayout.Button("更新", GUILayout.Width(70)))
+            {
+                ReloadRows();
+            }
+
+            if (GUILayout.Button("保存并刷新", GUILayout.Width(100)))
+            {
+                SaveRowsAndRefresh();
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("全选", GUILayout.Width(70)))
+            {
+                SetVisibleForFilteredRows(true);
+            }
+
+            if (GUILayout.Button("全不选", GUILayout.Width(70)))
+            {
+                SetVisibleForFilteredRows(false);
+            }
+
+            if (GUILayout.Button("反选", GUILayout.Width(70)))
+            {
+                InvertFilteredRows();
+            }
+
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button("重置当前来源配置", GUILayout.Width(130)))
+            {
+                if (EditorUtility.DisplayDialog("确认重置", $"确定重置 {ScenePlaySelectorStorage.GetSourceDisplayName(_source)} 的显示配置吗？", "重置", "取消"))
+                {
+                    ScenePlaySelectorStorage.ResetSource(_source);
+                    ReloadRows();
+                    ScenePlaySelector.RefreshToolbar();
                 }
             }
+
+            if (GUILayout.Button("打开配置目录", GUILayout.Width(110)))
+            {
+                string dir = ScenePlaySelectorStorage.ConfigDirectory;
+                if (!Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+
+                EditorUtility.RevealInFinder(dir);
+            }
+
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndVertical();
         }
 
-        private void OnSelectionSource()
+        /// <summary>
+        /// 绘制当前来源、场景数量、配置路径等信息。
+        /// </summary>
+        private void DrawSummary()
+        {
+            int total = _rows.Count;
+            int visible = _rows.Count(r => r.show);
+
+            EditorGUILayout.BeginVertical("box");
+            EditorGUILayout.LabelField($"当前来源：{ScenePlaySelectorStorage.GetSourceDisplayName(_source)}");
+            EditorGUILayout.LabelField($"场景总数：{total}，Toolbar 显示：{visible}，隐藏：{total - visible}");
+            EditorGUILayout.LabelField($"配置文件：{ScenePlaySelectorStorage.ConfigPath}", EditorStyles.miniLabel);
+            EditorGUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// 绘制场景列表。
+        /// </summary>
+        private void DrawSceneList()
+        {
+            var filteredRows = GetFilteredRows();
+
+            EditorGUILayout.BeginVertical("box");
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("显示", EditorStyles.boldLabel, GUILayout.Width(42));
+            EditorGUILayout.LabelField("序号", EditorStyles.boldLabel, GUILayout.Width(42));
+            EditorGUILayout.LabelField("场景", EditorStyles.boldLabel, GUILayout.Width(240));
+            EditorGUILayout.LabelField("路径", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("操作", EditorStyles.boldLabel, GUILayout.Width(110));
+            EditorGUILayout.EndHorizontal();
+
+            if (filteredRows.Count == 0)
+            {
+                EditorGUILayout.HelpBox("没有匹配的场景。", MessageType.None);
+                EditorGUILayout.EndVertical();
+                return;
+            }
+
+            _scroll = EditorGUILayout.BeginScrollView(_scroll);
+            foreach (var row in filteredRows)
+            {
+                DrawSceneRow(row);
+            }
+
+            EditorGUILayout.EndScrollView();
+            EditorGUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// 绘制单行场景配置。
+        /// </summary>
+        private void DrawSceneRow(SceneRow row)
         {
             EditorGUILayout.BeginHorizontal();
 
-            EditorGUILayout.LabelField("场景来源：", GUILayout.Width(80));
-            var sourceIndex = EditorGUILayout.Popup(_sourceIndex, _sourceNames, GUILayout.Width(200));
-            if (_sourceIndex != sourceIndex)
+            row.show = EditorGUILayout.Toggle(row.show, GUILayout.Width(42));
+            EditorGUILayout.LabelField(row.index.ToString(), GUILayout.Width(42));
+
+            using (new EditorGUI.DisabledScope(true))
             {
-                _sourceIndex = sourceIndex;
-                // Debug.Log("刷新");
-                EditorPrefs.SetInt(PrefSourceIndexKey, _sourceIndex);
-                GetScenesWay();
+                EditorGUILayout.ObjectField(row.asset, typeof(SceneAsset), false, GUILayout.Width(240));
             }
 
-            if (GUILayout.Button("更新"))
-            {
-                GetScenes();
-            }
+            EditorGUILayout.LabelField(row.path, EditorStyles.miniLabel);
 
-            if (GUILayout.Button("保存"))
+            using (new EditorGUI.DisabledScope(row.asset == null))
             {
-                if (_sceneDataLists.Count == 0)
+                if (GUILayout.Button("打开", GUILayout.Width(50)))
                 {
-                    EditorGUILayout.EndHorizontal();
-                    return;
+                    OpenScene(row.path);
                 }
 
-                var wrapper = new SceneDataListWrapper
+                if (GUILayout.Button("定位", GUILayout.Width(50)))
                 {
-                    sceneDataList = new List<SceneDataJson>()
-                };
-                for (int i = 0; i < _sceneDataLists.Count; i++)
-                {
-                    if (!_sceneDataLists[i].asset) continue;
-                    var sceneDataJson = new SceneDataJson
-                    {
-                        index = _sceneDataLists[i].index,
-                        name  = _sceneDataLists[i].asset.name,
-                        path  = _sceneDataLists[i].path,
-                        show  = _sceneDataLists[i].show
-                    };
-                    wrapper.sceneDataList.Add(sceneDataJson);
-                }
-
-                string jsonString = JsonUtility.ToJson(wrapper, true); // true表示格式化输出
-                SaveJsonFile(jsonString);
-                // ScenePlaySelector.RefreshToolbar();
-            }
-
-            if (GUILayout.Button("全选"))
-            {
-                foreach (var sceneData in _sceneDataLists)
-                {
-                    if (sceneData.asset == null) continue;
-                    sceneData.show = true;
-                }
-            }
-
-            if (GUILayout.Button("反选"))
-            {
-                foreach (var sceneData in _sceneDataLists)
-                {
-                    if (sceneData.asset == null) continue;
-                    sceneData.show = !sceneData.show;
+                    EditorGUIUtility.PingObject(row.asset);
+                    Selection.activeObject = row.asset;
                 }
             }
 
             EditorGUILayout.EndHorizontal();
         }
 
-        private void DrawScenesList()
+        /// <summary>
+        /// 从存储配置和项目真实场景中重新加载窗口列表。
+        /// </summary>
+        private void ReloadRows()
         {
-            _sceneListScrollPos = EditorGUILayout.BeginScrollView(_sceneListScrollPos);
-            {
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("显示", _sceneTitleStyle, GUILayout.Width(30));
-                EditorGUILayout.LabelField("序号", _sceneTitleStyle, GUILayout.Width(30));
-                EditorGUILayout.LabelField("场景", _sceneTitleStyle);
-                EditorGUILayout.EndHorizontal();
+            _rows.Clear();
 
-                foreach (var sceneData in _sceneDataLists)
+            var scenes = ScenePlaySelectorStorage.GetMergedScenes(_source);
+            for (int i = 0; i < scenes.Count; i++)
+            {
+                var scene = scenes[i];
+                var asset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scene.path);
+
+                _rows.Add(new SceneRow
                 {
-                    if (sceneData.asset == null) continue;
-                    EditorGUILayout.BeginHorizontal();
-                    sceneData.show = GUILayout.Toggle(sceneData.show, "", EditorStyles.radioButton, GUILayout.Width(30));
-                    EditorGUILayout.LabelField($"{sceneData.index}. ", GUILayout.Width(30));
-                    EditorGUILayout.ObjectField(sceneData.asset, typeof(SceneAsset), false);
-                    EditorGUILayout.EndHorizontal();
-                }
-            }
-            EditorGUILayout.EndScrollView();
-        }
-
-        #region 辅助
-
-        private void GetScenesWay()
-        {
-            _fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
-            if (File.Exists(_fileFullPath))
-                ReadJsonFile();
-            else
-                GetScenes();
-        }
-
-        private void GetScenes()
-        {
-            switch ((SceneSource)_sourceIndex)
-            {
-                case SceneSource.BuildSettings:
-                    var sceneBuildPaths = EditorBuildSettings.scenes.Select(s => s.path).ToArray();
-                    RefreshSceneDataLists(sceneBuildPaths);
-                    break;
-
-                case SceneSource.Project:
-                    var sceneProjectPaths = AssetDatabase.FindAssets("t:Scene").Select(AssetDatabase.GUIDToAssetPath).ToArray();
-                    RefreshSceneDataLists(sceneProjectPaths);
-                    break;
+                    index = i,
+                    name = string.IsNullOrWhiteSpace(scene.name) ? Path.GetFileNameWithoutExtension(scene.path) : scene.name,
+                    path = scene.path,
+                    show = scene.show,
+                    asset = asset,
+                });
             }
         }
 
-        private void RefreshSceneDataLists(string[] scenePaths)
+        /// <summary>
+        /// 保存当前窗口中的显示配置，并刷新 Toolbar。
+        /// </summary>
+        private void SaveRowsAndRefresh()
         {
-            var sceneDataLists = new List<SceneData>();
-            for (int i = 0; i < scenePaths.Length; i++)
+            var saveList = _rows.Select(row => new ScenePlaySceneItem
             {
-                var scenePath  = scenePaths[i];
-                var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scenePath);
-                if (_sceneDataLists.Any(s => s.path == scenePath))
-                {
-                    // 标记配置表中已经包含的场景
-                    var sceneData = _sceneDataLists.Find(s => s.path == scenePath);
-                    sceneDataLists.Add(sceneData);
-                    // continue;
-                }
-                else
-                {
-                    // 标记配置表中未包含的场景
-                    sceneDataLists.Add(new SceneData(i, scenePath, sceneAsset, true));
-                }
+                index = row.index,
+                name = row.name,
+                path = row.path,
+                show = row.show,
+            }).ToList();
+
+            ScenePlaySelectorStorage.SaveSourceScenes(_source, saveList);
+            ScenePlaySelectorStorage.SaveSelectedSource(_source);
+            ScenePlaySelector.RefreshToolbar();
+
+            ShowNotification(new GUIContent("已保存并刷新 Toolbar"));
+        }
+
+        /// <summary>
+        /// 获取搜索过滤后的场景行。
+        /// </summary>
+        private List<SceneRow> GetFilteredRows()
+        {
+            if (string.IsNullOrWhiteSpace(_searchText))
+            {
+                return _rows;
             }
 
-            _sceneDataLists.Clear();
-            for (int i = 0; i < sceneDataLists.Count; i++)
+            string keyword = _searchText.Trim();
+            return _rows
+                .Where(row =>
+                    (!string.IsNullOrWhiteSpace(row.name) && row.name.IndexOf(keyword, System.StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (!string.IsNullOrWhiteSpace(row.path) && row.path.IndexOf(keyword, System.StringComparison.OrdinalIgnoreCase) >= 0))
+                .ToList();
+        }
+
+        /// <summary>
+        /// 设置过滤后所有场景是否显示。
+        /// </summary>
+        private void SetVisibleForFilteredRows(bool visible)
+        {
+            foreach (var row in GetFilteredRows())
             {
-                var sceneData = sceneDataLists[i];
-                sceneData.index = i;
-                _sceneDataLists.Add(sceneData);
+                row.show = visible;
             }
         }
 
-        private void SaveJsonFile(string jsonContent)
+        /// <summary>
+        /// 反选过滤后的场景显示状态。
+        /// </summary>
+        private void InvertFilteredRows()
         {
-            try
+            foreach (var row in GetFilteredRows())
             {
-                _fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
-
-                if (File.Exists(_fileFullPath)) File.Delete(_fileFullPath);
-                File.WriteAllText(_fileFullPath, jsonContent, Encoding.UTF8);
+                row.show = !row.show;
             }
-            catch (Exception e)
-            {
-                EditorGUILayout.EndHorizontal();
-                throw new Exception($"保存失败:{e.Message}");
-            }
-
-            AssetDatabase.Refresh();
         }
 
-        private void ReadJsonFile()
+        /// <summary>
+        /// 从配置窗口中打开指定场景。
+        /// </summary>
+        private static void OpenScene(string path)
         {
-            _fileFullPath = Path.Combine(CheckDirectory(), $"{_sourceNames[_sourceIndex]}.json");
-
-            if (!File.Exists(_fileFullPath))
+            if (string.IsNullOrWhiteSpace(path))
             {
-                Debug.LogError("文件不存在");
-                EditorGUILayout.EndHorizontal();
                 return;
             }
 
-            var jsonContent     = File.ReadAllText(_fileFullPath);
-            var dataListWrapper = JsonUtility.FromJson<SceneDataListWrapper>(jsonContent);
-            // Debug.Log(string.Join("\n", dataListWrapper.sceneDataList.Select(s => s.name)));
-
-            // 刷新数据
-            _sceneDataLists.Clear();
-            for (int i = 0; i < dataListWrapper.sceneDataList.Count; i++)
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
             {
-                var data       = dataListWrapper.sceneDataList[i];
-                var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(data.path);
-                _sceneDataLists.Add(new SceneData(data.index, data.path, sceneAsset, data.show));
-            }
-        }
-
-        private string CheckDirectory()
-        {
-            var monoScript     = MonoScript.FromScriptableObject(this);
-            var scriptFullPath = AssetDatabase.GetAssetPath(monoScript);
-            var folderPath     = GetUpperDirectory(scriptFullPath, 2, "ScenePlaySelectorFiles");
-            if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
-            EditorPrefs.SetString(PrefKeyFoldPath, folderPath);
-            return folderPath;
-        }
-
-        // 获取上级目录
-        private static string GetUpperDirectory(string path, int level, string lastFold = "")
-        {
-            var currentPath = path;
-
-            for (var i = 0; i < level; i++)
-            {
-                currentPath = Path.GetDirectoryName(currentPath);
-
-                if (string.IsNullOrEmpty(currentPath))
-                    return null;
+                EditorUtility.DisplayDialog("提示", "播放中或即将进入播放模式时不能切换场景。", "确定");
+                return;
             }
 
-            lastFold    = string.IsNullOrEmpty(lastFold) ? lastFold : $"{lastFold}/";
-            currentPath = $"{currentPath.Replace('\\', '/')}/{lastFold}";
-            return currentPath;
-        }
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(path) == null)
+            {
+                EditorUtility.DisplayDialog("提示", $"场景不存在或已被移动：\n{path}", "确定");
+                return;
+            }
 
-        #endregion
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                return;
+            }
+
+            EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+            ScenePlaySelector.RefreshToolbar();
+        }
     }
 }

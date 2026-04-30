@@ -4,7 +4,6 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
     using UnityEditor;
     using UnityEditor.SceneManagement;
     using UnityEngine;
@@ -12,226 +11,360 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
     using UnityEngine.UIElements;
 
     /// <summary>
-    /// 快速切换场景
+    /// Editor Toolbar 场景快速切换器。
+    /// 
+    /// 功能：
+    /// 1. 将 Source / Scene 下拉选项放到 Play/Pause/Step 的右侧。
+    /// 2. Source 用于切换场景来源：BuildSettings 或 ProjectAssets。
+    /// 3. Scene 用于快速切换当前编辑器场景。
+    /// 4. 支持刷新和打开配置窗口。
     /// </summary>
     [InitializeOnLoad]
     public static class ScenePlaySelector
     {
-        private const string PrefKeyFoldPath = "ScenePlaySelector_FoldPath";
-        private const string PrefKeySelectedIndexSource = "ScenePlaySelector_SelectedIndexSource";
-        private const string PrefKeySelectedBuildScene = "ScenePlaySelector_BuildScene";
-        private const string PrefKeySelectedProjectScene = "ScenePlaySelector_ProjectScene";
-        private static readonly string[] sourceNames = { "BuildSettings", "ProjectAssets" };
-        private static Vector2 _lastSize;
+        [Header("Toolbar 中当前工具容器的唯一名称")]
+        private const string ToolbarElementName = "ScenePlaySelector";
 
-        private enum SceneSource
-        {
-            BuildSettings,
-            Project
-        }
+        [Header("没有可用场景时显示的占位文本")]
+        private const string EmptySceneLabel = "<无可用场景>";
 
+        [Header("Source 来源下拉菜单控件")]
+        private static VisualElementFactory.NativeToolbarDropdown _sourceDropdown;
+
+        [Header("Scene 场景下拉菜单控件")]
+        private static VisualElementFactory.NativeToolbarDropdown _sceneDropdown;
+
+        [Header("当前 Source 下可显示的场景路径列表")]
+        private static List<string> _currentScenePaths = new();
+
+        [Header("是否正在内部刷新控件，防止刷新时触发回调")]
+        private static bool _suppressCallback;
+
+        [Header("下一次允许检测 Toolbar 是否存在的时间")]
+        private static double _nextEnsureToolbarTime;
+
+        /// <summary>
+        /// 静态构造函数。
+        /// Unity 加载编辑器域后自动执行，用于挂载 Toolbar 和注册事件。
+        /// </summary>
         static ScenePlaySelector()
         {
-            EditorApplication.update    += EnsureToolbar;
-            EditorApplication.delayCall += InitToolbar;
+            EditorApplication.delayCall += RefreshToolbar;
+            EditorApplication.update += EnsureToolbarThrottled;
+            EditorSceneManager.activeSceneChangedInEditMode += OnActiveSceneChangedInEditMode;
         }
 
-        private static void EnsureToolbar()
-        {
-            if (!HasToolbar())
-            {
-                InitToolbar();
-            }
-
-            // 若手动打开其它场景，处理选择的Index
-            // var activeScene = SceneManager.GetActiveScene();
-        }
-
-        private static bool HasToolbar()
-        {
-            var toolbarType = typeof(Editor).Assembly.GetType("UnityEditor.Toolbar");
-            var toolbars    = Resources.FindObjectsOfTypeAll(toolbarType);
-            if (toolbars.Length == 0) return false;
-
-            var rootField = toolbarType.GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
-            var root      = rootField?.GetValue(toolbars[0]) as VisualElement;
-            var leftZone  = root?.Q("ToolbarZoneLeftAlign");
-            return leftZone?.Q("ScenePlaySelector") != null;
-        }
-
+        /// <summary>
+        /// 对外刷新入口。
+        /// 配置窗口保存后会调用这里刷新 Toolbar。
+        /// </summary>
         public static void RefreshToolbar()
         {
-            InitToolbar();
+            BuildToolbar();
         }
 
-        private static void InitToolbar()
+        /// <summary>
+        /// 节流检测 Toolbar 是否存在。
+        /// Unity 重新编译、切换布局或 Domain Reload 后，Toolbar 可能会重建，
+        /// 所以这里每秒检查一次，缺失时重新挂载。
+        /// </summary>
+        private static void EnsureToolbarThrottled()
         {
-            var toolbarType = typeof(Editor).Assembly.GetType("UnityEditor.Toolbar");
-            var toolbars    = Resources.FindObjectsOfTypeAll(toolbarType);
-            if (toolbars.Length == 0)
+            if (EditorApplication.timeSinceStartup < _nextEnsureToolbarTime)
             {
-                Debug.LogError("ScenePlaySelector: 未找到工具栏 (Toolbar)");
                 return;
             }
 
-            var toolbar   = (ScriptableObject)toolbars[0];
-            var rootField = toolbarType.GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
-            if (rootField == null)
+            _nextEnsureToolbarTime = EditorApplication.timeSinceStartup + 1.0d;
+
+            if (!EditorToolbarUtil.HasElement(ToolbarElementName))
             {
-                Debug.LogError("ScenePlaySelector: 未找到工具栏 (m_Root)");
-                return;
+                BuildToolbar();
             }
+        }
 
-            var root = rootField.GetValue(toolbar) as VisualElement;
-
-            var leftZone = root.Q("ToolbarZoneLeftAlign");
-            if (leftZone == null)
-            {
-                Debug.LogError("ScenePlaySelector: 未找到工具栏 (ToolbarZoneLeftAlign)");
-                return;
-            }
-
-            // var existingContainer = leftZone.Q("ScenePlaySelector");
-            // if (existingContainer != null) leftZone.Remove(existingContainer);
+        /// <summary>
+        /// 构建并挂载 Toolbar 控件。
+        /// </summary>
+        private static void BuildToolbar()
+        {
+            var selectedSource = ScenePlaySelectorStorage.GetSelectedSource();
 
             var container = new VisualElement
             {
-                name = "ScenePlaySelector",
+                name = ToolbarElementName,
                 style =
                 {
                     flexDirection = FlexDirection.Row,
-                    alignItems    = Align.Center,
-                    marginLeft    = 6,
-                    marginRight   = 6,
+                    alignItems = Align.Center,
+                    marginLeft = 8,
+                    marginRight = 4,
+                    height = 22,
+                    flexShrink = 0,
                 }
             };
 
-            EditorToolbarUtil.AddOrReplace("ScenePlaySelector", container);
+            _sourceDropdown = VisualElementFactory.CreateToolbarDropdown(
+                "Source",
+                ScenePlaySelectorStorage.SourceDisplayNames.ToList(),
+                (int)selectedSource,
+                150f);
 
-            var label = VisualElementFactory.CreateToolbarLabel("Source:", FontStyle.Bold);
-            container.Add(label);
+            container.Add(_sourceDropdown);
 
-            // --- 场景来源选项 ---
-            var selectedSource = (SceneSource)EditorPrefs.GetInt(PrefKeySelectedIndexSource, 0);
-            var sourcePopup    = VisualElementFactory.CreateToolbarPopup(sourceNames.ToList(), (int)selectedSource);
-            container.Add(sourcePopup);
+            var sceneLabels = BuildSceneDropdownData(selectedSource, out int selectedSceneIndex);
+            _sceneDropdown = VisualElementFactory.CreateToolbarDropdown(
+                "Scene",
+                sceneLabels,
+                selectedSceneIndex,
+                220f);
 
-            // --- 场景标签 ---
-            var sceneLabel = VisualElementFactory.CreateToolbarLabel("Scene:", FontStyle.Bold);
-            container.Add(sceneLabel);
+            container.Add(_sceneDropdown);
 
-            // --- 选择场景弹出框 ---
-            string[] scenePaths = GetScenePaths(selectedSource);
-            var      sceneNames = scenePaths.Select(Path.GetFileNameWithoutExtension).ToList();
+            var refreshButton = VisualElementFactory.CreateToolbarButton("↻", RefreshToolbar, "Refresh Scene List");
+            container.Add(refreshButton);
 
-            int lastSelectedSceneIndex = selectedSource switch
+            var configButton = VisualElementFactory.CreateToolbarButton("⚙", SceneSelectorEditorWindow.ShowWindow, "Scene Selector Settings");
+            container.Add(configButton);
+
+            if (!EditorToolbarUtil.AddOrReplaceToPlayModeRight(ToolbarElementName, container))
             {
-                SceneSource.BuildSettings => EditorPrefs.GetInt(PrefKeySelectedBuildScene, 0),
-                SceneSource.Project       => EditorPrefs.GetInt(PrefKeySelectedProjectScene, 0),
-                _                         => throw new ArgumentOutOfRangeException()
-            };
+                return;
+            }
 
-            int selectedSceneIndex = Mathf.Clamp(value: lastSelectedSceneIndex, 0, sceneNames.Count - 1);
-            var scenePopup         = VisualElementFactory.CreateToolbarPopup(sceneNames, selectedSceneIndex);
-            container.Add(scenePopup);
-
-            // --- Source 切换回调 ---
-            sourcePopup.RegisterValueChangedCallback(_ =>
-            {
-                selectedSource = (SceneSource)sourcePopup.index;
-                EditorPrefs.SetInt(PrefKeySelectedIndexSource, (int)selectedSource);
-
-                // 刷新 Scene 列表
-                scenePaths         = GetScenePaths(selectedSource);
-                sceneNames         = scenePaths.Select(Path.GetFileNameWithoutExtension).ToList();
-                scenePopup.choices = sceneNames;
-
-                int idx = 0;
-                if (sceneNames.Count > 0)
-                {
-                    int lastSelectedIndex = selectedSource switch
-                    {
-                        SceneSource.BuildSettings => EditorPrefs.GetInt(PrefKeySelectedBuildScene, 0),
-                        SceneSource.Project       => EditorPrefs.GetInt(PrefKeySelectedProjectScene, 0),
-                        _                         => throw new ArgumentOutOfRangeException()
-                    };
-
-                    idx = Mathf.Clamp(lastSelectedIndex, 0, sceneNames.Count - 1);
-                }
-
-                scenePopup.index = idx;
-            });
-
-            // --- 场景切换回调（立即打开 场景） ---
-            scenePopup.RegisterValueChangedCallback(_ =>
-            {
-                int index = scenePopup.index;
-                switch (selectedSource)
-                {
-                    case SceneSource.BuildSettings:
-                        EditorPrefs.SetInt(PrefKeySelectedBuildScene, index);
-                        break;
-                    case SceneSource.Project:
-                        EditorPrefs.SetInt(PrefKeySelectedProjectScene, index);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                if (index >= 0 && index < scenePaths.Length)
-                {
-                    string targetScene  = scenePaths[index];
-                    string currentScene = SceneManager.GetActiveScene().path;
-                    if (currentScene != targetScene)
-                    {
-                        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
-                            return;
-                        EditorSceneManager.OpenScene(targetScene);
-                    }
-                }
-            });
-
-            var button = VisualElementFactory.CreateToolbarButton("⚙", SceneSelectorEditorWindow.ShowWindow);
-            container.Add(button);
-            leftZone.Add(container);
+            RegisterCallbacks();
         }
 
-        private static readonly List<string> activeScenesPath = new();
-
-        private static string[] GetScenePaths(SceneSource source)
+        /// <summary>
+        /// 注册 Source / Scene 下拉菜单的回调事件。
+        /// </summary>
+        private static void RegisterCallbacks()
         {
-            var foldPath     = EditorPrefs.GetString(PrefKeyFoldPath, string.Empty);
-            var fileFullPath = Path.Combine(foldPath, $"{sourceNames[(int)source]}.json");
-            var hasFile      = File.Exists(fileFullPath);
-            activeScenesPath.Clear();
-            // 未设置配置文件，使用默认查找场景
-            if (string.IsNullOrEmpty(foldPath) || !hasFile)
+            if (_sourceDropdown != null)
             {
-                // Debug.Log($"未找到配置文件，使用默认查找场景\n{PrefKeyFoldPath}");
-                switch (source)
+                _sourceDropdown.IndexChanged += _ =>
                 {
-                    case SceneSource.BuildSettings:
-                        return EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
-                    case SceneSource.Project:
-                        var guids = AssetDatabase.FindAssets("t:Scene");
-                        return guids.Select(AssetDatabase.GUIDToAssetPath).ToArray();
-                    default:
-                        return Array.Empty<string>();
-                }
+                    if (_suppressCallback)
+                    {
+                        return;
+                    }
+
+                    var source = ScenePlaySelectorStorage.SourceFromIndex(_sourceDropdown.Index);
+                    ScenePlaySelectorStorage.SaveSelectedSource(source);
+                    RefreshSceneDropdown(source, selectActiveSceneWhenPossible: true);
+                };
             }
 
-            // Debug.Log($"使用配置文件数据:{fileFullPath}");
-            // 使用配置文件数据
-            var jsonContent     = File.ReadAllText(fileFullPath);
-            var dataListWrapper = JsonUtility.FromJson<SceneDataListWrapper>(jsonContent);
-
-            foreach (var sceneData in dataListWrapper.sceneDataList)
+            if (_sceneDropdown != null)
             {
-                if (!sceneData.show) continue;
-                activeScenesPath.Add(sceneData.path);
+                _sceneDropdown.IndexChanged += _ =>
+                {
+                    if (_suppressCallback)
+                    {
+                        return;
+                    }
+
+                    TryOpenSelectedScene();
+                };
+            }
+        }
+
+        /// <summary>
+        /// 根据指定来源刷新 Scene 下拉菜单。
+        /// </summary>
+        private static void RefreshSceneDropdown(ScenePlaySource source, bool selectActiveSceneWhenPossible)
+        {
+            if (_sceneDropdown == null)
+            {
+                return;
             }
 
-            return activeScenesPath.ToArray();
+            _suppressCallback = true;
+            try
+            {
+                var labels = BuildSceneDropdownData(source, out int selectedIndex, selectActiveSceneWhenPossible);
+                _sceneDropdown.SetChoices(labels, selectedIndex, false);
+            }
+            finally
+            {
+                _suppressCallback = false;
+            }
+        }
+
+        /// <summary>
+        /// 构建 Scene 下拉菜单显示数据。
+        /// </summary>
+        private static List<string> BuildSceneDropdownData(ScenePlaySource source, out int selectedIndex, bool selectActiveSceneWhenPossible = true)
+        {
+            _currentScenePaths = ScenePlaySelectorStorage.GetVisibleScenePaths(source);
+
+            var labels = BuildSceneLabels(_currentScenePaths);
+            if (labels.Count == 0)
+            {
+                labels.Add(EmptySceneLabel);
+                selectedIndex = 0;
+                return labels;
+            }
+
+            string selectedPath = ScenePlaySelectorStorage.GetSelectedScenePath(source);
+            string activePath = NormalizePath(SceneManager.GetActiveScene().path);
+
+            if (selectActiveSceneWhenPossible && !string.IsNullOrWhiteSpace(activePath) && _currentScenePaths.Contains(activePath, StringComparer.OrdinalIgnoreCase))
+            {
+                selectedPath = activePath;
+            }
+
+            selectedIndex = _currentScenePaths.FindIndex(path =>
+                string.Equals(path, selectedPath, StringComparison.OrdinalIgnoreCase));
+
+            if (selectedIndex < 0)
+            {
+                selectedIndex = 0;
+            }
+
+            return labels;
+        }
+
+        /// <summary>
+        /// 根据场景路径生成显示文本。
+        /// 如果存在同名场景，会追加目录路径辅助区分。
+        /// 当前激活场景前面会显示 ● 标记。
+        /// </summary>
+        private static List<string> BuildSceneLabels(List<string> scenePaths)
+        {
+            var result = new List<string>();
+            if (scenePaths == null || scenePaths.Count == 0)
+            {
+                return result;
+            }
+
+            string activePath = NormalizePath(SceneManager.GetActiveScene().path);
+
+            var names = scenePaths
+                .Select(Path.GetFileNameWithoutExtension)
+                .ToList();
+
+            var duplicateNames = names
+                .GroupBy(name => name, StringComparer.OrdinalIgnoreCase)
+                .Where(group => group.Count() > 1)
+                .Select(group => group.Key)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            for (int i = 0; i < scenePaths.Count; i++)
+            {
+                string path = NormalizePath(scenePaths[i]);
+                string name = Path.GetFileNameWithoutExtension(path);
+
+                string label = duplicateNames.Contains(name)
+                    ? $"{name}  ({Path.GetDirectoryName(path)?.Replace('\\', '/')})"
+                    : name;
+
+                if (string.Equals(path, activePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    label = $"● {label}";
+                }
+
+                result.Add(label);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 打开当前 Scene 下拉菜单选中的场景。
+        /// </summary>
+        private static void TryOpenSelectedScene()
+        {
+            if (_sceneDropdown == null || _currentScenePaths == null || _currentScenePaths.Count == 0)
+            {
+                return;
+            }
+
+            int index = _sceneDropdown.Index;
+            if (index < 0 || index >= _currentScenePaths.Count)
+            {
+                return;
+            }
+
+            string targetScene = NormalizePath(_currentScenePaths[index]);
+            if (string.IsNullOrWhiteSpace(targetScene))
+            {
+                return;
+            }
+
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                EditorUtility.DisplayDialog("提示", "播放中或即将进入播放模式时不能切换场景。", "确定");
+                SyncDropdownToActiveScene();
+                return;
+            }
+
+            var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(targetScene);
+            if (sceneAsset == null)
+            {
+                EditorUtility.DisplayDialog("提示", $"场景不存在或已被移动：\n{targetScene}", "确定");
+                RefreshToolbar();
+                return;
+            }
+
+            string currentScene = NormalizePath(SceneManager.GetActiveScene().path);
+            var source = ScenePlaySelectorStorage.SourceFromIndex(_sourceDropdown?.Index ?? 0);
+            ScenePlaySelectorStorage.SaveSelectedScenePath(source, targetScene);
+
+            if (string.Equals(currentScene, targetScene, StringComparison.OrdinalIgnoreCase))
+            {
+                SyncDropdownToActiveScene();
+                return;
+            }
+
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                SyncDropdownToActiveScene();
+                return;
+            }
+
+            EditorSceneManager.OpenScene(targetScene, OpenSceneMode.Single);
+            SyncDropdownToActiveScene();
+        }
+
+        /// <summary>
+        /// 当用户通过其它方式切换场景时，同步 Toolbar 上的当前场景显示。
+        /// </summary>
+        private static void OnActiveSceneChangedInEditMode(Scene oldScene, Scene newScene)
+        {
+            SyncDropdownToActiveScene();
+        }
+
+        /// <summary>
+        /// 将 Scene 下拉菜单同步到当前激活场景。
+        /// </summary>
+        private static void SyncDropdownToActiveScene()
+        {
+            if (_sceneDropdown == null || _sourceDropdown == null || _currentScenePaths == null || _currentScenePaths.Count == 0)
+            {
+                return;
+            }
+
+            var source = ScenePlaySelectorStorage.SourceFromIndex(_sourceDropdown.Index);
+            var labels = BuildSceneDropdownData(source, out int index, selectActiveSceneWhenPossible: true);
+
+            _suppressCallback = true;
+            try
+            {
+                _sceneDropdown.SetChoices(labels, index, false);
+            }
+            finally
+            {
+                _suppressCallback = false;
+            }
+        }
+
+        /// <summary>
+        /// 统一路径格式，避免 Windows 反斜杠导致路径比较失败。
+        /// </summary>
+        private static string NormalizePath(string path)
+        {
+            return path?.Replace('\\', '/').Trim() ?? string.Empty;
         }
     }
 }

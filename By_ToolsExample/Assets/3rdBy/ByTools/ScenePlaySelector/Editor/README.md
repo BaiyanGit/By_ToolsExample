@@ -251,3 +251,123 @@ ProjectSettings/ScenePlaySelectorConfig.json
 - 支持配置持久化到 ProjectSettings。
 - 脚本字段已添加 `Header` 注释。
 - 关键类、字段、方法已补充 XML 注释。
+
+
+
+---
+
+## Fixed: 补全 RefreshSceneDropdownAfterSourceChanged
+
+上一版调用了：
+
+```csharp
+RefreshSceneDropdownAfterSourceChanged(source);
+```
+
+但方法本体漏掉了。本版已补全。
+
+同时普通刷新逻辑也调整为：如果当前激活场景和保存的场景都不在当前 Source 的可见列表中，则 Scene 显示 `<未选择场景>`，不再错误地默认选中第一个场景。
+
+
+---
+
+## Fixed: Scene 下拉菜单勾选状态同步
+
+修复 `Source` 切换后：
+
+```text
+Scene 按钮文字已经切到保存的 Scene
+但打开 Scene 下拉菜单时，菜单项没有显示 Checked 勾选状态
+```
+
+原因是旧逻辑在 `SetChoices()` 中先重建菜单，再设置 `_index`。  
+部分 Unity 版本会缓存 `ToolbarMenu` 菜单状态，导致勾选状态没有同步。
+
+现在改成：
+
+```text
+SetChoices
+    ↓
+先更新 _index
+    ↓
+更新按钮文字
+    ↓
+再 RebuildMenu
+    ↓
+Checked 状态使用本次重建时的索引快照
+```
+
+
+---
+
+## 本版 Source 切换准确逻辑
+
+```text
+Source 改变
+    ↓
+刷新 Scene 下拉
+    ↓
+如果这个 Source 保存过的 Scene 还在显示列表中：
+    Scene 按钮显示这个 Scene
+    Scene 下拉菜单里对应项显示 Checked / Toggle 勾选状态
+    不自动打开这个 Scene
+
+否则：
+    Scene 显示为 <未选择场景>
+    Scene 列表中不勾选任何场景
+    当前 Unity 已打开的场景保持不变
+    不自动打开
+    ↓
+用户手动点 Scene 菜单里的场景时才打开
+```
+
+实现点：
+
+- `BuildSceneDropdownDataForSourceChanged()` 只认新 Source 自己保存过的 Scene。
+- 保存过的 Scene 不在当前可见列表时，返回 `selectedIndex = -1`。
+- `NativeToolbarDropdown` 支持 `index = -1`，用于显示 `<未选择场景>`。
+- `ToolbarMenu` 的 Checked 状态直接读取当前 `_index`，确保按钮文字和菜单勾选状态同步。
+
+
+---
+
+## ActiveSceneDriven 版本逻辑
+
+这版重新整理了 Source / Scene 的状态关系。
+
+核心规则：
+
+```text
+Scene 按钮永远优先显示 Unity 当前实际打开的 Scene
+Source 切换不自动打开任何 Scene
+Scene 菜单是否勾选，只看当前实际打开的 Scene 是否存在于当前 Source 的可见列表中
+用户手动点击 Scene 菜单项时，才打开并保存该 Scene
+```
+
+具体表现：
+
+```text
+Source 改变
+    ↓
+刷新 Scene 下拉列表
+    ↓
+检查当前 Unity 实际打开的 Scene 是否存在于新的 Source 显示列表中
+
+    如果存在：
+        Scene 按钮显示当前实际打开的 Scene
+        Scene 菜单里这个 Scene 显示 Checked / 勾选状态
+
+    如果不存在：
+        Scene 按钮仍然显示当前实际打开的 Scene 名称
+        Scene 菜单里不勾选任何项
+
+    ↓
+不自动打开任何 Scene
+    ↓
+用户手动点击 Scene 菜单里的某个 Scene 时：
+        打开这个 Scene
+        保存为当前 Source 的 selectedScenePath
+        Scene 菜单勾选这个 Scene
+```
+
+这版不再使用 `<未选择场景>` 作为 Source 切换后的显示文本，因为 Unity 实际上始终有当前打开的 Scene。

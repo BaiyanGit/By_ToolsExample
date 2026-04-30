@@ -18,6 +18,13 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
     /// 2. Source 用于切换场景来源：BuildSettings 或 ProjectAssets。
     /// 3. Scene 用于快速切换当前编辑器场景。
     /// 4. 支持刷新和打开配置窗口。
+    /// 
+    /// 当前 Scene 显示规则：
+    /// 1. Scene 按钮永远优先显示 Unity 当前实际打开的 Scene。
+    /// 2. Source 切换时不自动打开场景。
+    /// 3. 当前实际打开的 Scene 如果存在于当前 Source 的可见列表中，则菜单项显示 Checked。
+    /// 4. 当前实际打开的 Scene 如果不存在于当前 Source 的可见列表中，则菜单不勾选任何项，但按钮仍显示当前实际打开的 Scene 名称。
+    /// 5. 用户手动点击 Scene 菜单项时，才打开该场景并保存为当前 Source 的 selectedScenePath。
     /// </summary>
     [InitializeOnLoad]
     public static class ScenePlaySelector
@@ -27,6 +34,9 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
 
         [Header("没有可用场景时显示的占位文本")]
         private const string EmptySceneLabel = "<无可用场景>";
+
+        [Header("无场景名时显示的占位文本")]
+        private const string UntitledSceneLabel = "<未保存场景>";
 
         [Header("Source 来源下拉菜单控件")]
         private static VisualElementFactory.NativeToolbarDropdown _sourceDropdown;
@@ -112,12 +122,13 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
 
             container.Add(_sourceDropdown);
 
-            var sceneLabels = BuildSceneDropdownData(selectedSource, out int selectedSceneIndex);
+            var sceneLabels = BuildSceneDropdownDataByActiveScene(selectedSource, out int selectedSceneIndex);
             _sceneDropdown = VisualElementFactory.CreateToolbarDropdown(
                 "Scene",
                 sceneLabels,
                 selectedSceneIndex,
-                220f);
+                220f,
+                GetActiveSceneDisplayName());
 
             container.Add(_sceneDropdown);
 
@@ -151,7 +162,12 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
 
                     var source = ScenePlaySelectorStorage.SourceFromIndex(_sourceDropdown.Index);
                     ScenePlaySelectorStorage.SaveSelectedSource(source);
-                    RefreshSceneDropdown(source, selectActiveSceneWhenPossible: true);
+
+                    // Source 切换时只刷新右侧 Scene 列表，不自动打开场景。
+                    // Scene 按钮继续显示 Unity 当前实际打开的 Scene。
+                    // 如果当前实际打开的 Scene 存在于新 Source 列表中，则菜单勾选它；
+                    // 否则菜单不勾选任何项。
+                    RefreshSceneDropdownByActiveScene(source);
                 };
             }
 
@@ -171,8 +187,11 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
 
         /// <summary>
         /// 根据指定来源刷新 Scene 下拉菜单。
+        /// 
+        /// 这里不使用 Source 保存过的 selectedScenePath 决定显示状态，
+        /// 因为只要没有主动打开新场景，Unity 当前实际打开的 Scene 才是唯一真实状态。
         /// </summary>
-        private static void RefreshSceneDropdown(ScenePlaySource source, bool selectActiveSceneWhenPossible)
+        private static void RefreshSceneDropdownByActiveScene(ScenePlaySource source)
         {
             if (_sceneDropdown == null)
             {
@@ -182,7 +201,9 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             _suppressCallback = true;
             try
             {
-                var labels = BuildSceneDropdownData(source, out int selectedIndex, selectActiveSceneWhenPossible);
+                _sceneDropdown.SetEmptySelectionText(GetActiveSceneDisplayName());
+
+                var labels = BuildSceneDropdownDataByActiveScene(source, out int selectedIndex);
                 _sceneDropdown.SetChoices(labels, selectedIndex, false);
             }
             finally
@@ -193,33 +214,32 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
 
         /// <summary>
         /// 构建 Scene 下拉菜单显示数据。
+        /// 
+        /// 规则：
+        /// 1. 按当前 Source 获取可见 Scene 列表；
+        /// 2. 根据 Unity 当前实际打开的 Scene path 查找是否存在于该列表；
+        /// 3. 如果存在，selectedIndex 为对应索引，菜单显示 Checked；
+        /// 4. 如果不存在，selectedIndex = -1，按钮仍显示当前实际打开的 Scene 名，菜单不勾选任何项。
         /// </summary>
-        private static List<string> BuildSceneDropdownData(ScenePlaySource source, out int selectedIndex, bool selectActiveSceneWhenPossible = true)
+        private static List<string> BuildSceneDropdownDataByActiveScene(ScenePlaySource source, out int selectedIndex)
         {
             _currentScenePaths = ScenePlaySelectorStorage.GetVisibleScenePaths(source);
 
             var labels = BuildSceneLabels(_currentScenePaths);
             if (labels.Count == 0)
             {
-                labels.Add(EmptySceneLabel);
-                selectedIndex = 0;
+                selectedIndex = -1;
                 return labels;
             }
 
-            string selectedPath = ScenePlaySelectorStorage.GetSelectedScenePath(source);
             string activePath = NormalizePath(SceneManager.GetActiveScene().path);
 
-            if (selectActiveSceneWhenPossible && !string.IsNullOrWhiteSpace(activePath) && _currentScenePaths.Contains(activePath, StringComparer.OrdinalIgnoreCase))
-            {
-                selectedPath = activePath;
-            }
-
             selectedIndex = _currentScenePaths.FindIndex(path =>
-                string.Equals(path, selectedPath, StringComparison.OrdinalIgnoreCase));
+                string.Equals(path, activePath, StringComparison.OrdinalIgnoreCase));
 
             if (selectedIndex < 0)
             {
-                selectedIndex = 0;
+                selectedIndex = -1;
             }
 
             return labels;
@@ -272,6 +292,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
 
         /// <summary>
         /// 打开当前 Scene 下拉菜单选中的场景。
+        /// 只有用户手动点击 Scene 菜单项时才会进入这里。
         /// </summary>
         private static void TryOpenSelectedScene()
         {
@@ -340,23 +361,46 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
         /// </summary>
         private static void SyncDropdownToActiveScene()
         {
-            if (_sceneDropdown == null || _sourceDropdown == null || _currentScenePaths == null || _currentScenePaths.Count == 0)
+            if (_sceneDropdown == null || _sourceDropdown == null)
             {
                 return;
             }
 
             var source = ScenePlaySelectorStorage.SourceFromIndex(_sourceDropdown.Index);
-            var labels = BuildSceneDropdownData(source, out int index, selectActiveSceneWhenPossible: true);
 
             _suppressCallback = true;
             try
             {
+                _sceneDropdown.SetEmptySelectionText(GetActiveSceneDisplayName());
+
+                var labels = BuildSceneDropdownDataByActiveScene(source, out int index);
                 _sceneDropdown.SetChoices(labels, index, false);
             }
             finally
             {
                 _suppressCallback = false;
             }
+        }
+
+        /// <summary>
+        /// 获取当前 Unity 实际打开的场景名称。
+        /// 当当前场景不在当前 Source 列表中时，Scene 按钮仍显示这个名字，但菜单不勾选任何项。
+        /// </summary>
+        private static string GetActiveSceneDisplayName()
+        {
+            var activeScene = SceneManager.GetActiveScene();
+
+            if (!string.IsNullOrWhiteSpace(activeScene.name))
+            {
+                return activeScene.name;
+            }
+
+            if (!string.IsNullOrWhiteSpace(activeScene.path))
+            {
+                return Path.GetFileNameWithoutExtension(activeScene.path);
+            }
+
+            return UntitledSceneLabel;
         }
 
         /// <summary>

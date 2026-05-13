@@ -68,6 +68,28 @@ FFmpeg 进程管理器，负责：
 
 ---
 
+## UGUI 参数设置
+
+新增 `CrossPlatformScreenRecorderSettingsUI.cs`，可用于运行时 UI 面板配置：
+
+- 视频质量参数：`captureFrameRate`、`outputScale`、`videoCrf`、`videoPreset`
+- WebM 设置：`outputAsWebM`、`webmVideoCodec`、`webmAudioCodec`、`webmVideoBitrate`、`webmDeadline`、`webmCpuUsed`
+- 音频参数：`audioMode`、`audioCodec`、`audioBitrate`、`audioSampleRate`、`audioChannels`、`linuxSystemAudioSourceName`
+- 输出路径：`outputDirectory`
+- 自定义 FFmpeg 程序：`customFFmpegPath`
+
+使用方式：
+
+1. 在场景中创建一个 UGUI 面板，添加 `InputField` / `Dropdown` / `Toggle` / `Slider` / `Button`。
+2. 将 `CrossPlatformScreenRecorderSettingsUI` 组件挂载到该面板。
+3. 将 `CrossPlatformScreenRecorder` 拖到 `recorder` 字段。
+4. 绑定每个控件到对应字段。
+5. 单击“应用设置”按钮，保存当前界面配置到录屏控制器。
+
+> 在编辑器中还支持“浏览 FFmpeg 路径”按钮，便于选择不同平台的 FFmpeg 可执行程序。
+
+---
+
 ## 运行环境
 
 ### Unity

@@ -28,7 +28,6 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     #region 屏幕相关
 
     [Header("是否激活全部 Unity 显示器")] public bool activateAllUnityDisplays = true;
-
     [Header("显示器列表缓存")] private readonly List<RecorderDisplayInfo> _displays = new();
 
     #endregion
@@ -36,70 +35,39 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     #region 录制音频相关
 
     [Header("音频采集模式")] public RecorderAudioMode audioMode = RecorderAudioMode.SystemAudio;
-
     [Header("音频编码器")] public string audioCodec = "aac";
-
     [Header("音频码率（如 128k / 192k）")] public string audioBitrate = "192k";
-
     [Header("音频采样率（仅合并时输出编码参考）")] public int audioSampleRate = 48000;
-
     [Header("音频声道数（仅合并时输出编码参考）")] public int audioChannels = 2;
-
-    [Header("Linux PulseAudio 音频源名称（留空则自动探测默认输出设备的 monitor 源）")]
-    public string linuxSystemAudioSourceName = "";
+    [Header("音频源名称")] public string linuxSystemAudioSourceName = ""; // Linux PulseAudio 音频源名称（留空则自动探测默认输出设备的 monitor 源）
 
     #endregion
 
     #region 视频质量相关
 
     [Header("录制帧率")] [Range(10, 60)] public int captureFrameRate = 30;
-
-    [Header("输出缩放比例，1 为原始分辨率，0.5 为半分辨率")] [Range(0.25f, 1f)]
-    public float outputScale = 1f;
-
-
-    [Header("x264 CRF，数值越小越清晰，文件越大")] [Range(16, 35)]
-    public int videoCrf = 23;
-
-    [Header("像素格式，兼容性更好时保持 yuv420p")] public string pixelFormat = "yuv420p";
-
-    [Header("是否输出为 WebM（国产机 Unity 内播放更友好）")]
-    public bool outputAsWebM = true;
-
-    [Header("WebM 视频编码器（推荐 VP8：libvpx；如机器较强可改为 libvpx-vp9）")]
-    public string webmVideoCodec = "libvpx";
-
-    [Header("WebM 音频编码器（推荐 libvorbis；也可改为 libopus）")]
-    public string webmAudioCodec = "libvorbis";
-
-    [Header("WebM 视频码率（如 2M / 3M / 4M）")] public string webmVideoBitrate = "3M";
-
-    [Header("WebM 实时编码模式（best / good / realtime）")]
-    public string webmDeadline = "realtime";
-
-    [Header("WebM CPU 使用等级，越大越快，画质略降")] [Range(0, 8)]
-    public int webmCpuUsed = 8;
+    [Header("输出缩放比例")] [Range(0.25f, 1f)] public float outputScale = 1f; // 输出缩放比例，1 为原始分辨率，0.5 为半分辨率
+    [Header("视频画质档位")] [Range(16, 35)] public int videoCrf = 23;         // x264 CRF，数值越小越清晰，文件越大
+    [Header("视频像素格式")] public string pixelFormat = "yuv420p";            // 像素格式，兼容性更好时保持 yuv420p
+    [Header("输出WebM")] public bool outputAsWebM = true;                  //（国产机 Unity 内播放更友好）
+    [Header("视频编码器")] public string webmVideoCodec = "libvpx";           // WebM 视频编码器（推荐 VP8：libvpx；如机器较强可改为 libvpx-vp9）
+    [Header("音频编码器")] public string webmAudioCodec = "libvorbis";        // WebM 音频编码器（推荐 libvorbis；也可改为 libopus）
+    [Header("视频码率")] public string webmVideoBitrate = "3M";              // WebM 视频码率（如 2M / 3M / 4M）
+    [Header("实时编码模式")] public string webmDeadline = "realtime";          // WebM 实时编码模式（best / good / realtime）
+    [Header("视频CPU使用等级")] [Range(0, 8)] public int webmCpuUsed = 8;      // WebM CPU 使用等级，越大越快，画质略降
 
     #endregion
 
     #region 录制参数相关
 
     [Header("输出文件前缀")] public string outputFilePrefix = "recording";
-
     [Header("视频编码器")] public string videoCodec = "libx264";
-
     [Header("视频编码预设")] public string videoPreset = "ultrafast";
-
     [Header("ffmpeg 进程运行器")] private FFmpegProcessRunner _processRunner;
-
     [Header("ffmpeg 可执行文件路径")] private string _ffmpegExecutablePath;
-
     [Header("停止录制等待 ffmpeg 退出超时（毫秒）")] public int stopVideoTimeoutMs = 15000;
-
     [Header("等待临时文件释放超时（毫秒）")] public int waitTempFileReadyTimeoutMs = 8000;
-
     [Header("后台合并音视频等待超时（毫秒），<=0 表示不限时")] public int mergeTimeoutMs;
-
     [Header("是否在后台合并完成后删除临时文件")] public bool deleteTempFilesAfterMerge = true;
 
     #endregion
@@ -107,33 +75,24 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     [Header("录屏输出目录，为空则使用 StreamingAssets")]
     public string outputDirectory = "";
 
+    [Header("自定义 FFmpeg 可执行文件路径（优先）")] public string customFFmpegPath = "";
     [Header("是否已初始化")] private bool _isInitialized;
 
-    /// <summary>
-    /// 是否正在异步启动录制。
-    /// </summary>
-    private bool _isStarting;
 
-    /// <summary>
-    /// 是否正在异步停止录制。
-    /// </summary>
-    private bool _isStopping;
+    #region 私有字段
 
-    /// <summary>
-    /// 当前录制会话。
-    /// </summary>
-    private CaptureSession _currentSession;
+    [Header("是否正在异步启动录制")] private bool _isStarting;
+    [Header("是否正在异步停止录制")] private bool _isStopping;
+    [Header("当前录制会话")] private CaptureSession _currentSession;
+    [Header("当前后台合并任务数量")] private int _activeMergeJobs;
 
-    /// <summary>
-    /// 当前后台合并任务数量。
-    /// </summary>
-    private int _activeMergeJobs;
+    [Header("主线程回调队列")] private readonly ConcurrentQueue<Action> _mainThreadActions = new(); // 后台线程完成后，将需要触发 Unity 事件或更新 UI 的逻辑投递回来。
 
-    /// <summary>
-    /// 主线程回调队列。
-    /// 后台线程完成后，将需要触发 Unity 事件或更新 UI 的逻辑投递回来。
-    /// </summary>
-    private readonly ConcurrentQueue<Action> _mainThreadActions = new();
+    [Header("是否正在录制|启动中|停止中")] public bool   IsRecording           => _isStarting || _isStopping || _processRunner is { IsRunning: true };
+    [Header("当前是否还有后台合并任务")]   public bool   IsMerging             => _activeMergeJobs > 0;
+    [Header("当前输出文件路径")]       public string CurrentOutputFilePath => _currentSession != null ? _currentSession.finalOutputPath : string.Empty;
+
+    #endregion
 
     /// <summary>
     /// 当显示器列表刷新完成时触发。
@@ -159,20 +118,6 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// </summary>
     public event Action<string> OnRecordStopped;
 
-    /// <summary>
-    /// 当前是否正在录制、启动中或停止中。
-    /// </summary>
-    public bool IsRecording => _isStarting || _isStopping || _processRunner is { IsRunning: true };
-
-    /// <summary>
-    /// 当前是否还有后台合并任务。
-    /// </summary>
-    public bool IsMerging => _activeMergeJobs > 0;
-
-    /// <summary>
-    /// 当前输出文件路径。
-    /// </summary>
-    public string CurrentOutputFilePath => _currentSession != null ? _currentSession.finalOutputPath : string.Empty;
 
     /// <summary>
     /// 一次录制会话的临时路径与状态。
@@ -569,6 +514,20 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     }
 
     /// <summary>
+    /// 获取当前平台下的默认 ffmpeg 可执行文件路径。
+    /// </summary>
+    /// <returns>默认 ffmpeg 路径。</returns>
+    public string GetPlatformDefaultFFmpegPath()
+    {
+        return Application.platform switch
+        {
+            RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsEditor => $"{Application.streamingAssetsPath}/FFmpegApp/ffmpeg.exe",
+            RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxEditor     => $"{Application.streamingAssetsPath}/FFmpegApp/ffmpeg",
+            _                                                              => string.Empty
+        };
+    }
+
+    /// <summary>
     /// 读取 ffmpeg 可执行文件路径，并在 Linux 下自动检查/补充执行权限。
     /// </summary>
     /// <param name="executablePath">输出的 ffmpeg 路径。</param>
@@ -579,17 +538,23 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
 
         try
         {
-            executablePath = Application.platform switch
+            if (!string.IsNullOrWhiteSpace(customFFmpegPath))
             {
-                RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsEditor => $"{Application.streamingAssetsPath}/FFmpegApp/ffmpeg.exe",
-                RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxEditor     => $"{Application.streamingAssetsPath}/FFmpegApp/ffmpeg",
-                _                                                              => throw new NotSupportedException("不支持的平台: " + Application.platform)
-            };
-
-            if (!File.Exists(executablePath))
+                executablePath = customFFmpegPath.Trim();
+                if (!File.Exists(executablePath))
+                {
+                    Debug.LogError("自定义 ffmpeg 路径不存在: " + executablePath);
+                    return false;
+                }
+            }
+            else
             {
-                Debug.LogError("ffmpeg 路径不存在: " + executablePath);
-                return false;
+                executablePath = GetPlatformDefaultFFmpegPath();
+                if (string.IsNullOrWhiteSpace(executablePath) || !File.Exists(executablePath))
+                {
+                    Debug.LogError("ffmpeg 路径不存在: " + executablePath);
+                    return false;
+                }
             }
 
 #if (UNITY_STANDALONE_LINUX || UNITY_EDITOR_LINUX) && !UNITY_EDITOR_WIN
@@ -941,11 +906,6 @@ public class CrossPlatformScreenRecorder : MonoBehaviour
     /// <returns>新建的录制会话。</returns>
     private CaptureSession PrepareOutputPaths()
     {
-        if (Application.platform == RuntimePlatform.LinuxPlayer)
-        {
-            outputDirectory = "";
-        }
-
         string realOutputDirectory = string.IsNullOrWhiteSpace(outputDirectory)
                                          ? Application.streamingAssetsPath
                                          : outputDirectory;

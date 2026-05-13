@@ -26,23 +26,18 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
         /// </summary>
         public sealed class NativeToolbarDropdown : ToolbarMenu
         {
-            [Header("下拉菜单中的所有选项")]
-            private readonly List<string> _choices = new();
+            [Header("下拉菜单中的所有选项")] private readonly List<string> _choices = new();
 
             [Header("显示在当前选项前面的前缀，例如 Source 或 Scene")]
             private readonly string _prefix;
 
-            [Header("没有选中任何选项时显示的文本")]
-            private string _emptySelectionText;
+            [Header("没有选中任何选项时显示的文本")] private string _emptySelectionText;
 
-            [Header("鼠标是否正在悬停在当前控件上")]
-            private bool _isHover;
+            [Header("鼠标是否正在悬停在当前控件上")] private bool _isHover;
 
-            [Header("鼠标是否正在按下当前控件")]
-            private bool _isPressed;
+            [Header("鼠标是否正在按下当前控件")] private bool _isPressed;
 
-            [Header("当前选中的选项索引，-1 表示没有选中任何选项")]
-            private int _index = -1;
+            [Header("当前选中的选项索引，-1 表示没有选中任何选项")] private int _index = -1;
 
             /// <summary>
             /// 当前选择项变化时触发。
@@ -65,19 +60,19 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             /// </summary>
             public NativeToolbarDropdown(string prefix, IList<string> options, int index, float minWidth, string emptySelectionText = "<未选择>")
             {
-                _prefix = string.IsNullOrWhiteSpace(prefix) ? string.Empty : prefix.Trim();
+                _prefix             = string.IsNullOrWhiteSpace(prefix) ? string.Empty : prefix.Trim();
                 _emptySelectionText = string.IsNullOrWhiteSpace(emptySelectionText) ? "<未选择>" : emptySelectionText.Trim();
 
                 tooltip = _prefix;
 
-                style.minWidth = minWidth;
-                style.height = 22;
-                style.marginLeft = 1;
-                style.marginRight = 2;
-                style.paddingLeft = 6;
-                style.paddingRight = 6;
+                style.minWidth       = minWidth;
+                style.height         = 22;
+                style.marginLeft     = 1;
+                style.marginRight    = 2;
+                style.paddingLeft    = 6;
+                style.paddingRight   = 6;
                 style.unityTextAlign = TextAnchor.MiddleLeft;
-                style.flexShrink = 0;
+                style.flexShrink     = 0;
 
                 SetChoices(options, index, false);
 
@@ -192,10 +187,10 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             private void UpdateDisplayedText()
             {
                 string selectedText = _index >= 0 && _index < _choices.Count
-                    ? _choices[_index]
-                    : _emptySelectionText;
+                                          ? _choices[_index]
+                                          : _emptySelectionText;
 
-                text = string.IsNullOrEmpty(_prefix) ? selectedText : $"{_prefix}: {selectedText}";
+                text    = string.IsNullOrEmpty(_prefix) ? selectedText : $"{_prefix}: {selectedText}";
                 tooltip = text;
             }
 
@@ -217,8 +212,8 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
 
                 for (int i = 0; i < _choices.Count; i++)
                 {
-                    int capturedIndex = i;
-                    string choice = _choices[i];
+                    int    capturedIndex = i;
+                    string choice        = _choices[i];
 
                     menu.AppendAction(
                         choice,
@@ -231,8 +226,8 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
                         // 状态回调在菜单展开时由 Unity 重新求值。
                         // _index = -1 时不会勾选任何项。
                         _ => capturedIndex == _index
-                            ? DropdownMenuAction.Status.Checked
-                            : DropdownMenuAction.Status.Normal);
+                                 ? DropdownMenuAction.Status.Checked
+                                 : DropdownMenuAction.Status.Normal);
                 }
             }
 
@@ -249,7 +244,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
 
                 RegisterCallback<MouseLeaveEvent>(_ =>
                 {
-                    _isHover = false;
+                    _isHover   = false;
                     _isPressed = false;
                     ApplyDropdownVisualState();
                 });
@@ -279,8 +274,8 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             /// </summary>
             private void ApplyDropdownVisualState()
             {
-                Color textColor = GetUnityToolbarTextColor();
-                Color backgroundColor = Color.clear;
+                var textColor       = GetUnityToolbarTextColor();
+                var backgroundColor = Color.clear;
 
                 if (_isPressed)
                 {
@@ -315,10 +310,10 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
                 style =
                 {
                     unityFontStyleAndWeight = fontStyle,
-                    unityTextAlign = TextAnchor.MiddleRight,
-                    marginLeft = 2,
-                    marginRight = 3,
-                    fontSize = 11,
+                    unityTextAlign          = TextAnchor.MiddleRight,
+                    marginLeft              = 2,
+                    marginRight             = 3,
+                    fontSize                = 11,
                 }
             };
 
@@ -332,18 +327,18 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
         {
             var button = new ToolbarButton(onClick)
             {
-                text = text,
+                text    = text,
                 tooltip = tooltip ?? string.Empty,
                 style =
                 {
-                    minWidth = 24,
-                    height = 22,
-                    marginLeft = 1,
-                    marginRight = 1,
-                    paddingLeft = 4,
-                    paddingRight = 4,
+                    minWidth       = 24,
+                    height         = 22,
+                    marginLeft     = 1,
+                    marginRight    = 1,
+                    paddingLeft    = 4,
+                    paddingRight   = 4,
                     unityTextAlign = TextAnchor.MiddleCenter,
-                    flexShrink = 0,
+                    flexShrink     = 0,
                 }
             };
 
@@ -362,13 +357,13 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             }
 
             root.style.backgroundColor = backgroundColor;
-            root.style.color = textColor;
+            root.style.color           = textColor;
 
             var children = root.Query<VisualElement>().Build().ToList();
             foreach (var child in children)
             {
                 child.style.backgroundColor = backgroundColor;
-                child.style.color = textColor;
+                child.style.color           = textColor;
             }
         }
 
@@ -377,11 +372,25 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
         /// </summary>
         private static Color GetUnityToolbarTextColor()
         {
-            Color color = EditorStyles.toolbarButton.normal.textColor;
-            if (color.a > 0.01f)
+            // 尝试获取 toolbarButton 样式，如果样式未就绪则返回默认颜色
+            GUIStyle style = null;
+            try
             {
-                color.a = 1f;
-                return color;
+                style = EditorStyles.toolbarButton;
+            }
+            catch (NullReferenceException)
+            {
+                // 样式未初始化
+            }
+
+            if (style != null)
+            {
+                var color = style.normal.textColor;
+                if (color.a > 0.01f)
+                {
+                    color.a = 1f;
+                    return color;
+                }
             }
 
             return EditorGUIUtility.isProSkin ? Color.white : Color.black;
@@ -393,7 +402,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
         /// </summary>
         private static Color GetToolbarButtonHoverColor()
         {
-            Color sampled = TrySampleStyleBackground(EditorStyles.toolbarButton.hover.background);
+            var sampled = TrySampleStyleBackground(EditorStyles.toolbarButton.hover.background);
             if (sampled.a > 0.01f)
             {
                 sampled.a = 1f;
@@ -401,8 +410,8 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             }
 
             return EditorGUIUtility.isProSkin
-                ? new Color(0.30f, 0.30f, 0.30f, 1f)
-                : new Color(0.68f, 0.68f, 0.68f, 1f);
+                       ? new Color(0.30f, 0.30f, 0.30f, 1f)
+                       : new Color(0.68f, 0.68f, 0.68f, 1f);
         }
 
         /// <summary>
@@ -411,7 +420,7 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
         /// </summary>
         private static Color GetToolbarButtonActiveColor()
         {
-            Color sampled = TrySampleStyleBackground(EditorStyles.toolbarButton.active.background);
+            var sampled = TrySampleStyleBackground(EditorStyles.toolbarButton.active.background);
             if (sampled.a > 0.01f)
             {
                 sampled.a = 1f;
@@ -419,8 +428,8 @@ namespace _3rdBy.ByTools.ScenePlaySelector.Editor
             }
 
             return EditorGUIUtility.isProSkin
-                ? new Color(0.17f, 0.17f, 0.17f, 1f)
-                : new Color(0.58f, 0.58f, 0.58f, 1f);
+                       ? new Color(0.17f, 0.17f, 0.17f, 1f)
+                       : new Color(0.58f, 0.58f, 0.58f, 1f);
         }
 
         /// <summary>

@@ -39,38 +39,24 @@ public static class RecorderDisplayProvider
     /// 枚举系统中的显示器。
     /// </summary>
     [DllImport("user32.dll")]
-    private static extern bool EnumDisplayMonitors(
-        IntPtr hdc,
-        IntPtr lprcClip,
-        MonitorEnumDelegate lpfnEnum,
-        IntPtr dwData);
+    private static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumDelegate lpfnEnum, IntPtr dwData);
 
     /// <summary>
     /// 获取指定显示器的信息。
     /// </summary>
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    private static extern bool GetMonitorInfo(
-        IntPtr hMonitor,
-        ref Monitorinfo lpmi);
+    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref Monitorinfo lpmi);
 
     /// <summary>
     /// 枚举显示设备。
     /// </summary>
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    private static extern bool EnumDisplayDevices(
-        string lpDevice,
-        uint iDevNum,
-        ref DisplayDevice lpDisplayDevice,
-        uint dwFlags);
+    private static extern bool EnumDisplayDevices(string lpDevice, uint iDevNum, ref DisplayDevice lpDisplayDevice, uint dwFlags);
 
     /// <summary>
     /// 显示器枚举回调委托。
     /// </summary>
-    private delegate bool MonitorEnumDelegate(
-        IntPtr hMonitor,
-        IntPtr hdcMonitor,
-        ref Rect lprcMonitor,
-        IntPtr dwData);
+    private delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData);
 
     /// <summary>
     /// Windows 矩形结构。
@@ -220,7 +206,7 @@ public static class RecorderDisplayProvider
                 if (attachedDisplayCount == displayOrder)
                 {
                     return string.IsNullOrEmpty(device.DeviceName)
-                               ? $"\\\\.\\DISPLAY{displayOrder}"
+                               ? @$"\\\\.\\显示器_{displayOrder}"
                                : device.DeviceName;
                 }
             }
@@ -232,7 +218,7 @@ public static class RecorderDisplayProvider
             };
         }
 
-        return $@"\\.\DISPLAY{displayOrder}";
+        return @$"\\.\显示器_{displayOrder}";
     }
 #endif
 
@@ -286,4 +272,35 @@ public static class RecorderDisplayProvider
         return results;
     }
 #endif
+}
+
+/// <summary>
+/// 显示器信息
+/// </summary>
+[Serializable]
+public class RecorderDisplayInfo
+{
+    [Header("显示器索引")] public int index;
+
+    [Header("显示器名称")] public string name;
+
+    [Header("显示器宽度")] public int width;
+
+    [Header("显示器高度")] public int height;
+
+    [Header("显示器相对虚拟桌面的X偏移")] public int offsetX;
+
+    [Header("显示器相对虚拟桌面的Y偏移")] public int offsetY;
+
+    [Header("是否为主显示器")] public bool isPrimary;
+
+    /// <summary>
+    /// 获取用于下拉框显示的文本。
+    /// </summary>
+    /// <returns>显示器选项文本。</returns>
+    public string ToOptionText()
+    {
+        string primaryMark = isPrimary ? "(主)" : "";
+        return $"{name} {primaryMark} - {width}x{height}";
+    }
 }

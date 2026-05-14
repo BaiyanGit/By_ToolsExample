@@ -1,0 +1,12 @@
+﻿{
+  "Groups": [
+    { "Key": "VideoFormat", "SettingName": "视频格式", "Options": [ { "Option": "webm", "Description": "适合 Unity 内播放和跨平台分发。" }, { "Option": "mp4", "Description": "兼容性更广。" } ] },
+    { "Key": "AudioMode", "SettingName": "音频采集模式", "Options": [ { "Option": "静音录制", "Description": "只录制画面。" }, { "Option": "系统音频", "Description": "录制系统输出声音。" } ] },
+    { "Key": "AudioCodec", "SettingName": "音频编码器", "Options": [ { "Option": "aac", "Description": "MP4 常用编码器。" }, { "Option": "libvorbis", "Description": "WebM 默认推荐。" }, { "Option": "libopus", "Description": "质量更好，兼容性取决于播放端。" } ] },
+    { "Key": "FrameRate", "SettingName": "视频录制帧率", "Options": [ { "Option": "20", "Description": "低负载。" }, { "Option": "25", "Description": "均衡。" }, { "Option": "30", "Description": "默认推荐。" }, { "Option": "45", "Description": "更流畅。" }, { "Option": "60", "Description": "性能消耗更高。" } ] },
+    { "Key": "OutputScale", "SettingName": "视频输出缩放比例", "Options": [ { "Option": "0.5", "Description": "半分辨率。" }, { "Option": "0.75", "Description": "均衡。" }, { "Option": "1", "Description": "原始分辨率。" } ] },
+    { "Key": "VideoCrf", "SettingName": "视频画质档位", "Options": [ { "Option": "20", "Description": "更清晰，文件更大。" }, { "Option": "23", "Description": "均衡推荐。" }, { "Option": "26", "Description": "文件更小。" }, { "Option": "30", "Description": "压缩更强。" } ] },
+    { "Key": "VideoCodec", "SettingName": "视频编码器", "Options": [ { "Option": "libx264", "Description": "MP4 推荐。" }, { "Option": "libx265", "Description": "压缩率更高。" }, { "Option": "libvpx", "Description": "WebM VP8。" }, { "Option": "libvpx-vp9", "Description": "WebM VP9。" } ] },
+    { "Key": "DeleteTempFiles", "SettingName": "删除临时文件", "Options": [ { "Option": "是", "Description": "合并成功后删除临时文件。" }, { "Option": "否", "Description": "保留临时文件，方便排查问题。" } ] }
+  ]
+}

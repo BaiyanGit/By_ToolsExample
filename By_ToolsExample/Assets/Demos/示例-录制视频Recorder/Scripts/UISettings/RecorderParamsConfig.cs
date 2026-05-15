@@ -12,6 +12,7 @@ public class RecorderParamsConfig
     [Header("显示器")] public int displayIndex;
     [Header("输出文件前缀")] public string outputFilePrefix;
     [Header("输出WebM")] public bool outputAsWebm;
+    [Header("自定义FFmpeg可执行文件路径")] public string customFFmpegPath;
     [Header("FFmpeg可执行文件路径")] public string ffmpegExecutablePath;
     [Header("音频采集模式")] public int audioMode;
     [Header("音频编码器")] public string audioCodec;

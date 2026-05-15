@@ -65,7 +65,7 @@ public partial class UIRecorderParamsSettings
         return new RecorderParamsConfig
         {
             configName         = presetName, platform              = platform, isDefault                         = isDefault, fileName = BuildSafeFileName($"{platform}_{presetName}.json"),
-            displayIndex       = 0, outputFilePrefix               = $"{Application.productName}_", outputAsWebm = true, ffmpegExecutablePath = string.Empty,
+            displayIndex       = 0, outputFilePrefix               = $"{Application.productName}_", outputAsWebm = true, customFFmpegPath = string.Empty, ffmpegExecutablePath = string.Empty,
             audioMode          = 1, audioCodec                     = "aac", webmAudioCodec                       = "libvorbis", audioBitrate = audioRate, audioSampleRate = 48000, audioChannels = 2,
             captureFrameRate   = fps, outputScale                  = scale, videoCrf                             = crf, pixelFormat = "yuv420p", videoCodec = "libx264", videoPreset = videoSpeed,
             webmVideoCodec     = "libvpx", webmVideoBitrate        = videoRate, webmDeadline                     = "realtime", webmCpuUsed = qualityIndex == 2 ? 6 : 8,
@@ -93,7 +93,7 @@ public partial class UIRecorderParamsSettings
         ApplyConfig(_currentConfig);
         if (!_hasInitUsingConfig)
         {
-            UseCurrentConfig();
+            if (HasValidFFmpegPath()) UseCurrentConfig();
             _hasInitUsingConfig = true;
         }
     }
@@ -146,8 +146,11 @@ public partial class UIRecorderParamsSettings
     private void SaveConfig(RecorderParamsConfig config)
     {
         config.platform = GetCurrentPlatformName();
+        config.customFFmpegPath     = GetConfigFFmpegPath(config);
+        config.ffmpegExecutablePath = config.customFFmpegPath;
         if (string.IsNullOrWhiteSpace(config.fileName)) config.fileName = BuildUniqueUserConfigFileName(config.platform, config.configName);
-        string path                                                     = Path.Combine(GetUserConfigDirectory(), config.fileName);
+        string directory                                                = config.isDefault ? GetDefaultConfigDirectory() : GetUserConfigDirectory();
+        string path                                                     = Path.Combine(directory, config.fileName);
         config.fileName = Path.GetFileName(path);
         File.WriteAllText(path, JsonUtility.ToJson(config, true));
     }

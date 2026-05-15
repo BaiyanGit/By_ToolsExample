@@ -6,6 +6,7 @@
   "displayIndex": 0,
   "outputFilePrefix": "By_ToolsExample_",
   "outputAsWebm": true,
+  "customFFmpegPath": "",
   "ffmpegExecutablePath": "",
   "audioMode": 1,
   "audioCodec": "aac",

@@ -118,7 +118,7 @@ public partial class UIRecorderParamsSettings
         var lines    = new List<string>();
         if (dropdown == drConfig)
         {
-            foreach (var config in _currentPlatformConfigs) lines.Add($"{config.configName}: {config.platform} 平台，{(config.isDefault ? "默认配置，不允许覆盖" : "用户配置，可保存覆盖")}");
+            foreach (var config in _currentPlatformConfigs) lines.Add($"{config.configName}: {config.platform} 平台，{(config.isDefault ? "默认配置，可保存基础设置与 FFmpeg 路径" : "用户配置，可保存覆盖")}");
         }
         else if (dropdown != null)
         {

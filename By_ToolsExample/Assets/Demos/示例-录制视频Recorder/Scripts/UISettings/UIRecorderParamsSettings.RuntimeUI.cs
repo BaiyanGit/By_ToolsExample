@@ -25,6 +25,37 @@ public partial class UIRecorderParamsSettings
     }
 
     /// <summary>
+    /// 功能：确保删除用户配置按钮存在。
+    /// </summary>
+    private void EnsureDeleteButton()
+    {
+        if (btnDeleteConfig != null) return;
+        foreach (var button in GetComponentsInChildren<Button>(true))
+        {
+            if (button == null) continue;
+            if (button.name != "BtnDeleteConfig" && button.name != "BtnDelete") continue;
+            btnDeleteConfig = button;
+            btnDeleteConfig.onClick.RemoveAllListeners();
+            return;
+        }
+
+        Button sourceButton = btnUse != null ? btnUse : btnSave;
+        if (sourceButton == null) return;
+        var go = Instantiate(sourceButton.gameObject, sourceButton.transform.parent);
+        go.name         = "BtnDeleteConfig";
+        btnDeleteConfig = go.GetComponent<Button>();
+        if (btnDeleteConfig != null) btnDeleteConfig.onClick.RemoveAllListeners();
+
+        var rect       = go.GetComponent<RectTransform>();
+        var sourceRect = sourceButton.GetComponent<RectTransform>();
+        if (rect != null && sourceRect != null)
+            rect.anchoredPosition = sourceRect.anchoredPosition + new Vector2(sourceRect.rect.width + 12f, 0f);
+
+        var text                    = go.GetComponentInChildren<Text>(true);
+        if (text != null) text.text = "删除";
+    }
+
+    /// <summary>
     /// 功能：执行 EnsureSaveAsWindow 相关逻辑。
     /// </summary>
     private void EnsureSaveAsWindow()
@@ -55,6 +86,22 @@ public partial class UIRecorderParamsSettings
         txtSaveAsTips.color = new Color(1f, 0.45f, 0.35f, 1f);
         txtSaveAsTips.gameObject.SetActive(false);
         saveAsWindowRoot.SetActive(false);
+    }
+
+    /// <summary>
+    /// 功能：确保通用操作提示窗口存在。
+    /// </summary>
+    private void EnsureMessageWindow()
+    {
+        if (_messageWindowRoot != null) return;
+        var canvas = GetCanvasTransform();
+        if (canvas == null) return;
+        _messageWindowRoot = CreatePanel("RecorderMessageWindow", canvas, new Vector2(420f, 170f), Vector2.zero);
+        CreateText("TxtTitle", _messageWindowRoot.transform, "提示", new Vector2(380f, 30f), new Vector2(0f, 52f), 20, TextAnchor.MiddleCenter);
+        _txtMessageContent = CreateText("TxtContent", _messageWindowRoot.transform, string.Empty, new Vector2(360f, 54f), new Vector2(0f, 8f), 16, TextAnchor.MiddleCenter);
+        _btnMessageConfirm = CreateButton("BtnConfirm", _messageWindowRoot.transform, "确定", new Vector2(120f, 36f), new Vector2(0f, -52f));
+        if (_btnMessageConfirm != null) _btnMessageConfirm.onClick.AddListener(HideMessageTips);
+        _messageWindowRoot.SetActive(false);
     }
 
     /// <summary>

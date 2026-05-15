@@ -58,7 +58,6 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
 
     [Tooltip("选择 FFmpeg 文件按钮。")] public Button btnSelectFfmpeg;
     [Tooltip("重置 FFmpeg 路径按钮。")] public Button btnResetFfmpeg;
-    [Tooltip("FFmpeg 路径提示文本。")] public Text txtFfmpegPathTips;
 
     #endregion
 
@@ -67,6 +66,7 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
     [Header("配置操作按钮")] [Tooltip("另存为按钮")] public Button btnSaveAs;
     [Tooltip("保存按钮")] public Button btnSave;
     [Tooltip("使用按钮")] public Button btnUse;
+    [Tooltip("删除用户配置按钮")] public Button btnDeleteConfig;
 
     [Header("另存为窗口")] [Tooltip("另存为窗口根节点")]
     public GameObject saveAsWindowRoot;
@@ -113,6 +113,9 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
     private string _usingConfigFileName;
     private string _usingConfigJson;
     private Coroutine _saveAsTipsCoroutine;
+    private GameObject _messageWindowRoot;
+    private Text _txtMessageContent;
+    private Button _btnMessageConfirm;
     private bool _hasInitUsingConfig;
     private bool _isRefreshingUI;
 
@@ -137,10 +140,11 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
         InitPlatformDropdown();
         InitParameterOptions();
         RefreshConfigDropdown();
-        RefreshFFmpegPathTips();
         LoadOptionDescriptions();
         EnsureUseButton();
+        EnsureDeleteButton();
         EnsureSaveAsWindow();
+        EnsureMessageWindow();
         EnsureOptionDescWindow();
         BindDescButtons();
     }
@@ -198,6 +202,12 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
         {
             btnUse.onClick.RemoveListener(UseCurrentConfig);
             btnUse.onClick.AddListener(UseCurrentConfig);
+        }
+
+        if (btnDeleteConfig != null)
+        {
+            btnDeleteConfig.onClick.RemoveListener(DeleteCurrentConfig);
+            btnDeleteConfig.onClick.AddListener(DeleteCurrentConfig);
         }
 
         if (btnSaveAsConfirm != null)
@@ -337,7 +347,8 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
         }
 
         if (ifVideoPrefix != null) ifVideoPrefix.text = config.outputFilePrefix;
-        if (ifFfmpegPath != null) ifFfmpegPath.text   = config.ffmpegExecutablePath;
+        string ffmpegPath = GetConfigFFmpegPath(config);
+        if (ifFfmpegPath != null) ifFfmpegPath.text = File.Exists(ffmpegPath) ? ffmpegPath : string.Empty;
         _isRefreshingUI = false;
     }
 
@@ -347,8 +358,9 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
     private void ApplyConfigToRecorder(RecorderParamsConfig config)
     {
         if (recorder == null || config == null) return;
+        string ffmpegPath                  = GetConfigFFmpegPath(config);
         recorder.outputFilePrefix           = config.outputFilePrefix;
-        recorder.customFFmpegPath           = config.ffmpegExecutablePath;
+        recorder.customFFmpegPath           = ffmpegPath;
         recorder.outputAsWebM               = config.outputAsWebm;
         recorder.audioMode                  = config.audioMode == 1 ? RecorderAudioMode.SystemAudio : RecorderAudioMode.None;
         recorder.audioCodec                 = config.audioCodec;
@@ -381,7 +393,8 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
         config.platform                   = GetCurrentPlatformName();
         config.displayIndex               = drDisplay != null ? drDisplay.value : 0;
         config.outputFilePrefix           = ifVideoPrefix != null ? ifVideoPrefix.text.Trim() : config.outputFilePrefix;
-        config.ffmpegExecutablePath       = ifFfmpegPath != null ? ifFfmpegPath.text.Trim() : config.ffmpegExecutablePath;
+        config.customFFmpegPath           = ifFfmpegPath != null ? ifFfmpegPath.text.Trim() : GetConfigFFmpegPath(config);
+        config.ffmpegExecutablePath       = config.customFFmpegPath;
         config.outputAsWebm               = string.Equals(GetDropdownText(drVideoFormat), "webm", StringComparison.OrdinalIgnoreCase);
         config.audioMode                  = GetDropdownText(drAudioMode) == "系统音频" ? 1 : 0;
         config.audioBitrate               = GetDropdownTextOrDefault(drAudioBitrate, config.audioBitrate);
@@ -413,7 +426,35 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
             else config.videoCodec                         = vCodec;
         }
 
+        if (baseConfig != null && baseConfig.isDefault) KeepDefaultLockedParams(config, baseConfig);
         return config;
+    }
+
+    /// <summary>
+    /// 功能：默认配置只允许基础参数和 FFmpeg 路径写回，音频、视频参数保持模板原值。
+    /// </summary>
+    private static void KeepDefaultLockedParams(RecorderParamsConfig config, RecorderParamsConfig baseConfig)
+    {
+        config.audioMode                 = baseConfig.audioMode;
+        config.audioCodec                = baseConfig.audioCodec;
+        config.webmAudioCodec            = baseConfig.webmAudioCodec;
+        config.audioBitrate              = baseConfig.audioBitrate;
+        config.audioSampleRate           = baseConfig.audioSampleRate;
+        config.audioChannels             = baseConfig.audioChannels;
+        config.captureFrameRate          = baseConfig.captureFrameRate;
+        config.outputScale               = baseConfig.outputScale;
+        config.videoCrf                  = baseConfig.videoCrf;
+        config.pixelFormat               = baseConfig.pixelFormat;
+        config.videoCodec                = baseConfig.videoCodec;
+        config.videoPreset               = baseConfig.videoPreset;
+        config.webmVideoCodec            = baseConfig.webmVideoCodec;
+        config.webmVideoBitrate          = baseConfig.webmVideoBitrate;
+        config.webmDeadline              = baseConfig.webmDeadline;
+        config.webmCpuUsed               = baseConfig.webmCpuUsed;
+        config.stopVideoTimeoutMs        = baseConfig.stopVideoTimeoutMs;
+        config.waitTempFileReadyTimeoutMs = baseConfig.waitTempFileReadyTimeoutMs;
+        config.mergeTimeoutMs            = baseConfig.mergeTimeoutMs;
+        config.deleteTempFilesAfterMerge = baseConfig.deleteTempFilesAfterMerge;
     }
 
     /// <summary>
@@ -422,11 +463,7 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
     private void SaveCurrentConfig()
     {
         if (_currentConfig == null) return;
-        if (_currentConfig.isDefault)
-        {
-            Debug.LogWarning("默认配置不允许修改，请使用另存为生成新的用户配置。");
-            return;
-        }
+        if (!CheckFFmpegPathBeforeOperate()) return;
 
         _currentConfig = BuildConfigFromUI(_currentConfig);
         SaveConfig(_currentConfig);
@@ -450,6 +487,7 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
     private void SaveAsConfig()
     {
         if (_currentConfig == null) return;
+        if (!CheckFFmpegPathBeforeOperate()) return;
         EnsureSaveAsWindow();
         if (ifSaveAsName != null)
         {
@@ -467,6 +505,7 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
     private void UseCurrentConfig()
     {
         if (_currentConfig == null) return;
+        if (!CheckFFmpegPathBeforeOperate()) return;
         _currentConfig = BuildConfigFromUI(_currentConfig);
         ApplyConfigToRecorder(_currentConfig);
         _usingConfigFileName = _currentConfig.fileName;
@@ -480,6 +519,7 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
     /// </summary>
     private void ConfirmSaveAsConfig()
     {
+        if (!CheckFFmpegPathBeforeOperate(true)) return;
         string configName                                     = ifSaveAsName != null ? ifSaveAsName.text.Trim() : string.Empty;
         if (string.IsNullOrWhiteSpace(configName)) configName = _currentConfig != null ? _currentConfig.fileName : "RecorderConfig.json";
         string fileName                                       = BuildSafeFileName(configName.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? configName : configName + ".json");
@@ -503,6 +543,41 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
         SelectConfigByFileName(config.fileName);
         RefreshEditState();
         Debug.Log("已另存为录制配置: " + config.configName);
+    }
+
+    /// <summary>
+    /// 功能：删除当前选中的用户配置文件。
+    /// </summary>
+    private void DeleteCurrentConfig()
+    {
+        if (_currentConfig == null) return;
+        if (_currentConfig.isDefault)
+        {
+            ShowMessageTips("默认配置模板不能删除。");
+            return;
+        }
+
+        string fileName = _currentConfig.fileName;
+        string path     = Path.Combine(GetUserConfigDirectory(), fileName);
+        if (!File.Exists(path))
+        {
+            ShowMessageTips("未找到要删除的用户配置文件。");
+            RefreshConfigDropdown();
+            return;
+        }
+
+        File.Delete(path);
+        string metaPath = path + ".meta";
+        if (File.Exists(metaPath)) File.Delete(metaPath);
+        if (string.Equals(fileName, _usingConfigFileName, StringComparison.OrdinalIgnoreCase))
+        {
+            _usingConfigFileName = string.Empty;
+            _usingConfigJson     = string.Empty;
+        }
+
+        RefreshConfigDropdown();
+        RefreshEditState();
+        ShowMessageTips("已删除当前用户配置。");
     }
 
     /// <summary>
@@ -579,6 +654,25 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
             txtSaveAsTips.text = string.Empty;
             txtSaveAsTips.gameObject.SetActive(false);
         }
+    }
+
+    /// <summary>
+    /// 功能：显示通用操作提示弹窗。
+    /// </summary>
+    private void ShowMessageTips(string tips)
+    {
+        EnsureMessageWindow();
+        if (_messageWindowRoot == null) return;
+        if (_txtMessageContent != null) _txtMessageContent.text = tips;
+        _messageWindowRoot.SetActive(true);
+    }
+
+    /// <summary>
+    /// 功能：隐藏通用操作提示弹窗。
+    /// </summary>
+    private void HideMessageTips()
+    {
+        if (_messageWindowRoot != null) _messageWindowRoot.SetActive(false);
     }
 
     /// <summary>
@@ -732,7 +826,6 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
         if (_isRefreshingUI) return;
         if (recorder != null) recorder.customFFmpegPath = value.Trim();
         OnAnyParamsChanged();
-        RefreshFFmpegPathTips();
     }
 
     /// <summary>
@@ -743,7 +836,6 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
         if (ifFfmpegPath != null) ifFfmpegPath.text     = string.Empty;
         if (recorder != null) recorder.customFFmpegPath = string.Empty;
         OnAnyParamsChanged();
-        RefreshFFmpegPathTips();
     }
 
     /// <summary>
@@ -755,16 +847,48 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
     }
 
     /// <summary>
+    /// 功能：检查当前输入框中的 FFmpeg 路径是否存在。
+    /// </summary>
+    private bool HasValidFFmpegPath()
+    {
+        string path = ifFfmpegPath != null ? ifFfmpegPath.text.Trim() : string.Empty;
+        return !string.IsNullOrWhiteSpace(path) && File.Exists(path);
+    }
+
+    /// <summary>
+    /// 功能：获取配置中的 FFmpeg 路径，兼容新旧配置字段。
+    /// </summary>
+    private static string GetConfigFFmpegPath(RecorderParamsConfig config)
+    {
+        if (config == null) return string.Empty;
+        return !string.IsNullOrWhiteSpace(config.customFFmpegPath) ? config.customFFmpegPath : config.ffmpegExecutablePath;
+    }
+
+    /// <summary>
+    /// 功能：在保存、另存为、使用前校验 FFmpeg 路径，失败时提示用户。
+    /// </summary>
+    private bool CheckFFmpegPathBeforeOperate(bool showInSaveAsWindow = false)
+    {
+        if (HasValidFFmpegPath()) return true;
+        string path = ifFfmpegPath != null ? ifFfmpegPath.text.Trim() : string.Empty;
+        string tips = string.IsNullOrWhiteSpace(path) ? "请先配置 FFmpeg 可执行文件路径。" : "FFmpeg 可执行文件不存在，请重新选择。";
+        if (ifFfmpegPath != null) ifFfmpegPath.ActivateInputField();
+        if (showInSaveAsWindow) ShowSaveAsTips(tips);
+        ShowMessageTips(tips);
+        Debug.LogWarning(tips);
+        return false;
+    }
+
+    /// <summary>
     /// 功能：执行 RefreshSaveButtonState 相关逻辑。
     /// </summary>
     private void RefreshSaveButtonState()
     {
         bool hasConfig      = _currentConfig != null;
         bool isDirty        = IsCurrentConfigDirty();
-        bool isDefaultDirty = hasConfig && _currentConfig.isDefault && isDirty;
         if (btnSave != null)
         {
-            bool showSave = hasConfig && !_currentConfig.isDefault && isDirty;
+            bool showSave = hasConfig && isDirty;
             btnSave.gameObject.SetActive(showSave);
             btnSave.interactable = showSave;
             var text                    = btnSave.GetComponentInChildren<Text>(true);
@@ -777,7 +901,8 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
             btnSaveAs.interactable = hasConfig;
         }
 
-        RefreshUseButtonState(isDefaultDirty);
+        RefreshUseButtonState(false);
+        RefreshDeleteButtonState();
     }
 
     /// <summary>
@@ -816,6 +941,17 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
     }
 
     /// <summary>
+    /// 功能：刷新删除按钮显示状态。
+    /// </summary>
+    private void RefreshDeleteButtonState()
+    {
+        if (btnDeleteConfig == null) return;
+        bool showDelete = _currentConfig != null && !_currentConfig.isDefault;
+        btnDeleteConfig.gameObject.SetActive(showDelete);
+        btnDeleteConfig.interactable = showDelete;
+    }
+
+    /// <summary>
     /// 功能：执行 RefreshModifiedControlColors 相关逻辑。
     /// </summary>
     private void RefreshModifiedControlColors()
@@ -833,7 +969,7 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
         SetControlModified(drDisplay, current.displayIndex != baseConfig.displayIndex);
         SetControlModified(drVideoFormat, current.outputAsWebm != baseConfig.outputAsWebm);
         SetControlModified(ifVideoPrefix, current.outputFilePrefix != baseConfig.outputFilePrefix);
-        SetControlModified(ifFfmpegPath, current.ffmpegExecutablePath != baseConfig.ffmpegExecutablePath);
+        SetControlModified(ifFfmpegPath, GetConfigFFmpegPath(current) != GetConfigFFmpegPath(baseConfig));
         SetControlModified(drAudioMode, current.audioMode != baseConfig.audioMode);
         SetControlModified(drAudioCoder, current.audioCodec != baseConfig.audioCodec || current.webmAudioCodec != baseConfig.webmAudioCodec);
         SetControlModified(drAudioBitrate, current.audioBitrate != baseConfig.audioBitrate);
@@ -882,28 +1018,29 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
     private void RefreshParameterInteractable()
     {
         bool canEdit = _currentConfig != null;
+        bool canEditFullParams = canEdit && !_currentConfig.isDefault;
         SetParameterInteractable(drDisplay, canEdit);
         SetParameterInteractable(drVideoFormat, canEdit);
         SetParameterInteractable(ifVideoPrefix, canEdit);
         SetParameterInteractable(ifFfmpegPath, canEdit);
-        SetParameterInteractable(drAudioMode, canEdit);
-        SetParameterInteractable(drAudioCoder, canEdit);
-        SetParameterInteractable(drAudioBitrate, canEdit);
-        SetParameterInteractable(drAudioSampleRate, canEdit);
-        SetParameterInteractable(drAudioChannel, canEdit);
-        SetParameterInteractable(videoCaptureFrameRate, canEdit);
-        SetParameterInteractable(videoOutputScale, canEdit);
-        SetParameterInteractable(videoCrf, canEdit);
-        SetParameterInteractable(videoPixelFormat, canEdit);
-        SetParameterInteractable(videoCodec, canEdit);
-        SetParameterInteractable(videoPreset, canEdit);
-        SetParameterInteractable(webmVideoBitrate, canEdit);
-        SetParameterInteractable(webmVideoDeadlineMode, canEdit);
-        SetParameterInteractable(webmVideoCpuUsed, canEdit);
-        SetParameterInteractable(stopVideoTimeoutMs, canEdit);
-        SetParameterInteractable(waitTempFileReadyTimeoutMs, canEdit);
-        SetParameterInteractable(mergeTimeoutMs, canEdit);
-        SetParameterInteractable(deleteTempFilesAfterMerge, canEdit);
+        SetParameterInteractable(drAudioMode, canEditFullParams);
+        SetParameterInteractable(drAudioCoder, canEditFullParams);
+        SetParameterInteractable(drAudioBitrate, canEditFullParams);
+        SetParameterInteractable(drAudioSampleRate, canEditFullParams);
+        SetParameterInteractable(drAudioChannel, canEditFullParams);
+        SetParameterInteractable(videoCaptureFrameRate, canEditFullParams);
+        SetParameterInteractable(videoOutputScale, canEditFullParams);
+        SetParameterInteractable(videoCrf, canEditFullParams);
+        SetParameterInteractable(videoPixelFormat, canEditFullParams);
+        SetParameterInteractable(videoCodec, canEditFullParams);
+        SetParameterInteractable(videoPreset, canEditFullParams);
+        SetParameterInteractable(webmVideoBitrate, canEditFullParams);
+        SetParameterInteractable(webmVideoDeadlineMode, canEditFullParams);
+        SetParameterInteractable(webmVideoCpuUsed, canEditFullParams);
+        SetParameterInteractable(stopVideoTimeoutMs, canEditFullParams);
+        SetParameterInteractable(waitTempFileReadyTimeoutMs, canEditFullParams);
+        SetParameterInteractable(mergeTimeoutMs, canEditFullParams);
+        SetParameterInteractable(deleteTempFilesAfterMerge, canEditFullParams);
         SetParameterInteractable(btnSelectFfmpeg, canEdit);
         SetParameterInteractable(btnResetFfmpeg, canEdit);
     }
@@ -917,18 +1054,6 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
         if (!_originSelectableStates.ContainsKey(selectable)) _originSelectableStates.Add(selectable, selectable.interactable);
         selectable.interactable = canEdit && _originSelectableStates[selectable];
     }
-
-    /// <summary>
-    /// 功能：执行 RefreshFFmpegPathTips 相关逻辑。
-    /// </summary>
-    private void RefreshFFmpegPathTips()
-    {
-        if (txtFfmpegPathTips == null || recorder == null) return;
-        string currentPath = ifFfmpegPath != null ? ifFfmpegPath.text.Trim() : recorder.customFFmpegPath;
-        string defaultPath = recorder.GetPlatformDefaultFFmpegPath();
-        txtFfmpegPathTips.text = string.IsNullOrWhiteSpace(currentPath) ? $"当前使用平台默认 FFmpeg: {defaultPath}" : $"当前使用自定义 FFmpeg: {currentPath}";
-    }
-
 
     /// <summary>
     /// 功能：执行 BindDropdown 相关逻辑。

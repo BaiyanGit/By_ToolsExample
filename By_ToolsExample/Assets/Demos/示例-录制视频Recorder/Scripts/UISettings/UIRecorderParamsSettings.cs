@@ -2,6 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+using System.Runtime.InteropServices;
+#endif
 using UnityEngine;
 using UnityEngine.UI;
 #if UNITY_EDITOR
@@ -17,55 +20,91 @@ using UnityEditor;
 
 public partial class UIRecorderParamsSettings : MonoBehaviour
 {
-    [Header("录屏核心控制器")] public CrossPlatformScreenRecorder recorder;
-    [Header("配置文件")] public Dropdown drConfig;
-    [Header("显示器")] public Dropdown drDisplay;
-    [Header("运行平台")] public Dropdown drPlatform;
-    [Header("视频格式")] public Dropdown drVideoFormat;
-    [Header("视频文件前缀")] public InputField ifVideoPrefix;
-    [Header("音频采集模式")] public Dropdown drAudioMode;
-    [Header("音频编码器")] public Dropdown drAudioCoder;
-    [Header("音频码率")] public Dropdown drAudioBitrate;
-    [Header("音频采样率")] public Dropdown drAudioSampleRate;
-    [Header("音频声道数")] public Dropdown drAudioChannel;
-    [Header("视频录制帧率")] public Dropdown videoCaptureFrameRate;
-    [Header("视频输出缩放比例")] public Dropdown videoOutputScale;
-    [Header("视频画质档位")] public Dropdown videoCrf;
-    [Header("视频像素格式")] public Dropdown videoPixelFormat;
-    [Header("视频编码器")] public Dropdown videoCodec;
-    [Header("视频编码预设")] public Dropdown videoPreset;
-    [Header("视频码率")] public Dropdown webmVideoBitrate;
-    [Header("视频实时编码模式")] public Dropdown webmVideoDeadlineMode;
-    [Header("视频CPU使用等级")] public Dropdown webmVideoCpuUsed;
-    [Header("视频停止录制等待ffmpeg退出超时")] public Dropdown stopVideoTimeoutMs;
-    [Header("视频等待临时文件释放超时")] public Dropdown waitTempFileReadyTimeoutMs;
-    [Header("视频后台合并音视频等待超时")] public Dropdown mergeTimeoutMs;
-    [Header("视频是否在后台合并完成后删除临时文件")] public Dropdown deleteTempFilesAfterMerge;
-    [Header("FFmpeg可执行文件路径")] public InputField ifFfmpegPath;
-    [Header("选择FFmpeg文件")] public Button btnSelectFfmpeg;
-    [Header("重置FFmpeg路径")] public Button btnResetFfmpeg;
-    [Header("FFmpeg路径提示")] public Text txtFfmpegPathTips;
-    [Header("另存为")] public Button btnSaveAs;
-    [Header("保存")] public Button btnSave;
-    [Header("使用")] public Button btnUse;
-    [Header("另存为窗口")] public GameObject saveAsWindowRoot;
-    [Header("另存为名称输入")] public InputField ifSaveAsName;
-    [Header("确定另存为")] public Button btnSaveAsConfirm;
-    [Header("取消另存为")] public Button btnSaveAsCancel;
-    [Header("另存为提示文字")] public Text txtSaveAsTips;
-    [Header("修改标记颜色")] public Color changedColor = new(1f, 0.72f, 0.18f, 1f);
-    [Header("说明框最小尺寸")] public Vector2 descWindowMinSize = new(420f, 150f);
-    [Header("说明框最大尺寸")] public Vector2 descWindowMaxSize = new(640f, 360f);
-    [Header("选项说明JSON")] public string optionDescriptionJsonName = "RecorderOptionDescriptions.json";
-    [Header("选项说明窗口")] public GameObject optionDescWindowRoot;
-    [Header("选项说明标题")] public Text txtOptionDescTitle;
-    [Header("选项说明内容")] public Text txtOptionDescContent;
-    [Header("配置目录")] public string configFolderName = "RecorderConfigs";
-    [Header("默认配置目录")] public string defaultConfigFolderName = "Default";
-    [Header("用户配置目录")] public string userConfigFolderName = "User";
+    [Header("核心组件")] [Tooltip("录屏核心控制器")] public CrossPlatformScreenRecorder recorder;
+
+    [Header("配置与基础参数")] [Tooltip("配置文件")] public Dropdown drConfig;
+
+    #region 参数设置
+
+    [Tooltip("显示器")] public Dropdown drDisplay;
+    [Tooltip("运行平台")] public Dropdown drPlatform;
+    [Tooltip("视频格式")] public Dropdown drVideoFormat;
+    [Tooltip("视频文件前缀输入框")] public InputField ifVideoPrefix;
+    [Header("音频参数")] [Tooltip("音频采集模式")] public Dropdown drAudioMode;
+    [Tooltip("音频编码器")] public Dropdown drAudioCoder;
+    [Tooltip("音频码率")] public Dropdown drAudioBitrate;
+    [Tooltip("音频采样率")] public Dropdown drAudioSampleRate;
+    [Tooltip("音频声道数")] public Dropdown drAudioChannel;
+    [Header("视频参数")] [Tooltip("视频录制帧率。")] public Dropdown videoCaptureFrameRate;
+    [Tooltip("视频像素格式")] public Dropdown videoPixelFormat;
+    [Tooltip("视频码率")] public Dropdown webmVideoBitrate;
+    [Tooltip("视频画质档位")] public Dropdown videoCrf;
+    [Tooltip("视频编码预设")] public Dropdown videoPreset;
+    [Tooltip("视频编码器")] public Dropdown videoCodec;
+    [Tooltip("视频输出缩放比例")] public Dropdown videoOutputScale;
+    [Tooltip("视频实时编码模式")] public Dropdown webmVideoDeadlineMode;
+    [Tooltip("后台合并音视频等待超时")] public Dropdown mergeTimeoutMs;
+    [Tooltip("后台合并完成后是否删除临时文件")] public Dropdown deleteTempFilesAfterMerge;
+    [Tooltip("停止录制等待 ffmpeg 退出超时")] public Dropdown stopVideoTimeoutMs;
+    [Tooltip("视频CPU使用等级")] public Dropdown webmVideoCpuUsed;
+    [Tooltip("等待临时文件释放超时")] public Dropdown waitTempFileReadyTimeoutMs;
+
+    #endregion
+
+    #region FFmpeg相关
+
+    [Header("FFmpeg路径")] [Tooltip("FFmpeg 可执行文件路径输入框。")]
+    public InputField ifFfmpegPath;
+
+    [Tooltip("选择 FFmpeg 文件按钮。")] public Button btnSelectFfmpeg;
+    [Tooltip("重置 FFmpeg 路径按钮。")] public Button btnResetFfmpeg;
+    [Tooltip("FFmpeg 路径提示文本。")] public Text txtFfmpegPathTips;
+
+    #endregion
+
+    #region 按钮功能相关
+
+    [Header("配置操作按钮")] [Tooltip("另存为按钮")] public Button btnSaveAs;
+    [Tooltip("保存按钮")] public Button btnSave;
+    [Tooltip("使用按钮")] public Button btnUse;
+
+    [Header("另存为窗口")] [Tooltip("另存为窗口根节点")]
+    public GameObject saveAsWindowRoot;
+
+    [Tooltip("另存为名称输入框")] public InputField ifSaveAsName;
+    [Tooltip("确定另存为按钮")] public Button btnSaveAsConfirm;
+    [Tooltip("取消另存为按钮")] public Button btnSaveAsCancel;
+    [Tooltip("另存为提示文字")] public Text txtSaveAsTips;
+
+    #endregion
+
+    #region 选项说明相关
+
+    [Header("选项说明窗口")] [Tooltip("修改参数时用于标记控件的颜色。")]
+    public Color changedColor = new(1f, 0.72f, 0.18f, 1f);
+
+    [Tooltip("说明框最小尺寸")] public Vector2 descWindowMinSize = new(420f, 150f);
+    [Tooltip("说明框最大尺寸")] public Vector2 descWindowMaxSize = new(640f, 360f);
+    [Tooltip("选项说明 JSON 文件名")] public string optionDescriptionJsonName = "RecorderOptionDescriptions.json";
+    [Tooltip("选项说明窗口根节点")] public GameObject optionDescWindowRoot;
+    [Tooltip("选项说明标题文本")] public Text txtOptionDescTitle;
+    [Tooltip("选项说明内容文本")] public Text txtOptionDescContent;
+
+    #endregion
+
+    #region 配置保存与使用
+
+    [Header("配置文件目录")] [Tooltip("配置根目录名称")]
+    public string configFolderName = "RecorderConfigs";
+
+    [Tooltip("默认配置目录名称")] public string defaultConfigFolderName = "Default";
+    [Tooltip("用户配置目录名称")] public string userConfigFolderName = "User";
+
+    #endregion
+
 
     private readonly List<RecorderParamsConfig> _currentPlatformConfigs = new();
-    private readonly List<Button> _descButtons = new();
+
     private readonly Dictionary<Graphic, Color> _originGraphicColors = new();
     private readonly Dictionary<Selectable, bool> _originSelectableStates = new();
     private RecorderParamsConfig _currentConfig;
@@ -343,31 +382,31 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
         config.displayIndex               = drDisplay != null ? drDisplay.value : 0;
         config.outputFilePrefix           = ifVideoPrefix != null ? ifVideoPrefix.text.Trim() : config.outputFilePrefix;
         config.ffmpegExecutablePath       = ifFfmpegPath != null ? ifFfmpegPath.text.Trim() : config.ffmpegExecutablePath;
-        config.outputAsWebm               = string.Equals(getDropdownText(drVideoFormat), "webm", StringComparison.OrdinalIgnoreCase);
-        config.audioMode                  = getDropdownText(drAudioMode) == "系统音频" ? 1 : 0;
-        config.audioBitrate               = getDropdownTextOrDefault(drAudioBitrate, config.audioBitrate);
-        config.audioSampleRate            = ParseInt(getDropdownText(drAudioSampleRate), config.audioSampleRate);
-        config.audioChannels              = ParseInt(getDropdownText(drAudioChannel), config.audioChannels);
-        config.captureFrameRate           = ParseInt(getDropdownText(videoCaptureFrameRate), config.captureFrameRate);
-        config.outputScale                = ParseFloat(getDropdownText(videoOutputScale), config.outputScale);
-        config.videoCrf                   = ParseInt(getDropdownText(videoCrf), config.videoCrf);
-        config.pixelFormat                = getDropdownTextOrDefault(videoPixelFormat, config.pixelFormat);
-        config.videoPreset                = getDropdownTextOrDefault(videoPreset, config.videoPreset);
-        config.webmVideoBitrate           = getDropdownTextOrDefault(webmVideoBitrate, config.webmVideoBitrate);
-        config.webmDeadline               = getDropdownTextOrDefault(webmVideoDeadlineMode, config.webmDeadline);
-        config.webmCpuUsed                = ParseInt(getDropdownText(webmVideoCpuUsed), config.webmCpuUsed);
-        config.stopVideoTimeoutMs         = ParseInt(getDropdownText(stopVideoTimeoutMs), config.stopVideoTimeoutMs);
-        config.waitTempFileReadyTimeoutMs = ParseInt(getDropdownText(waitTempFileReadyTimeoutMs), config.waitTempFileReadyTimeoutMs);
-        config.mergeTimeoutMs             = ParseInt(getDropdownText(mergeTimeoutMs), config.mergeTimeoutMs);
-        config.deleteTempFilesAfterMerge  = getDropdownText(deleteTempFilesAfterMerge) != "否";
-        string audioCodec = getDropdownText(drAudioCoder);
+        config.outputAsWebm               = string.Equals(GetDropdownText(drVideoFormat), "webm", StringComparison.OrdinalIgnoreCase);
+        config.audioMode                  = GetDropdownText(drAudioMode) == "系统音频" ? 1 : 0;
+        config.audioBitrate               = GetDropdownTextOrDefault(drAudioBitrate, config.audioBitrate);
+        config.audioSampleRate            = ParseInt(GetDropdownText(drAudioSampleRate), config.audioSampleRate);
+        config.audioChannels              = ParseInt(GetDropdownText(drAudioChannel), config.audioChannels);
+        config.captureFrameRate           = ParseInt(GetDropdownText(videoCaptureFrameRate), config.captureFrameRate);
+        config.outputScale                = ParseFloat(GetDropdownText(videoOutputScale), config.outputScale);
+        config.videoCrf                   = ParseInt(GetDropdownText(videoCrf), config.videoCrf);
+        config.pixelFormat                = GetDropdownTextOrDefault(videoPixelFormat, config.pixelFormat);
+        config.videoPreset                = GetDropdownTextOrDefault(videoPreset, config.videoPreset);
+        config.webmVideoBitrate           = GetDropdownTextOrDefault(webmVideoBitrate, config.webmVideoBitrate);
+        config.webmDeadline               = GetDropdownTextOrDefault(webmVideoDeadlineMode, config.webmDeadline);
+        config.webmCpuUsed                = ParseInt(GetDropdownText(webmVideoCpuUsed), config.webmCpuUsed);
+        config.stopVideoTimeoutMs         = ParseInt(GetDropdownText(stopVideoTimeoutMs), config.stopVideoTimeoutMs);
+        config.waitTempFileReadyTimeoutMs = ParseInt(GetDropdownText(waitTempFileReadyTimeoutMs), config.waitTempFileReadyTimeoutMs);
+        config.mergeTimeoutMs             = ParseInt(GetDropdownText(mergeTimeoutMs), config.mergeTimeoutMs);
+        config.deleteTempFilesAfterMerge  = GetDropdownText(deleteTempFilesAfterMerge) != "否";
+        string audioCodec = GetDropdownText(drAudioCoder);
         if (!string.IsNullOrWhiteSpace(audioCodec))
         {
             if (config.outputAsWebm) config.webmAudioCodec = audioCodec;
             else config.audioCodec                         = audioCodec;
         }
 
-        string vCodec = getDropdownText(videoCodec);
+        string vCodec = GetDropdownText(videoCodec);
         if (!string.IsNullOrWhiteSpace(vCodec))
         {
             if (config.outputAsWebm) config.webmVideoCodec = vCodec;
@@ -547,18 +586,143 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
     /// </summary>
     private void SelectFFmpegPath()
     {
+        string path = OpenFFmpegExecutableDialog();
+        if (string.IsNullOrWhiteSpace(path)) return;
+        if (ifFfmpegPath != null) ifFfmpegPath.text = path;
+        SetFFmpegPath(path);
+    }
+
+    /// <summary>
+    /// 功能：打开当前平台支持的 FFmpeg 可执行文件选择对话框。
+    /// </summary>
+    private string OpenFFmpegExecutableDialog()
+    {
 #if UNITY_EDITOR
         string extension = Application.platform == RuntimePlatform.WindowsEditor ? "exe" : string.Empty;
-        string path      = EditorUtility.OpenFilePanel("选择 FFmpeg 可执行文件", string.Empty, extension);
-        if (!string.IsNullOrWhiteSpace(path))
-        {
-            SetFFmpegPath(path);
-            if (ifFfmpegPath != null) ifFfmpegPath.text = path;
-        }
+        return EditorUtility.OpenFilePanel("选择 FFmpeg 可执行文件", GetFFmpegDialogStartDirectory(), extension);
+#elif UNITY_STANDALONE_WIN
+        return OpenWindowsFFmpegExecutableDialog();
+#elif UNITY_STANDALONE_LINUX
+        return OpenLinuxFFmpegExecutableDialog();
 #else
-        Debug.LogWarning("运行时请直接在 FFmpeg 路径输入框中填写可执行文件路径。");
+        Debug.LogWarning("当前平台暂不支持 FFmpeg 文件选择对话框，请直接填写 FFmpeg 路径。");
+        return string.Empty;
 #endif
     }
+
+    /// <summary>
+    /// 功能：获取 FFmpeg 文件选择对话框的初始目录。
+    /// </summary>
+    private string GetFFmpegDialogStartDirectory()
+    {
+        string currentPath = ifFfmpegPath != null ? ifFfmpegPath.text.Trim() : string.Empty;
+        if (!string.IsNullOrWhiteSpace(currentPath))
+        {
+            string directory = Path.GetDirectoryName(currentPath);
+            if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory)) return directory;
+        }
+
+        return Application.streamingAssetsPath;
+    }
+
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+    /// <summary>
+    /// 功能：在 Windows Player 中打开系统文件选择对话框并返回 FFmpeg 路径。
+    /// </summary>
+    private string OpenWindowsFFmpegExecutableDialog()
+    {
+        var openFileName = new OpenFileName();
+        openFileName.structSize   = Marshal.SizeOf(openFileName);
+        openFileName.filter       = "FFmpeg (ffmpeg.exe)\0ffmpeg.exe\0Executable Files (*.exe)\0*.exe\0All Files (*.*)\0*.*\0";
+        openFileName.file         = new string(new char[4096]);
+        openFileName.maxFile      = openFileName.file.Length;
+        openFileName.fileTitle    = new string(new char[256]);
+        openFileName.maxFileTitle = openFileName.fileTitle.Length;
+        openFileName.initialDir   = GetFFmpegDialogStartDirectory().Replace('/', '\\');
+        openFileName.title        = "选择 FFmpeg 可执行文件";
+        openFileName.defExt       = "exe";
+        openFileName.flags        = OpenFileNameFlags.OFN_EXPLORER | OpenFileNameFlags.OFN_FILEMUSTEXIST | OpenFileNameFlags.OFN_PATHMUSTEXIST | OpenFileNameFlags.OFN_NOCHANGEDIR;
+        return GetOpenFileName(openFileName) ? openFileName.file.TrimEnd('\0') : string.Empty;
+    }
+
+    [DllImport("Comdlg32.dll", SetLastError = true, ThrowOnUnmappableChar = true, CharSet = CharSet.Auto)]
+    private static extern bool GetOpenFileName([In, Out] OpenFileName openFileName);
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    private class OpenFileName
+    {
+        public int structSize;
+        public IntPtr dlgOwner = IntPtr.Zero;
+        public IntPtr instance = IntPtr.Zero;
+        public string filter;
+        public string customFilter;
+        public int maxCustFilter;
+        public int filterIndex;
+        public string file;
+        public int maxFile;
+        public string fileTitle;
+        public int maxFileTitle;
+        public string initialDir;
+        public string title;
+        public int flags;
+        public short fileOffset;
+        public short fileExtension;
+        public string defExt;
+        public IntPtr custData = IntPtr.Zero;
+        public IntPtr hook = IntPtr.Zero;
+        public string templateName;
+        public IntPtr reservedPtr = IntPtr.Zero;
+        public int reservedInt;
+        public int flagsEx;
+    }
+
+    private static class OpenFileNameFlags
+    {
+        public const int OFN_NOCHANGEDIR   = 0x00000008;
+        public const int OFN_PATHMUSTEXIST = 0x00000800;
+        public const int OFN_FILEMUSTEXIST = 0x00001000;
+        public const int OFN_EXPLORER      = 0x00080000;
+    }
+#endif
+
+#if UNITY_STANDALONE_LINUX && !UNITY_EDITOR
+    /// <summary>
+    /// 功能：在 Linux Player 中调用常见桌面文件选择器并返回 FFmpeg 路径。
+    /// </summary>
+    private string OpenLinuxFFmpegExecutableDialog()
+    {
+        string startDirectory = GetFFmpegDialogStartDirectory();
+        if (TryOpenLinuxFileDialog("zenity", $"--file-selection --title=\"选择 FFmpeg 可执行文件\" --filename=\"{startDirectory.TrimEnd('/')}/\"", out string path)) return path;
+        if (TryOpenLinuxFileDialog("kdialog", $"--title \"选择 FFmpeg 可执行文件\" --getopenfilename \"{startDirectory}\"", out path)) return path;
+        Debug.LogWarning("未找到可用的 Linux 文件选择器，请安装 zenity 或 kdialog，或直接填写 FFmpeg 路径。");
+        return string.Empty;
+    }
+
+    /// <summary>
+    /// 功能：启动指定 Linux 文件选择器并读取用户选择的文件路径。
+    /// </summary>
+    private bool TryOpenLinuxFileDialog(string executable, string arguments, out string path)
+    {
+        path = string.Empty;
+        try
+        {
+            var process = new System.Diagnostics.Process();
+            process.StartInfo.FileName               = executable;
+            process.StartInfo.Arguments              = arguments;
+            process.StartInfo.UseShellExecute        = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.CreateNoWindow         = true;
+            process.Start();
+            path = process.StandardOutput.ReadLine();
+            process.WaitForExit();
+            return process.ExitCode == 0 && !string.IsNullOrWhiteSpace(path);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+#endif
 
     /// <summary>
     /// 功能：执行 SetFFmpegPath 相关逻辑。
@@ -769,7 +933,7 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
     /// <summary>
     /// 功能：执行 BindDropdown 相关逻辑。
     /// </summary>
-    private void BindDropdown(Dropdown dropdown, UnityEngine.Events.UnityAction<int> action)
+    private static void BindDropdown(Dropdown dropdown, UnityEngine.Events.UnityAction<int> action)
     {
         if (dropdown == null) return;
         dropdown.onValueChanged.RemoveListener(action);
@@ -806,7 +970,7 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
     /// <summary>
     /// 功能：执行 getDropdownText 相关逻辑。
     /// </summary>
-    private static string getDropdownText(Dropdown dropdown)
+    private static string GetDropdownText(Dropdown dropdown)
     {
         if (dropdown == null || dropdown.options.Count == 0 || dropdown.value < 0 || dropdown.value >= dropdown.options.Count) return string.Empty;
         return dropdown.options[dropdown.value].text;
@@ -815,9 +979,9 @@ public partial class UIRecorderParamsSettings : MonoBehaviour
     /// <summary>
     /// 功能：执行 getDropdownTextOrDefault 相关逻辑。
     /// </summary>
-    private static string getDropdownTextOrDefault(Dropdown dropdown, string defaultValue)
+    private static string GetDropdownTextOrDefault(Dropdown dropdown, string defaultValue)
     {
-        string value = getDropdownText(dropdown);
+        string value = GetDropdownText(dropdown);
         return string.IsNullOrWhiteSpace(value) ? defaultValue : value;
     }
 

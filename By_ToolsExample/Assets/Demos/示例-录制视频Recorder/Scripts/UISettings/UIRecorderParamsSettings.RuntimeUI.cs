@@ -12,12 +12,16 @@ public partial class UIRecorderParamsSettings
         var go = Instantiate(btnSave.gameObject, btnSave.transform.parent);
         go.name = "BtnUse";
         btnUse  = go.GetComponent<Button>();
+
         if (btnUse != null) btnUse.onClick.RemoveAllListeners();
-        var rect                                                    = go.GetComponent<RectTransform>();
-        var saveRect                                                = btnSave.GetComponent<RectTransform>();
-        if (rect != null && saveRect != null) rect.anchoredPosition = saveRect.anchoredPosition + new Vector2(saveRect.rect.width + 12f, 0f);
-        var text                                                    = go.GetComponentInChildren<Text>(true);
-        if (text != null) text.text                                 = "使用";
+
+        var rect     = go.GetComponent<RectTransform>();
+        var saveRect = btnSave.GetComponent<RectTransform>();
+        if (rect != null && saveRect != null)
+            rect.anchoredPosition = saveRect.anchoredPosition + new Vector2(saveRect.rect.width + 12f, 0f);
+
+        var text                    = go.GetComponentInChildren<Text>(true);
+        if (text != null) text.text = "使用";
     }
 
     /// <summary>
@@ -33,6 +37,7 @@ public partial class UIRecorderParamsSettings
                                     ? saveAsWindowRoot.transform.Find("TxtSaveAsTips").GetComponent<Text>()
                                     : CreateText("TxtSaveAsTips", saveAsWindowRoot.transform, string.Empty, new Vector2(390f, 28f), new Vector2(0f, -18f), 14, TextAnchor.MiddleLeft);
                 txtSaveAsTips.color = new Color(1f, 0.45f, 0.35f, 1f);
+                
                 txtSaveAsTips.gameObject.SetActive(false);
             }
 
@@ -79,7 +84,7 @@ public partial class UIRecorderParamsSettings
     /// <summary>
     /// 功能：执行 CreatePanel 相关逻辑。
     /// </summary>
-    private GameObject CreatePanel(string goName, Transform parent, Vector2 size, Vector2 anchoredPosition)
+    private static GameObject CreatePanel(string goName, Transform parent, Vector2 size, Vector2 anchoredPosition)
     {
         var go = new GameObject(goName, typeof(RectTransform), typeof(Image));
         go.transform.SetParent(parent, false);
@@ -114,7 +119,7 @@ public partial class UIRecorderParamsSettings
     /// <summary>
     /// 功能：执行 CreateInputField 相关逻辑。
     /// </summary>
-    private InputField CreateInputField(string goName, Transform parent, Vector2 size, Vector2 anchoredPosition, string placeholder)
+    private static InputField CreateInputField(string goName, Transform parent, Vector2 size, Vector2 anchoredPosition, string placeholder)
     {
         var go = new GameObject(goName, typeof(RectTransform), typeof(Image), typeof(InputField));
         go.transform.SetParent(parent, false);
@@ -135,7 +140,7 @@ public partial class UIRecorderParamsSettings
     /// <summary>
     /// 功能：执行 CreateButton 相关逻辑。
     /// </summary>
-    private Button CreateButton(string goName, Transform parent, string label, Vector2 size, Vector2 anchoredPosition)
+    private static Button CreateButton(string goName, Transform parent, string label, Vector2 size, Vector2 anchoredPosition)
     {
         var go = new GameObject(goName, typeof(RectTransform), typeof(Image), typeof(Button));
         go.transform.SetParent(parent, false);

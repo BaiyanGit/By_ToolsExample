@@ -37,12 +37,10 @@ public partial class UIRecorderParamsSettings
     /// </summary>
     private void BindDescButtons()
     {
-        _descButtons.Clear();
         foreach (var button in GetComponentsInChildren<Button>(true))
         {
             if (!string.Equals(button.name, "Btn_Desc", StringComparison.OrdinalIgnoreCase) && !string.Equals(button.name, "TogDesc", StringComparison.OrdinalIgnoreCase)) continue;
             string settingName = button.transform.parent != null ? button.transform.parent.name : button.name;
-            _descButtons.Add(button);
             BindHoverEvent(button.gameObject, EventTriggerType.PointerEnter, _ => ShowOptionDescWindow(settingName, button.GetComponent<RectTransform>()));
             BindHoverEvent(button.gameObject, EventTriggerType.PointerExit, _ => HideOptionDescWindow());
         }
@@ -102,14 +100,6 @@ public partial class UIRecorderParamsSettings
         float width  = Mathf.Clamp(contentWidth + 48f, descWindowMinSize.x, descWindowMaxSize.x);
         float height = Mathf.Clamp(titleHeight + contentHeight + 52f, descWindowMinSize.y, descWindowMaxSize.y);
         windowRect.sizeDelta = new Vector2(width, height);
-
-        // if (txtOptionDescTitle != null)
-        // {
-        //     var titleRect = txtOptionDescTitle.GetComponent<RectTransform>();
-        //     titleRect.sizeDelta        = new Vector2(width - 40f, 28f);
-        //     titleRect.anchoredPosition = new Vector2(0f, height * 0.5f - 28f);
-        // }
-
         if (txtOptionDescContent != null)
         {
             var contentRect = txtOptionDescContent.GetComponent<RectTransform>();

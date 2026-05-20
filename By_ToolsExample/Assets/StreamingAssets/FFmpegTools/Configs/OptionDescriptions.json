@@ -1,0 +1,414 @@
+{
+  "groups": [
+    {
+      "key": "Config",
+      "settingName": "配置文件",
+      "options": []
+    },
+    {
+      "key": "Display",
+      "settingName": "显示器",
+      "options": []
+    },
+    {
+      "key": "platform",
+      "settingName": "运行平台",
+      "options": [
+        {
+          "option": "Windows",
+          "description": "Windows 平台配置，只会在 Windows 编辑器或 Windows Player 中显示。"
+        },
+        {
+          "option": "Linux",
+          "description": "Linux 平台配置，只会在 Linux 编辑器或 Linux Player 中显示。"
+        }
+      ]
+    },
+    {
+      "key": "useMode",
+      "settingName": "使用方式",
+      "options": [
+        {
+          "option": "存储本地",
+          "description": "将录制内容保存为本地视频文件，需要配置视频文件保存路径。"
+        },
+        {
+          "option": "视频推流",
+          "description": "用于后续直播或网络推流流程，当前版本暂不开发具体推流功能。"
+        }
+      ]
+    },
+    {
+      "key": "VideoFormat",
+      "settingName": "视频格式",
+      "options": [
+        {
+          "option": "webm",
+          "description": "推荐用于 Unity 内播放和跨平台分发，默认使用 VP8/VP9 视频与 Vorbis/Opus 音频。"
+        },
+        {
+          "option": "mp4",
+          "description": "通用播放器兼容性更广，通常搭配 libx264 与 aac。"
+        }
+      ]
+    },
+    {
+      "key": "audioMode",
+      "settingName": "音频采集模式",
+      "options": [
+        {
+          "option": "静音录制",
+          "description": "只录制画面，不采集系统声音，适合无声演示或后期配音。"
+        },
+        {
+          "option": "系统音频",
+          "description": "录制系统输出声音；Windows 使用 WASAPI Loopback，Linux 使用 PulseAudio 相关输入源。"
+        }
+      ]
+    },
+    {
+      "key": "audioCodec",
+      "settingName": "音频编码器",
+      "options": [
+        {
+          "option": "aac",
+          "description": "MP4 常用音频编码器，兼容性好。"
+        },
+        {
+          "option": "libvorbis",
+          "description": "WebM 常用音频编码器，兼容性稳定。"
+        },
+        {
+          "option": "libopus",
+          "description": "低码率音质更好，但播放端兼容性取决于环境。"
+        }
+      ]
+    },
+    {
+      "key": "audioBitrate",
+      "settingName": "音频码率",
+      "options": [
+        {
+          "option": "96k",
+          "description": "文件更小，适合普通语音。"
+        },
+        {
+          "option": "128k",
+          "description": "通用推荐，体积和音质均衡。"
+        },
+        {
+          "option": "192k",
+          "description": "音质更好，适合包含音乐或复杂声音的录制。"
+        },
+        {
+          "option": "256k",
+          "description": "更高音质，文件体积更大。"
+        }
+      ]
+    },
+    {
+      "key": "audioSampleRate",
+      "settingName": "音频采样率",
+      "options": [
+        {
+          "option": "44100",
+          "description": "常见音乐采样率，兼容性好。"
+        },
+        {
+          "option": "48000",
+          "description": "视频录制常用采样率，推荐默认值。"
+        }
+      ]
+    },
+    {
+      "key": "AudioChannel",
+      "settingName": "音频声道数",
+      "options": [
+        {
+          "option": "1",
+          "description": "单声道，文件更小，适合语音。"
+        },
+        {
+          "option": "2",
+          "description": "立体声，保留左右声道信息，推荐默认值。"
+        }
+      ]
+    },
+    {
+      "key": "FrameRate",
+      "settingName": "视频录制帧率",
+      "options": [
+        {
+          "option": "20",
+          "description": "低负载，适合性能紧张或内容变化较少的场景。"
+        },
+        {
+          "option": "25",
+          "description": "均衡帧率，适合普通演示。"
+        },
+        {
+          "option": "30",
+          "description": "常用推荐值，流畅度和性能消耗较均衡。"
+        },
+        {
+          "option": "45",
+          "description": "更流畅，但编码和磁盘压力更高。"
+        },
+        {
+          "option": "60",
+          "description": "最高流畅度，适合动作变化快的内容，性能消耗最高。"
+        }
+      ]
+    },
+    {
+      "key": "outputScale",
+      "settingName": "视频输出缩放比例",
+      "options": [
+        {
+          "option": "0.5",
+          "description": "半分辨率输出，文件小、编码快。"
+        },
+        {
+          "option": "0.75",
+          "description": "清晰度和体积折中。"
+        },
+        {
+          "option": "1",
+          "description": "原始分辨率输出，画面最清晰，文件和性能消耗更高。"
+        }
+      ]
+    },
+    {
+      "key": "videoCrf",
+      "settingName": "视频画质档位",
+      "options": [
+        {
+          "option": "20",
+          "description": "更清晰，文件更大，适合高质量录制。"
+        },
+        {
+          "option": "23",
+          "description": "默认均衡质量，推荐常规使用。"
+        },
+        {
+          "option": "26",
+          "description": "压缩更强，文件更小，画质略降。"
+        },
+        {
+          "option": "30",
+          "description": "文件最小，画质下降更明显。"
+        }
+      ]
+    },
+    {
+      "key": "pixelFormat",
+      "settingName": "视频像素格式",
+      "options": [
+        {
+          "option": "yuv420p",
+          "description": "兼容性最好，推荐默认值。"
+        },
+        {
+          "option": "yuv444p",
+          "description": "保留更多色彩采样信息，文件更大，部分播放器兼容性较弱。"
+        }
+      ]
+    },
+    {
+      "key": "videoCodec",
+      "settingName": "视频编码器",
+      "options": [
+        {
+          "option": "libx264",
+          "description": "MP4/H.264 推荐编码器，兼容性最好。"
+        },
+        {
+          "option": "libx265",
+          "description": "H.265 压缩率更高，但编码更慢、兼容性更依赖播放端。"
+        },
+        {
+          "option": "libvpx",
+          "description": "WebM VP8 编码器，实时录制推荐。"
+        },
+        {
+          "option": "libvpx-vp9",
+          "description": "WebM VP9 编码器，画质/压缩更好，但编码更慢。"
+        }
+      ]
+    },
+    {
+      "key": "videoPreset",
+      "settingName": "视频编码预设",
+      "options": [
+        {
+          "option": "ultrafast",
+          "description": "编码最快，实时录制压力最低，文件较大。"
+        },
+        {
+          "option": "veryfast",
+          "description": "速度和体积较均衡，推荐中高质量录制。"
+        },
+        {
+          "option": "faster",
+          "description": "压缩效率更好，编码压力提高。"
+        },
+        {
+          "option": "fast",
+          "description": "更重视压缩效率，适合性能较好的机器。"
+        },
+        {
+          "option": "medium",
+          "description": "默认压缩效率，但实时录制压力较高。"
+        }
+      ]
+    },
+    {
+      "key": "VideoBitrate",
+      "settingName": "视频码率",
+      "options": [
+        {
+          "option": "2M",
+          "description": "低码率，文件小，适合低分辨率或低动态内容。"
+        },
+        {
+          "option": "3M",
+          "description": "均衡码率，默认推荐。"
+        },
+        {
+          "option": "5M",
+          "description": "更清晰，适合高分辨率录制。"
+        },
+        {
+          "option": "8M",
+          "description": "高码率，文件更大，适合细节较多的画面。"
+        }
+      ]
+    },
+    {
+      "key": "Deadline",
+      "settingName": "视频实时编码模式",
+      "options": [
+        {
+          "option": "realtime",
+          "description": "实时录制推荐，优先保证编码速度。"
+        },
+        {
+          "option": "good",
+          "description": "质量优先，编码压力更高。"
+        },
+        {
+          "option": "best",
+          "description": "最重质量，通常不适合实时录制。"
+        }
+      ]
+    },
+    {
+      "key": "CpuUsed",
+      "settingName": "视频CPU使用等级",
+      "options": [
+        {
+          "option": "4",
+          "description": "质量更好，CPU 占用更高。"
+        },
+        {
+          "option": "6",
+          "description": "质量和速度均衡。"
+        },
+        {
+          "option": "8",
+          "description": "编码最快，画质略降。"
+        }
+      ]
+    },
+    {
+      "key": "StopTimeout",
+      "settingName": "停止录制等待超时",
+      "options": [
+        {
+          "option": "5000",
+          "description": "最多等待 5 秒，适合短视频或快速失败场景。"
+        },
+        {
+          "option": "8000",
+          "description": "最多等待 8 秒，适合轻量录制。"
+        },
+        {
+          "option": "15000",
+          "description": "最多等待 15 秒，推荐默认值。"
+        },
+        {
+          "option": "30000",
+          "description": "最多等待 30 秒，适合机器较慢或输出文件较大时使用。"
+        }
+      ]
+    },
+    {
+      "key": "TempFileTimeout",
+      "settingName": "临时文件释放超时",
+      "options": [
+        {
+          "option": "5000",
+          "description": "最多等待 5 秒，快速失败。"
+        },
+        {
+          "option": "8000",
+          "description": "最多等待 8 秒，推荐默认值。"
+        },
+        {
+          "option": "15000",
+          "description": "最多等待 15 秒，适合磁盘较慢的情况。"
+        },
+        {
+          "option": "30000",
+          "description": "最多等待 30 秒，等待最充分。"
+        }
+      ]
+    },
+    {
+      "key": "MergeTimeout",
+      "settingName": "后台合并等待超时",
+      "options": [
+        {
+          "option": "0",
+          "description": "不限制等待时间，直到合并完成。"
+        },
+        {
+          "option": "30000",
+          "description": "最多等待 30 秒。"
+        },
+        {
+          "option": "60000",
+          "description": "最多等待 60 秒。"
+        },
+        {
+          "option": "120000",
+          "description": "最多等待 120 秒，适合大文件。"
+        }
+      ]
+    },
+    {
+      "key": "DeleteTempFiles",
+      "settingName": "删除临时文件",
+      "options": [
+        {
+          "option": "是",
+          "description": "合并成功后删除临时视频/音频文件，保持目录干净。"
+        },
+        {
+          "option": "否",
+          "description": "保留临时文件，方便排查合并失败或编码问题。"
+        }
+      ]
+    },
+    {
+      "key": "OutputFilePrefix",
+      "settingName": "文件前缀",
+      "options": [
+        {
+          "option": "说明",
+          "description": "生成视频文件名前缀，用于区分不同业务或不同录制来源；建议使用字母、数字、下划线或短横线，避免使用系统文件名非法字符。"
+        }
+      ]
+    }
+  ]
+}

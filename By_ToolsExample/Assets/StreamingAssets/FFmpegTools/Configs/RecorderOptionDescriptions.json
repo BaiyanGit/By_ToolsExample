@@ -1,0 +1,198 @@
+{
+    "groups": [
+        {
+            "key": "VideoFormat",
+            "settingName": "视频格式",
+            "options": [
+                {
+                    "option": "webm",
+                    "description": "适合 Unity 内播放和跨平台分发。"
+                },
+                {
+                    "option": "mp4",
+                    "description": "兼容性更广。"
+                }
+            ]
+        },
+        {
+            "key": "useMode",
+            "settingName": "使用方式",
+            "options": [
+                {
+                    "option": "存储本地",
+                    "description": "将录制内容保存为本地视频文件，需要配置视频文件保存路径。"
+                },
+                {
+                    "option": "视频推流",
+                    "description": "用于后续直播或网络推流流程，当前版本暂不开发具体推流功能。"
+                }
+            ]
+        },
+        {
+            "key": "OutputFilePrefix",
+            "settingName": "文件前缀",
+            "options": [
+                {
+                    "option": "说明",
+                    "description": "生成视频文件名前缀，用于区分不同业务或不同录制来源；建议使用字母、数字、下划线或短横线，避免使用系统文件名非法字符。"
+                }
+            ]
+        },
+        {
+            "key": "audioMode",
+            "settingName": "音频采集模式",
+            "options": [
+                {
+                    "option": "静音录制",
+                    "description": "只录制画面。"
+                },
+                {
+                    "option": "系统音频",
+                    "description": "录制系统输出声音。"
+                }
+            ]
+        },
+        {
+            "key": "audioCodec",
+            "settingName": "音频编码器",
+            "options": [
+                {
+                    "option": "aac",
+                    "description": "MP4 常用编码器。"
+                },
+                {
+                    "option": "libvorbis",
+                    "description": "WebM 默认推荐。"
+                },
+                {
+                    "option": "libopus",
+                    "description": "质量更好。"
+                }
+            ]
+        },
+        {
+            "key": "FrameRate",
+            "settingName": "视频录制帧率",
+            "options": [
+                {
+                    "option": "20",
+                    "description": "低负载。"
+                },
+                {
+                    "option": "25",
+                    "description": "均衡。"
+                },
+                {
+                    "option": "30",
+                    "description": "默认推荐。"
+                },
+                {
+                    "option": "45",
+                    "description": "更流畅。"
+                },
+                {
+                    "option": "60",
+                    "description": "性能消耗更高。"
+                }
+            ]
+        },
+        {
+            "key": "outputScale",
+            "settingName": "视频输出缩放比例",
+            "options": [
+                {
+                    "option": "0.5",
+                    "description": "半分辨率。"
+                },
+                {
+                    "option": "0.75",
+                    "description": "均衡。"
+                },
+                {
+                    "option": "1",
+                    "description": "原始分辨率。"
+                }
+            ]
+        },
+        {
+            "key": "videoCrf",
+            "settingName": "视频画质档位",
+            "options": [
+                {
+                    "option": "20",
+                    "description": "更清晰。"
+                },
+                {
+                    "option": "23",
+                    "description": "均衡推荐。"
+                },
+                {
+                    "option": "26",
+                    "description": "文件更小。"
+                },
+                {
+                    "option": "30",
+                    "description": "压缩更强。"
+                }
+            ]
+        },
+        {
+            "key": "videoCodec",
+            "settingName": "视频编码器",
+            "options": [
+                {
+                    "option": "libx264",
+                    "description": "MP4 推荐。"
+                },
+                {
+                    "option": "libx265",
+                    "description": "压缩率更高。"
+                },
+                {
+                    "option": "libvpx",
+                    "description": "WebM VP8。"
+                },
+                {
+                    "option": "libvpx-vp9",
+                    "description": "WebM VP9。"
+                }
+            ]
+        },
+        {
+            "key": "StopTimeout",
+            "settingName": "停止录制等待超时",
+            "options": [
+                {
+                    "option": "5000",
+                    "description": "最多等待 5 秒，适合短视频或快速失败场景。"
+                },
+                {
+                    "option": "8000",
+                    "description": "最多等待 8 秒，适合轻量录制。"
+                },
+                {
+                    "option": "15000",
+                    "description": "最多等待 15 秒，推荐默认值。"
+                },
+                {
+                    "option": "30000",
+                    "description": "最多等待 30 秒，适合机器较慢或输出文件较大时使用。"
+                }
+            ]
+        },
+        {
+            "key": "DeleteTempFiles",
+            "settingName": "删除临时文件",
+            "options": [
+                {
+                    "option": "是",
+                    "description": "合并成功后删除。"
+                },
+                {
+                    "option": "否",
+                    "description": "保留方便排查。"
+                }
+            ]
+        }
+    ]
+}

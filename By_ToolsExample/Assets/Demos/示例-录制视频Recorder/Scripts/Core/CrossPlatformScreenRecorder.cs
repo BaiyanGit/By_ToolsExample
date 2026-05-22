@@ -111,6 +111,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             [Header("视频临时路径")] public string videoTempPath;
             [Header("音频临时路径")] public string audioTempPath;
             [Header("包含系统音频")] public bool containsSystemAudio;
+            [Header("是否为视频推流")] public bool isStreaming;
             [Header("Linux 已解析音频源")] public string resolvedLinuxAudioSource;
         }
 
@@ -217,6 +218,12 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                 return;
             }
 
+            if (config.useMode == 1 && string.IsNullOrWhiteSpace(config.streamUrl))
+            {
+                Debug.LogError("当前为视频推流模式，但未配置视频推流地址。");
+                return;
+            }
+
             if (!_isInitialized)
             {
                 Initialize();
@@ -277,17 +284,23 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                     try
                     {
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-                        if (config.audioMode == 1)
+                        if (config.audioMode == 1 && (!session.isStreaming || config.streamIncludeAudio))
                         {
-                            if (!WindowsLoopbackAudioRecorder.StartRecording(session.audioTempPath, out string audioError))
+                            if (session.isStreaming)
+                            {
+                                session.containsSystemAudio = true;
+                            }
+                            else if (!WindowsLoopbackAudioRecorder.StartRecording(session.audioTempPath, out string audioError))
                             {
                                 throw new Exception("启动 Windows 系统声音录制失败: " + audioError);
                             }
-
-                            session.containsSystemAudio = true;
+                            else
+                            {
+                                session.containsSystemAudio = true;
+                            }
                         }
 #elif UNITY_STANDALONE_LINUX || UNITY_EDITOR_LINUX
-                    if (config.audioMode == 1)
+                    if (config.audioMode == 1 && (!session.isStreaming || config.streamIncludeAudio))
                     {
                         if (!TryResolveLinuxSystemAudioSource(out string resolvedSource, out string resolveError))
                         {
@@ -309,6 +322,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                         bool started = _processRunner.Start(
                             _ffmpegExecutablePath,
                             arguments,
+                            session.isStreaming ? ProcessPriorityClass.BelowNormal : ProcessPriorityClass.Normal,
                             onStdOut: msg => Debug.Log("[ffmpeg] " + msg),
                             onStdErr: msg => Debug.LogWarning("[ffmpeg] " + msg)
                         );
@@ -347,7 +361,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             _currentSession = session;
 
             Debug.Log($"开始录制显示器: {target.name}");
-            Debug.Log($"视频临时文件: {session.videoTempPath}");
+            Debug.Log(session.isStreaming ? $"视频推流地址: {session.finalOutputPath}" : $"视频临时文件: {session.videoTempPath}");
             if (session.containsSystemAudio)
             {
                 Debug.Log($"音频临时文件: {session.audioTempPath}");
@@ -358,8 +372,13 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         {
             Debug.Log($"Linux 本次录制使用音频源: {session.resolvedLinuxAudioSource}");
         }
+#elif UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+            if (session.isStreaming && config.audioMode == 1)
+            {
+                Debug.LogWarning("Windows 推流模式当前只推送画面，系统音频仍需接入实时 WASAPI/dshow 音频源后才能进入直播流。");
+            }
 #endif
-            Debug.Log($"最终输出文件: {session.finalOutputPath}");
+            Debug.Log(session.isStreaming ? $"当前推流地址: {session.finalOutputPath}" : $"最终输出文件: {session.finalOutputPath}");
             Debug.Log($"当前质量设置: 帧率={config.captureFrameRate}, 缩放={config.outputScale}, CRF={config.videoCrf}, 预设={config.videoPreset}");
 
             OnRecordStarted?.Invoke(session.finalOutputPath);
@@ -442,6 +461,11 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             _processRunner.Stop(config != null && config.stopVideoTimeoutMs > 0 ? config.stopVideoTimeoutMs : 15000);
             Debug.Log("视频录制进程已停止。");
 
+            if (session.isStreaming)
+            {
+                return;
+            }
+
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
             if (session.containsSystemAudio)
             {
@@ -480,6 +504,16 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         {
             try
             {
+                if (session.isStreaming)
+                {
+                    EnqueueMainThread(() =>
+                    {
+                        Debug.Log("视频推流已停止: " + session.finalOutputPath);
+                        OnRecordStopped?.Invoke(session.finalOutputPath);
+                    });
+                    return;
+                }
+
                 bool hasVideo = File.Exists(session.videoTempPath) && new FileInfo(session.videoTempPath).Length > 0;
                 bool hasAudio = session.containsSystemAudio &&
                                 File.Exists(session.audioTempPath) &&
@@ -536,6 +570,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         /// <returns>默认 ffmpeg 路径。</returns>
         private static string GetPlatformDefaultFFmpegPath()
         {
+            Application.Quit();
             return Application.platform switch
             {
                 RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsEditor => $"{Application.streamingAssetsPath}/FFmpegTools/FFmpegApp/ffmpeg.exe",
@@ -912,6 +947,14 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         }
 
         /// <summary>
+        /// 判断当前配置是否为视频推流模式。
+        /// </summary>
+        private bool IsStreamMode()
+        {
+            return (GetCurrentConfig()?.useMode ?? 0) == 1;
+        }
+
+        /// <summary>
         /// 准备本次录制输出路径。
         /// 使用毫秒级时间戳，避免连续快速录制时重名。
         /// </summary>
@@ -919,6 +962,20 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         private CaptureSession PrepareOutputPaths()
         {
             var    config           = GetCurrentConfig();
+            bool   isStreaming      = IsStreamMode();
+            string streamUrl        = config?.streamUrl?.Trim() ?? string.Empty;
+            if (isStreaming)
+            {
+                return new CaptureSession
+                {
+                    finalOutputPath          = streamUrl,
+                    videoTempPath            = streamUrl,
+                    audioTempPath            = string.Empty,
+                    isStreaming              = true,
+                    resolvedLinuxAudioSource = string.Empty
+                };
+            }
+
             string outputDirectory  = recordConfigProvider != null ? recordConfigProvider.OutputDirectory : string.Empty;
             string outputFilePrefix = config == null || string.IsNullOrWhiteSpace(config.outputFilePrefix) ? "recording" : config.outputFilePrefix;
             string realOutputDirectory = string.IsNullOrWhiteSpace(outputDirectory)
@@ -935,6 +992,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                 finalOutputPath          = Path.Combine(realOutputDirectory, $"{outputFilePrefix}_{stamp}{videoExtension}"),
                 videoTempPath            = Path.Combine(realOutputDirectory, $"{outputFilePrefix}_{stamp}_video_tmp{videoExtension}"),
                 audioTempPath            = Path.Combine(realOutputDirectory, $"{outputFilePrefix}_{stamp}_audio_tmp.wav"),
+                isStreaming              = false,
                 resolvedLinuxAudioSource = string.Empty
             };
         }
@@ -956,8 +1014,50 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             string scaleArgs = (scaledWidth != target.width || scaledHeight != target.height)
                                    ? $"-vf scale={scaledWidth}:{scaledHeight} "
                                    : string.Empty;
+            int streamFrameRate = GetSafeStreamFrameRate(config);
+            string streamBitrate = GetSafeStreamBitrate(config);
+            string streamPreset = GetSafeStreamPreset(config);
+            int streamGop = GetSafeStreamGop(config, streamFrameRate);
+            string streamBufferSize = GetSafeStreamBufferSize(config, streamBitrate);
+            string lowLatencyArgs = config.streamLowLatency ? "-tune zerolatency " : string.Empty;
+            string streamCommonVideoArgs = $"-c:v libx264 " +
+                                           $"-preset {streamPreset} " +
+                                           lowLatencyArgs +
+                                           $"-b:v {streamBitrate} " +
+                                           $"-maxrate {streamBitrate} " +
+                                           $"-bufsize {streamBufferSize} " +
+                                           $"-g {streamGop} " +
+                                           $"-keyint_min {streamFrameRate} " +
+                                           $"-sc_threshold 0 " +
+                                           $"-threads 0 " +
+                                           $"-pix_fmt yuv420p " +
+                                           $"{scaleArgs}" +
+                                           $"-flush_packets 1 ";
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+            if (IsStreamMode())
+            {
+                string audioInputArgs = config.streamIncludeAudio && config.audioMode == 1
+                                            ? "-thread_queue_size 512 -f wasapi -i default -map 0:v:0 -map 1:a:0 "
+                                            : "-map 0:v:0 -an ";
+                string audioEncodeArgs = config.streamIncludeAudio && config.audioMode == 1
+                                             ? $"-c:a aac -b:a {config.audioBitrate} -ar {config.audioSampleRate} -ac {config.audioChannels} "
+                                             : string.Empty;
+                return $"-thread_queue_size 512 " +
+                       $"-rtbufsize 256M " +
+                       $"-f gdigrab " +
+                       $"-framerate {streamFrameRate} " +
+                       $"-offset_x {target.offsetX} " +
+                       $"-offset_y {target.offsetY} " +
+                       $"-video_size {target.width}x{target.height} " +
+                       $"-i desktop " +
+                       audioInputArgs +
+                       streamCommonVideoArgs +
+                       audioEncodeArgs +
+                       $"-f flv " +
+                       $"\"{outputPath}\"";
+            }
+
             if (config.outputAsWebm)
             {
                 return $"-f gdigrab " +
@@ -995,6 +1095,27 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
 
         bool useSystemAudio = config.audioMode == 1 &&
                               !string.IsNullOrWhiteSpace(linuxSourceToUse);
+
+        if (IsStreamMode())
+        {
+            string audioInputArgs = useSystemAudio && config.streamIncludeAudio
+                                        ? $"-thread_queue_size 512 -f pulse -i \"{linuxSourceToUse}\" -map 0:v:0 -map 1:a:0 "
+                                        : "-map 0:v:0 -an ";
+            string audioEncodeArgs = useSystemAudio && config.streamIncludeAudio
+                                         ? $"-c:a aac -b:a {config.audioBitrate} -ar {config.audioSampleRate} -ac {config.audioChannels} "
+                                         : string.Empty;
+
+            return $"-f x11grab " +
+                   $"-thread_queue_size 512 " +
+                   $"-framerate {streamFrameRate} " +
+                   $"-video_size {target.width}x{target.height} " +
+                   $"-i :0.0+{target.offsetX},{target.offsetY} " +
+                   audioInputArgs +
+                   streamCommonVideoArgs +
+                   audioEncodeArgs +
+                   $"-f flv " +
+                   $"\"{outputPath}\"";
+        }
 
         if (useSystemAudio)
         {
@@ -1244,6 +1365,11 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                 return;
             }
 
+            if (session.isStreaming)
+            {
+                return;
+            }
+
             try
             {
                 if (!string.IsNullOrWhiteSpace(session.videoTempPath) && File.Exists(session.videoTempPath))
@@ -1296,6 +1422,63 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             }
 
             return value % 2 == 0 ? value : value - 1;
+        }
+
+        /// <summary>
+        /// 获取推流安全帧率，避免异常配置导致编码压力过高。
+        /// </summary>
+        private static int GetSafeStreamFrameRate(RecorderParamsConfig config)
+        {
+            int frameRate = config != null && config.captureFrameRate > 0 ? config.captureFrameRate : 25;
+            return Mathf.Clamp(frameRate, 10, 60);
+        }
+
+        /// <summary>
+        /// 获取推流安全码率，未配置时使用兼容性较好的 3M。
+        /// </summary>
+        private static string GetSafeStreamBitrate(RecorderParamsConfig config)
+        {
+            if (config == null) return "3M";
+            return string.IsNullOrWhiteSpace(config.streamVideoBitrate) ? "3M" : config.streamVideoBitrate.Trim();
+        }
+
+        /// <summary>
+        /// 获取推流编码预设，过慢的预设会自动回落，减少国产硬件上的主程序卡顿风险。
+        /// </summary>
+        private static string GetSafeStreamPreset(RecorderParamsConfig config)
+        {
+            string preset = config == null || string.IsNullOrWhiteSpace(config.videoPreset) ? "veryfast" : config.videoPreset.Trim();
+            return preset == "ultrafast" || preset == "veryfast" || preset == "faster" ? preset : "veryfast";
+        }
+
+        /// <summary>
+        /// 获取推流 GOP，未配置时按帧率的 2 倍兜底。
+        /// </summary>
+        private static int GetSafeStreamGop(RecorderParamsConfig config, int streamFrameRate)
+        {
+            int gop = config != null && config.streamGop > 0 ? config.streamGop : streamFrameRate * 2;
+            return Mathf.Clamp(gop, streamFrameRate, streamFrameRate * 4);
+        }
+
+        /// <summary>
+        /// 获取推流缓冲区大小。
+        /// </summary>
+        private static string GetSafeStreamBufferSize(RecorderParamsConfig config, string streamBitrate)
+        {
+            return config == null || string.IsNullOrWhiteSpace(config.streamBufferSize) ? GetDoubleBitrate(streamBitrate) : config.streamBufferSize.Trim();
+        }
+
+        /// <summary>
+        /// 计算推流缓冲区码率，保持网络波动下的平滑输出。
+        /// </summary>
+        private static string GetDoubleBitrate(string bitrate)
+        {
+            if (string.IsNullOrWhiteSpace(bitrate)) return "6M";
+            string value = bitrate.Trim();
+            char suffix = value[value.Length - 1];
+            string numberPart = char.IsLetter(suffix) ? value.Substring(0, value.Length - 1) : value;
+            if (!float.TryParse(numberPart, out float number)) return "6M";
+            return char.IsLetter(suffix) ? $"{number * 2:0.#}{suffix}" : $"{number * 2:0.#}";
         }
 
         /// <summary>

@@ -24,6 +24,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         public bool Start(
             string executablePath,
             string arguments,
+            ProcessPriorityClass priorityClass = ProcessPriorityClass.Normal,
             Action<string> onStdOut = null,
             Action<string> onStdErr = null)
         {
@@ -60,6 +61,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                 };
 
                 _ffmpegProcess.Start();
+                TrySetProcessPriority(priorityClass);
                 _ffmpegProcess.BeginOutputReadLine();
                 _ffmpegProcess.BeginErrorReadLine();
 
@@ -69,6 +71,22 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             {
                 Cleanup();
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// 设置 ffmpeg 进程优先级，避免推流或录制时抢占主程序资源。
+        /// </summary>
+        private void TrySetProcessPriority(ProcessPriorityClass priorityClass)
+        {
+            if (_ffmpegProcess == null || priorityClass == ProcessPriorityClass.Normal) return;
+            try
+            {
+                _ffmpegProcess.PriorityClass = priorityClass;
+            }
+            catch (Exception exception)
+            {
+                UnityEngine.Debug.LogWarning("设置 ffmpeg 进程优先级失败: " + exception.Message);
             }
         }
 

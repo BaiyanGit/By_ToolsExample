@@ -21,24 +21,51 @@
     //=====================================================
     public partial class UIRecorderParamsSettings : MonoBehaviour
     {
-        [Header("配置与基础参数")] [Tooltip("配置文件")] public Dropdown drConfig;
         [Tooltip("关闭按钮")] public Button btnClose;
 
         #region 参数设置
 
-        [Tooltip("显示器")] public Dropdown drDisplay;
-        [Tooltip("运行平台")] public Dropdown drPlatform;
-        [Tooltip("使用方式")] public Dropdown drUseMode;
+        [Header("配置参数")] [Tooltip("配置文件")] public Dropdown drConfig;
+        [Tooltip("FFmpeg 可执行文件路径输入框。")] public InputField ifFfmpegPath;
+        [Tooltip("选择 FFmpeg 文件按钮。")] public Button btnSelectFfmpeg;
+        [Tooltip("重置 FFmpeg 路径按钮。")] public Button btnResetFfmpeg;
         [Tooltip("视频文件保存路径对象")] public GameObject goVideoSavePathRoot;
+
         [Tooltip("视频文件保存路径输入框")] public InputField ifVideoSavePath;
         [Tooltip("选择视频文件保存路径按钮")] public Button btnSelectVideoSavePath;
+        [Tooltip("视频推流地址对象")] public GameObject goStreamUrlRoot;
+
+        [Tooltip("视频推流地址输入框")] public InputField ifStreamUrl;
+
+        // 基础参数
+        [Header("基础参数")] [Tooltip("运行平台")] public Dropdown drPlatform;
+        [Tooltip("文件前缀")] public InputField ifVideoPrefix;
+        [Tooltip("使用模式")] public Dropdown drUseMode;
+        [Tooltip("显示器")] public Dropdown drDisplay;
         [Tooltip("视频格式")] public Dropdown drVideoFormat;
-        [Tooltip("视频文件前缀输入框")] public InputField ifVideoPrefix;
+
+        // 推流参数
+        [Header("推流参数")] [Tooltip("推流参数对象")] public GameObject goStreamSettingsRoot;
+        [Tooltip("推流视频码率")] public Dropdown drStreamVideoBitrate;
+        [Tooltip("推流GOP帧间隔")] public Dropdown drStreamGop;
+        [Tooltip("推流缓冲区大小")] public Dropdown drStreamBufferSize;
+
+        [Tooltip("推流重连次数")] public Dropdown drStreamReconnectCount;
+        [Tooltip("推流重连间隔")] public Dropdown drStreamReconnectInterval;
+        [Tooltip("推流低延迟模式")] public Toggle togStreamLowLatency;
+        [Tooltip("推流自动重连")] public Toggle togStreamAutoReconnect;
+        [Tooltip("推流包含系统音频")] public Toggle togStreamIncludeAudio;
+
+
+        // 音频参数
         [Header("音频参数")] [Tooltip("音频采集模式")] public Dropdown drAudioMode;
         [Tooltip("音频编码器")] public Dropdown drAudioCoder;
         [Tooltip("音频码率")] public Dropdown drAudioBitrate;
         [Tooltip("音频采样率")] public Dropdown drAudioSampleRate;
+
         [Tooltip("音频声道数")] public Dropdown drAudioChannel;
+
+        // 视频参数
         [Header("视频参数")] [Tooltip("视频录制帧率。")] public Dropdown videoCaptureFrameRate;
         [Tooltip("视频像素格式")] public Dropdown videoPixelFormat;
         [Tooltip("视频码率")] public Dropdown webmVideoBitrate;
@@ -57,11 +84,11 @@
 
         #region FFmpeg相关
 
-        [Header("FFmpeg路径")] [Tooltip("FFmpeg 可执行文件路径输入框。")]
-        public InputField ifFfmpegPath;
-
-        [Tooltip("选择 FFmpeg 文件按钮。")] public Button btnSelectFfmpeg;
-        [Tooltip("重置 FFmpeg 路径按钮。")] public Button btnResetFfmpeg;
+        // [Header("FFmpeg路径")] [Tooltip("FFmpeg 可执行文件路径输入框。")]
+        // public InputField ifFfmpegPath;
+        //
+        // [Tooltip("选择 FFmpeg 文件按钮。")] public Button btnSelectFfmpeg;
+        // [Tooltip("重置 FFmpeg 路径按钮。")] public Button btnResetFfmpeg;
 
         #endregion
 
@@ -120,7 +147,6 @@
         private Text _txtMessageContent;
         private Button _btnMessageConfirm;
         private Color? _btnUseOriginColor;
-        private bool _hasInitUsingConfig;
         private bool _isRefreshingUI;
         private bool _displayConfigAutoCorrected;
         private const int USE_MODE_LOCAL = 0;
@@ -145,6 +171,8 @@
             if (_recorder == null) _recorder = CrossPlatformScreenRecorder.ins;
             NormalizeFolderSettings();
             ResolveOptionalUIReferences();
+            EnsureStreamUrlInput();
+            EnsureStreamSettingsControls();
             EnsureConfigDirectories();
             EnsureDefaultConfigs();
             InitDisplayDropdown();
@@ -168,7 +196,7 @@
             BindDropdown(drConfig, OnConfigChanged);
             BindDropdown(drDisplay, _ => OnAnyParamsChanged());
             BindDropdown(drUseMode, _ => OnUseModeChanged());
-            BindDropdown(drVideoFormat, _ => OnAnyParamsChanged());
+            BindDropdown(drVideoFormat, _ => OnVideoFormatChanged());
             BindDropdown(drAudioMode, _ => OnAnyParamsChanged());
             BindDropdown(drAudioCoder, _ => OnAnyParamsChanged());
             BindDropdown(drAudioBitrate, _ => OnAnyParamsChanged());
@@ -187,6 +215,29 @@
             BindDropdown(waitTempFileReadyTimeoutMs, _ => OnAnyParamsChanged());
             BindDropdown(mergeTimeoutMs, _ => OnAnyParamsChanged());
             BindDropdown(deleteTempFilesAfterMerge, _ => OnAnyParamsChanged());
+            BindDropdown(drStreamVideoBitrate, _ => OnAnyParamsChanged());
+            BindDropdown(drStreamGop, _ => OnAnyParamsChanged());
+            BindDropdown(drStreamBufferSize, _ => OnAnyParamsChanged());
+            BindDropdown(drStreamReconnectCount, _ => OnAnyParamsChanged());
+            BindDropdown(drStreamReconnectInterval, _ => OnAnyParamsChanged());
+
+            if (togStreamLowLatency != null)
+            {
+                togStreamLowLatency.onValueChanged.RemoveListener(SetStreamLowLatency);
+                togStreamLowLatency.onValueChanged.AddListener(SetStreamLowLatency);
+            }
+
+            if (togStreamAutoReconnect != null)
+            {
+                togStreamAutoReconnect.onValueChanged.RemoveListener(SetStreamAutoReconnect);
+                togStreamAutoReconnect.onValueChanged.AddListener(SetStreamAutoReconnect);
+            }
+
+            if (togStreamIncludeAudio != null)
+            {
+                togStreamIncludeAudio.onValueChanged.RemoveListener(SetStreamIncludeAudio);
+                togStreamIncludeAudio.onValueChanged.AddListener(SetStreamIncludeAudio);
+            }
 
             if (btnClose != null)
             {
@@ -210,6 +261,12 @@
             {
                 ifVideoSavePath.onValueChanged.RemoveListener(SetVideoSavePath);
                 ifVideoSavePath.onValueChanged.AddListener(SetVideoSavePath);
+            }
+
+            if (ifStreamUrl != null)
+            {
+                ifStreamUrl.onValueChanged.RemoveListener(SetStreamUrl);
+                ifStreamUrl.onValueChanged.AddListener(SetStreamUrl);
             }
 
             if (btnSelectVideoSavePath != null)
@@ -334,6 +391,12 @@
             SetDropdownOptions(waitTempFileReadyTimeoutMs, new List<string> { "5000", "8000", "15000", "30000" });
             SetDropdownOptions(mergeTimeoutMs, new List<string> { "0", "30000", "60000", "120000" });
             SetDropdownOptions(deleteTempFilesAfterMerge, new List<string> { "是", "否" });
+            SetDropdownOptions(drStreamVideoBitrate, new List<string> { "1M", "2M", "3M", "5M", "8M" });
+            SetDropdownOptions(drStreamGop, new List<string> { "20", "30", "50", "60", "120" });
+            SetDropdownOptions(drStreamBufferSize, new List<string> { "2M", "4M", "6M", "10M", "16M" });
+            SetDropdownOptions(drStreamReconnectCount, new List<string> { "0", "3", "5", "10" });
+            SetDropdownOptions(drStreamReconnectInterval, new List<string> { "1000", "3000", "5000", "10000" });
+            RefreshFormatOptionVisibility();
         }
 
         /// <summary>
@@ -377,6 +440,7 @@
             _isRefreshingUI = true;
             SetDropdownValue(drVideoFormat, config.outputAsWebm ? "webm" : "mp4");
             SetDropdownValue(drUseMode, GetUseModeName(config.useMode));
+            RefreshFormatOptionVisibility();
             SetDropdownValue(drAudioMode, config.audioMode == 1 ? "系统音频" : "静音录制");
             SetDropdownValue(drAudioCoder, config.outputAsWebm ? config.webmAudioCodec : config.audioCodec);
             SetDropdownValue(drAudioBitrate, config.audioBitrate);
@@ -395,6 +459,14 @@
             SetDropdownValue(waitTempFileReadyTimeoutMs, config.waitTempFileReadyTimeoutMs.ToString());
             SetDropdownValue(mergeTimeoutMs, config.mergeTimeoutMs.ToString());
             SetDropdownValue(deleteTempFilesAfterMerge, config.deleteTempFilesAfterMerge ? "是" : "否");
+            SetDropdownValue(drStreamVideoBitrate, config.streamVideoBitrate);
+            SetDropdownValue(drStreamGop, config.streamGop.ToString());
+            SetDropdownValue(drStreamBufferSize, config.streamBufferSize);
+            SetDropdownValue(drStreamReconnectCount, config.streamReconnectCount.ToString());
+            SetDropdownValue(drStreamReconnectInterval, config.streamReconnectIntervalMs.ToString());
+            if (togStreamLowLatency != null) togStreamLowLatency.isOn       = config.streamLowLatency;
+            if (togStreamAutoReconnect != null) togStreamAutoReconnect.isOn = config.streamAutoReconnect;
+            if (togStreamIncludeAudio != null) togStreamIncludeAudio.isOn   = config.streamIncludeAudio;
             if (drDisplay != null)
             {
                 drDisplay.value = Mathf.Clamp(config.displayIndex, 0, Mathf.Max(0, drDisplay.options.Count - 1));
@@ -404,6 +476,7 @@
             if (ifVideoPrefix != null) ifVideoPrefix.text     = config.outputFilePrefix;
             string saveDirectory                              = GetConfigVideoSaveDirectory(config);
             if (ifVideoSavePath != null) ifVideoSavePath.text = saveDirectory;
+            if (ifStreamUrl != null) ifStreamUrl.text         = config.streamUrl ?? string.Empty;
             string ffmpegPath                                 = GetConfigFFmpegPath(config);
             if (ifFfmpegPath != null) ifFfmpegPath.text       = File.Exists(ffmpegPath) ? ffmpegPath : string.Empty;
             RefreshUseModeUI();
@@ -459,9 +532,12 @@
                 if (goVideoSavePathRoot == null && n == "VideoSavePathRoot") goVideoSavePathRoot                                      = item.gameObject;
                 if (ifVideoSavePath == null && (n == "IfVideoSavePath" || n == "InputVideoSavePath")) ifVideoSavePath                 = item.GetComponent<InputField>();
                 if (btnSelectVideoSavePath == null && (n == "BtnSelectVideoSavePath" || n.Contains("选择保存路径"))) btnSelectVideoSavePath = item.GetComponent<Button>();
+                if (goStreamUrlRoot == null && (n == "StreamUrlRoot" || n.Contains("推流地址"))) goStreamUrlRoot                          = item.gameObject;
+                if (ifStreamUrl == null && (n == "IfStreamUrl" || n == "InputStreamUrl" || n.Contains("推流地址"))) ifStreamUrl           = item.GetComponent<InputField>();
             }
 
             if (goVideoSavePathRoot == null && ifVideoSavePath != null && ifVideoSavePath.transform.parent != null) goVideoSavePathRoot = ifVideoSavePath.transform.parent.gameObject;
+            if (goStreamUrlRoot == null && ifStreamUrl != null && ifStreamUrl.transform.parent != null) goStreamUrlRoot                 = ifStreamUrl.transform.parent.gameObject;
         }
 
         /// <summary>
@@ -485,6 +561,15 @@
             config.outputFilePrefix           = ifVideoPrefix != null ? ifVideoPrefix.text.Trim() : config.outputFilePrefix;
             config.useMode                    = GetSelectedUseMode();
             config.videoSaveDirectory         = ifVideoSavePath != null ? ifVideoSavePath.text.Trim() : GetConfigVideoSaveDirectory(config);
+            config.streamUrl                  = ifStreamUrl != null ? ifStreamUrl.text.Trim() : config.streamUrl;
+            config.streamVideoBitrate         = GetDropdownTextOrDefault(drStreamVideoBitrate, config.streamVideoBitrate);
+            config.streamGop                  = ParseInt(GetDropdownText(drStreamGop), config.streamGop);
+            config.streamBufferSize           = GetDropdownTextOrDefault(drStreamBufferSize, config.streamBufferSize);
+            config.streamLowLatency           = togStreamLowLatency == null ? config.streamLowLatency : togStreamLowLatency.isOn;
+            config.streamAutoReconnect        = togStreamAutoReconnect == null ? config.streamAutoReconnect : togStreamAutoReconnect.isOn;
+            config.streamReconnectCount       = ParseInt(GetDropdownText(drStreamReconnectCount), config.streamReconnectCount);
+            config.streamReconnectIntervalMs  = ParseInt(GetDropdownText(drStreamReconnectInterval), config.streamReconnectIntervalMs);
+            config.streamIncludeAudio         = togStreamIncludeAudio == null ? config.streamIncludeAudio : togStreamIncludeAudio.isOn;
             config.customFFmpegPath           = ifFfmpegPath != null ? ifFfmpegPath.text.Trim() : GetConfigFFmpegPath(config);
             config.outputAsWebm               = string.Equals(GetDropdownText(drVideoFormat), "webm", StringComparison.OrdinalIgnoreCase);
             config.audioMode                  = GetDropdownText(drAudioMode) == "系统音频" ? 1 : 0;
@@ -556,6 +641,7 @@
             if (_currentConfig == null) return;
             if (!CheckFFmpegPathBeforeOperate()) return;
             if (!CheckVideoSaveDirectoryBeforeOperate()) return;
+            if (!CheckStreamUrlBeforeOperate()) return;
 
             try
             {
@@ -591,6 +677,7 @@
             if (_currentConfig == null) return;
             if (!CheckFFmpegPathBeforeOperate()) return;
             if (!CheckVideoSaveDirectoryBeforeOperate()) return;
+            if (!CheckStreamUrlBeforeOperate()) return;
             EnsureSaveAsWindow();
             if (ifSaveAsName != null)
             {
@@ -610,6 +697,7 @@
             if (_currentConfig == null) return;
             if (!CheckFFmpegPathBeforeOperate()) return;
             if (!CheckVideoSaveDirectoryBeforeOperate()) return;
+            if (!CheckStreamUrlBeforeOperate()) return;
             _currentConfig = BuildConfigFromUI(_currentConfig);
             SaveConfig(_currentConfig);
             SaveCurrentRecordConfig(_currentConfig);
@@ -627,6 +715,7 @@
         {
             if (!CheckFFmpegPathBeforeOperate(true)) return;
             if (!CheckVideoSaveDirectoryBeforeOperate(true)) return;
+            if (!CheckStreamUrlBeforeOperate(true)) return;
             string configName                                     = ifSaveAsName != null ? ifSaveAsName.text.Trim() : string.Empty;
             if (string.IsNullOrWhiteSpace(configName)) configName = _currentConfig != null ? BuildUserConfigName(_currentConfig) : "RecorderConfig";
             string fileName                                       = BuildUserConfigFileName(GetCurrentPlatformName(), configName);
@@ -991,6 +1080,51 @@
         }
 
         /// <summary>
+        /// 推流地址发生变化时刷新配置修改状态。
+        /// </summary>
+        private void SetStreamUrl(string value)
+        {
+            if (_isRefreshingUI) return;
+            OnAnyParamsChanged();
+        }
+
+        /// <summary>
+        /// 推流低延迟开关变化时刷新配置修改状态。
+        /// </summary>
+        private void SetStreamLowLatency(bool value)
+        {
+            if (_isRefreshingUI) return;
+            OnAnyParamsChanged();
+        }
+
+        /// <summary>
+        /// 推流自动重连开关变化时刷新配置修改状态。
+        /// </summary>
+        private void SetStreamAutoReconnect(bool value)
+        {
+            if (_isRefreshingUI) return;
+            OnAnyParamsChanged();
+        }
+
+        /// <summary>
+        /// 推流系统音频开关变化时刷新配置修改状态。
+        /// </summary>
+        private void SetStreamIncludeAudio(bool value)
+        {
+            if (_isRefreshingUI) return;
+            OnAnyParamsChanged();
+        }
+
+        /// <summary>
+        /// 视频格式变化时刷新格式相关选项和编辑状态。
+        /// </summary>
+        private void OnVideoFormatChanged()
+        {
+            RefreshFormatOptionVisibility();
+            OnAnyParamsChanged();
+        }
+
+        /// <summary>
         /// 使用方式发生变化时刷新本地保存路径区域。
         /// </summary>
         private void OnUseModeChanged()
@@ -1005,9 +1139,50 @@
         private void RefreshUseModeUI()
         {
             bool showLocalPath = IsLocalSaveMode();
+            bool showStreamUrl = IsStreamMode();
             if (goVideoSavePathRoot != null) goVideoSavePathRoot.SetActive(showLocalPath);
             else if (ifVideoSavePath != null) ifVideoSavePath.gameObject.SetActive(showLocalPath);
             if (btnSelectVideoSavePath != null) btnSelectVideoSavePath.gameObject.SetActive(showLocalPath);
+            if (goStreamUrlRoot != null) goStreamUrlRoot.SetActive(showStreamUrl);
+            else if (ifStreamUrl != null) ifStreamUrl.gameObject.SetActive(showStreamUrl);
+            if (goStreamSettingsRoot != null) goStreamSettingsRoot.SetActive(showStreamUrl);
+            SetControlActive(drVideoFormat, showLocalPath);
+            SetControlActive(videoCrf, showLocalPath);
+            SetControlActive(mergeTimeoutMs, showLocalPath);
+            SetControlActive(deleteTempFilesAfterMerge, showLocalPath);
+            SetControlActive(stopVideoTimeoutMs, showLocalPath);
+            SetControlActive(waitTempFileReadyTimeoutMs, showLocalPath);
+            RefreshFormatOptionVisibility();
+        }
+
+        /// <summary>
+        /// 根据当前格式和使用方式刷新编码器选项与无关参数显示。
+        /// </summary>
+        private void RefreshFormatOptionVisibility()
+        {
+            bool isStream = IsStreamMode();
+            bool isWebm   = string.Equals(GetDropdownText(drVideoFormat), "webm", StringComparison.OrdinalIgnoreCase);
+            if (isStream)
+            {
+                SetDropdownOptionsKeepValue(videoCodec, new List<string> { "libx264" }, "libx264");
+                SetDropdownOptionsKeepValue(drAudioCoder, new List<string> { "aac" }, "aac");
+            }
+            else if (isWebm)
+            {
+                SetDropdownOptionsKeepValue(videoCodec, new List<string> { "libvpx", "libvpx-vp9" }, "libvpx");
+                SetDropdownOptionsKeepValue(drAudioCoder, new List<string> { "libvorbis", "libopus" }, "libvorbis");
+            }
+            else
+            {
+                SetDropdownOptionsKeepValue(videoCodec, new List<string> { "libx264", "libx265" }, "libx264");
+                SetDropdownOptionsKeepValue(drAudioCoder, new List<string> { "aac" }, "aac");
+            }
+
+            SetControlActive(webmVideoBitrate, !isStream && isWebm);
+            SetControlActive(webmVideoDeadlineMode, !isStream && isWebm);
+            SetControlActive(webmVideoCpuUsed, !isStream && isWebm);
+            SetControlActive(videoCrf, !isStream && !isWebm);
+            SetControlActive(videoPixelFormat, !isStream);
         }
 
         /// <summary>
@@ -1100,6 +1275,14 @@
         }
 
         /// <summary>
+        /// 当前是否为视频推流模式。
+        /// </summary>
+        private bool IsStreamMode()
+        {
+            return GetSelectedUseMode() == USE_MODE_STREAM;
+        }
+
+        /// <summary>
         /// 判断指定使用方式是否需要本地保存路径。
         /// </summary>
         private static bool IsLocalSaveMode(int useMode)
@@ -1142,6 +1325,33 @@
             string path = ifVideoSavePath != null ? ifVideoSavePath.text.Trim() : string.Empty;
             string tips = string.IsNullOrWhiteSpace(path) ? "请选择视频文件保存路径。" : "视频文件保存路径不存在，请重新选择。";
             if (ifVideoSavePath != null) ifVideoSavePath.ActivateInputField();
+            if (showInSaveAsWindow) ShowSaveAsTips(tips);
+            ShowMessageTips(tips);
+            Debug.LogWarning(tips);
+            return false;
+        }
+
+        /// <summary>
+        /// 检查推流模式下的视频推流地址是否有效。
+        /// </summary>
+        private bool HasValidStreamUrl()
+        {
+            if (!IsStreamMode()) return true;
+            string url = ifStreamUrl != null ? ifStreamUrl.text.Trim() : string.Empty;
+            return !string.IsNullOrWhiteSpace(url) &&
+                   (url.StartsWith("rtmp://", StringComparison.OrdinalIgnoreCase) ||
+                    url.StartsWith("rtmps://", StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// 在保存、另存为、使用前校验视频推流地址。
+        /// </summary>
+        private bool CheckStreamUrlBeforeOperate(bool showInSaveAsWindow = false)
+        {
+            if (HasValidStreamUrl()) return true;
+            string url  = ifStreamUrl != null ? ifStreamUrl.text.Trim() : string.Empty;
+            string tips = string.IsNullOrWhiteSpace(url) ? "请输入视频推流地址。" : "视频推流地址格式不正确，请使用 rtmp:// 或 rtmps:// 地址。";
+            if (ifStreamUrl != null) ifStreamUrl.ActivateInputField();
             if (showInSaveAsWindow) ShowSaveAsTips(tips);
             ShowMessageTips(tips);
             Debug.LogWarning(tips);
@@ -1255,6 +1465,15 @@
             SetControlModified(drDisplay, _displayConfigAutoCorrected || current.displayIndex != baseConfig.displayIndex || current.displayName != baseConfig.displayName);
             SetControlModified(drUseMode, current.useMode != baseConfig.useMode);
             SetControlModified(ifVideoSavePath, current.videoSaveDirectory != baseConfig.videoSaveDirectory);
+            SetControlModified(ifStreamUrl, current.streamUrl != baseConfig.streamUrl);
+            SetControlModified(drStreamVideoBitrate, current.streamVideoBitrate != baseConfig.streamVideoBitrate);
+            SetControlModified(drStreamGop, current.streamGop != baseConfig.streamGop);
+            SetControlModified(drStreamBufferSize, current.streamBufferSize != baseConfig.streamBufferSize);
+            SetControlModified(togStreamLowLatency, current.streamLowLatency != baseConfig.streamLowLatency);
+            SetControlModified(togStreamAutoReconnect, current.streamAutoReconnect != baseConfig.streamAutoReconnect);
+            SetControlModified(drStreamReconnectCount, current.streamReconnectCount != baseConfig.streamReconnectCount);
+            SetControlModified(drStreamReconnectInterval, current.streamReconnectIntervalMs != baseConfig.streamReconnectIntervalMs);
+            SetControlModified(togStreamIncludeAudio, current.streamIncludeAudio != baseConfig.streamIncludeAudio);
             SetControlModified(drVideoFormat, current.outputAsWebm != baseConfig.outputAsWebm);
             SetControlModified(ifVideoPrefix, current.outputFilePrefix != baseConfig.outputFilePrefix);
             SetControlModified(ifFfmpegPath, GetConfigFFmpegPath(current) != GetConfigFFmpegPath(baseConfig));
@@ -1311,6 +1530,15 @@
             SetParameterInteractable(drUseMode, canEdit);
             SetParameterInteractable(ifVideoSavePath, canEdit);
             SetParameterInteractable(btnSelectVideoSavePath, canEdit);
+            SetParameterInteractable(ifStreamUrl, canEdit);
+            SetParameterInteractable(drStreamVideoBitrate, canEdit);
+            SetParameterInteractable(drStreamGop, canEdit);
+            SetParameterInteractable(drStreamBufferSize, canEdit);
+            SetParameterInteractable(togStreamLowLatency, canEdit);
+            SetParameterInteractable(togStreamAutoReconnect, canEdit);
+            SetParameterInteractable(drStreamReconnectCount, canEdit);
+            SetParameterInteractable(drStreamReconnectInterval, canEdit);
+            SetParameterInteractable(togStreamIncludeAudio, canEdit);
             SetParameterInteractable(drVideoFormat, canEdit);
             SetParameterInteractable(ifVideoPrefix, canEdit);
             SetParameterInteractable(ifFfmpegPath, canEdit);
@@ -1366,6 +1594,26 @@
             dropdown.AddOptions(options);
             dropdown.value = 0;
             dropdown.RefreshShownValue();
+        }
+
+        /// <summary>
+        /// 设置下拉选项并尽量保留当前值，当前值不合法时使用默认值。
+        /// </summary>
+        private static void SetDropdownOptionsKeepValue(Dropdown dropdown, List<string> options, string defaultValue)
+        {
+            if (dropdown == null) return;
+            string oldValue = GetDropdownText(dropdown);
+            dropdown.ClearOptions();
+            dropdown.AddOptions(options);
+            SetDropdownValue(dropdown, options.Contains(oldValue) ? oldValue : defaultValue);
+        }
+
+        /// <summary>
+        /// 设置控件根节点显示状态。
+        /// </summary>
+        private static void SetControlActive(Selectable selectable, bool isActive)
+        {
+            if (selectable != null) selectable.gameObject.transform.parent.gameObject.SetActive(isActive);
         }
 
         /// <summary>

@@ -28,6 +28,16 @@ namespace Demos.示例_录制视频Recorder.Scripts
         public bool IsLocalSaveMode => (recorderParamsConfig?.useMode ?? 0) == 0;
 
         /// <summary>
+        /// 当前配置是否为视频推流模式。
+        /// </summary>
+        public bool IsStreamMode => (recorderParamsConfig?.useMode ?? 0) == 1;
+
+        /// <summary>
+        /// 获取当前配置中的视频推流地址。
+        /// </summary>
+        public string StreamUrl => recorderParamsConfig?.streamUrl?.Trim() ?? string.Empty;
+
+        /// <summary>
         /// 获取当前配置的视频输出目录，本地存储未配置时回退到默认 Videos 目录。
         /// </summary>
         public string OutputDirectory

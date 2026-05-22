@@ -81,6 +81,15 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
                 outputFilePrefix           = $"{Application.productName}_",
                 useMode                    = 0,
                 videoSaveDirectory         = GetDefaultVideoSaveDirectory(),
+                streamUrl                  = string.Empty,
+                streamVideoBitrate         = videoRate,
+                streamGop                  = fps * 2,
+                streamBufferSize           = qualityIndex == 0 ? "4M" : qualityIndex == 1 ? "6M" : "10M",
+                streamLowLatency           = true,
+                streamAutoReconnect        = true,
+                streamReconnectCount       = 3,
+                streamReconnectIntervalMs  = 3000,
+                streamIncludeAudio         = false,
                 outputAsWebm               = true,
                 customFFmpegPath           = string.Empty,
                 audioMode                  = 1,
@@ -129,7 +138,6 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
 
             _currentConfig = _currentPlatformConfigs[drConfig.value].Clone();
             ApplyConfig(_currentConfig);
-            _hasInitUsingConfig = true;
         }
 
         /// <summary>
@@ -204,6 +212,8 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
             }
 
             if (string.IsNullOrWhiteSpace(config.videoSaveDirectory) && config.useMode == 0) config.videoSaveDirectory = GetDefaultVideoSaveDirectory();
+            if (config.streamUrl == null) config.streamUrl = string.Empty;
+            NormalizeStreamConfig(config);
             if (string.IsNullOrWhiteSpace(config.fileName)) config.fileName                                            = BuildUniqueUserConfigFileName(config.platform, config.configName);
             config.fileName = Path.GetFileName(config.fileName);
             string path = Path.Combine(GetConfigDirectory(), config.fileName);
@@ -288,8 +298,23 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
             if (config == null) return;
             config.platform = NormalizePlatform(config.platform);
             if (string.IsNullOrWhiteSpace(config.videoSaveDirectory) && config.useMode == 0) config.videoSaveDirectory = GetDefaultVideoSaveDirectory();
+            if (config.streamUrl == null) config.streamUrl = string.Empty;
+            NormalizeStreamConfig(config);
             if (!string.IsNullOrWhiteSpace(config.customFFmpegPath))
                 config.customFFmpegPath = config.customFFmpegPath.Replace("/StreamingAssets/FFmpegApp/", "/StreamingAssets/FFmpegTools/FFmpegApp/");
+        }
+
+        /// <summary>
+        /// 补全推流配置默认值，兼容旧 JSON。
+        /// </summary>
+        private static void NormalizeStreamConfig(RecorderParamsConfig config)
+        {
+            if (config == null) return;
+            if (string.IsNullOrWhiteSpace(config.streamVideoBitrate)) config.streamVideoBitrate = string.IsNullOrWhiteSpace(config.webmVideoBitrate) ? "3M" : config.webmVideoBitrate;
+            if (config.streamGop <= 0) config.streamGop = Mathf.Clamp(config.captureFrameRate > 0 ? config.captureFrameRate * 2 : 50, 20, 120);
+            if (string.IsNullOrWhiteSpace(config.streamBufferSize)) config.streamBufferSize = GetDoubleBitrate(config.streamVideoBitrate);
+            if (config.streamReconnectCount <= 0) config.streamReconnectCount = 3;
+            if (config.streamReconnectIntervalMs <= 0) config.streamReconnectIntervalMs = 3000;
         }
 
         /// <summary>
@@ -405,9 +430,10 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         {
             string rawName = string.IsNullOrWhiteSpace(configName) ? "RecorderConfig" : configName.Trim();
             rawName = Path.GetFileNameWithoutExtension(rawName);
-            if (rawName.StartsWith($"Create_{platform}_", StringComparison.OrdinalIgnoreCase)) return BuildSafeFileName($"{rawName}.json");
+            if (rawName.StartsWith($"Creat_{platform}_", StringComparison.OrdinalIgnoreCase)) return BuildSafeFileName($"{rawName}.json");
+            if (rawName.StartsWith($"Create_{platform}_", StringComparison.OrdinalIgnoreCase)) rawName = rawName.Substring($"Create_{platform}_".Length);
             if (rawName.StartsWith($"User_{platform}_", StringComparison.OrdinalIgnoreCase)) rawName = rawName.Substring($"User_{platform}_".Length);
-            return BuildSafeFileName($"Create_{platform}_{rawName}.json");
+            return BuildSafeFileName($"Creat_{platform}_{rawName}.json");
         }
 
         /// <summary>
@@ -475,7 +501,8 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         /// </summary>
         private static bool IsUserConfigFile(string fileName, string platform)
         {
-            return fileName.StartsWith($"Create_{platform}_", StringComparison.OrdinalIgnoreCase);
+            return fileName.StartsWith($"Creat_{platform}_", StringComparison.OrdinalIgnoreCase) ||
+                   fileName.StartsWith($"Create_{platform}_", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -494,6 +521,19 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
             string name  = Path.GetFileNameWithoutExtension(fileName);
             int    index = name.LastIndexOf('_');
             return index >= 0 && index < name.Length - 1 ? name.Substring(index + 1) : name;
+        }
+
+        /// <summary>
+        /// 根据码率计算默认缓冲区大小。
+        /// </summary>
+        private static string GetDoubleBitrate(string bitrate)
+        {
+            if (string.IsNullOrWhiteSpace(bitrate)) return "6M";
+            string value      = bitrate.Trim();
+            char   suffix     = value[value.Length - 1];
+            string numberPart = char.IsLetter(suffix) ? value.Substring(0, value.Length - 1) : value;
+            if (!float.TryParse(numberPart, out float number)) return "6M";
+            return char.IsLetter(suffix) ? $"{number * 2:0.#}{suffix}" : $"{number * 2:0.#}";
         }
 
         /// <summary>

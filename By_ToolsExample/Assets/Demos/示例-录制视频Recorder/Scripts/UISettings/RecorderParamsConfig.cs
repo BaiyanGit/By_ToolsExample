@@ -16,6 +16,15 @@
         [Header("输出文件前缀")] public string outputFilePrefix;
         [Header("使用方式")] public int useMode; // 0: 存储本地，1: 视频推流
         [Header("视频文件保存路径")] public string videoSaveDirectory;
+        [Header("视频推流地址")] public string streamUrl;
+        [Header("推流视频码率")] public string streamVideoBitrate;
+        [Header("推流GOP帧间隔")] public int streamGop;
+        [Header("推流缓冲区大小")] public string streamBufferSize;
+        [Header("推流低延迟模式")] public bool streamLowLatency;
+        [Header("推流自动重连")] public bool streamAutoReconnect;
+        [Header("推流重连次数")] public int streamReconnectCount;
+        [Header("推流重连间隔毫秒")] public int streamReconnectIntervalMs;
+        [Header("推流是否包含系统音频")] public bool streamIncludeAudio;
         [Header("输出WebM")] public bool outputAsWebm;
         [Header("自定义FFmpeg可执行文件路径")] public string customFFmpegPath;
         [Header("音频采集模式")] public int audioMode; // 0: 静音, 1: 系统声音

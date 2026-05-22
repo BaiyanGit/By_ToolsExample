@@ -34,7 +34,181 @@
         },
         {
           "option": "视频推流",
-          "description": "用于后续直播或网络推流流程，当前版本暂不开发具体推流功能。"
+          "description": "将录制画面实时推送到 rtmp:// 或 rtmps:// 地址，适合直播服务器或流媒体网关。"
+        }
+      ]
+    },
+    {
+      "key": "StreamUrl",
+      "settingName": "推流地址",
+      "options": [
+        {
+          "option": "rtmp://",
+          "description": "常用 RTMP 推流地址，例如 rtmp://服务器/app/streamKey。"
+        },
+        {
+          "option": "rtmps://",
+          "description": "加密 RTMP 推流地址，服务器支持 TLS 时使用。"
+        }
+      ]
+    },
+    {
+      "key": "StreamVideoBitrate",
+      "settingName": "推流码率",
+      "options": [
+        {
+          "option": "1M",
+          "description": "低带宽或低性能设备优先。"
+        },
+        {
+          "option": "2M",
+          "description": "720p 或低负载推荐。"
+        },
+        {
+          "option": "3M",
+          "description": "常规 1080p 均衡值。"
+        },
+        {
+          "option": "5M",
+          "description": "画质更好但网络和 CPU 压力更高。"
+        },
+        {
+          "option": "8M",
+          "description": "高画质，需要充分测试。"
+        }
+      ]
+    },
+    {
+      "key": "StreamGop",
+      "settingName": "推流GOP",
+      "options": [
+        {
+          "option": "20",
+          "description": "关键帧更频繁，延迟更低但码率压力更高。"
+        },
+        {
+          "option": "50",
+          "description": "25fps 下约 2 秒关键帧间隔，直播常用。"
+        },
+        {
+          "option": "60",
+          "description": "30fps 下约 2 秒关键帧间隔。"
+        },
+        {
+          "option": "120",
+          "description": "更省码率但拖动和恢复更慢。"
+        }
+      ]
+    },
+    {
+      "key": "StreamBufferSize",
+      "settingName": "推流缓冲区",
+      "options": [
+        {
+          "option": "2M",
+          "description": "低延迟优先。"
+        },
+        {
+          "option": "4M",
+          "description": "低码率场景。"
+        },
+        {
+          "option": "6M",
+          "description": "常规推流推荐。"
+        },
+        {
+          "option": "10M",
+          "description": "网络波动较大时更稳。"
+        },
+        {
+          "option": "16M",
+          "description": "高码率推流使用。"
+        }
+      ]
+    },
+    {
+      "key": "StreamLowLatency",
+      "settingName": "推流低延迟",
+      "options": [
+        {
+          "option": "开",
+          "description": "启用 zerolatency，降低延迟并减少排队。"
+        },
+        {
+          "option": "关",
+          "description": "允许编码器做更多缓冲，画质可能更稳但延迟更高。"
+        }
+      ]
+    },
+    {
+      "key": "StreamAutoReconnect",
+      "settingName": "推流自动重连",
+      "options": [
+        {
+          "option": "开",
+          "description": "保留重连配置，后续可用于断流恢复策略。"
+        },
+        {
+          "option": "关",
+          "description": "网络失败时直接结束推流。"
+        }
+      ]
+    },
+    {
+      "key": "StreamReconnectCount",
+      "settingName": "推流重连次数",
+      "options": [
+        {
+          "option": "0",
+          "description": "不重连。"
+        },
+        {
+          "option": "3",
+          "description": "常规推荐。"
+        },
+        {
+          "option": "5",
+          "description": "网络不稳定时使用。"
+        },
+        {
+          "option": "10",
+          "description": "长时间无人值守场景使用。"
+        }
+      ]
+    },
+    {
+      "key": "StreamReconnectInterval",
+      "settingName": "推流重连间隔",
+      "options": [
+        {
+          "option": "1000",
+          "description": "快速重试。"
+        },
+        {
+          "option": "3000",
+          "description": "默认推荐。"
+        },
+        {
+          "option": "5000",
+          "description": "降低服务器压力。"
+        },
+        {
+          "option": "10000",
+          "description": "弱网或服务器恢复较慢时使用。"
+        }
+      ]
+    },
+    {
+      "key": "StreamIncludeAudio",
+      "settingName": "推流系统音频",
+      "options": [
+        {
+          "option": "开",
+          "description": "推流时尝试包含系统声音；Windows 依赖 FFmpeg WASAPI 输入支持，Linux 使用 Pulse 音频源。"
+        },
+        {
+          "option": "关",
+          "description": "只推送画面，性能更稳。"
         }
       ]
     },
@@ -72,7 +246,7 @@
       "options": [
         {
           "option": "aac",
-          "description": "MP4 常用音频编码器，兼容性好。"
+          "description": "MP4 和 RTMP 推流常用编码器。"
         },
         {
           "option": "libvorbis",

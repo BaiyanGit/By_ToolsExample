@@ -1,5 +1,5 @@
 ﻿{
+    "schemaVersion":  2,
     "platform":  "Linux",
-    "fileName":  "Template_Linux_Medium.json",
-    "sourceType":  "Template"
+    "currentConfigId":  "template_linux_medium"
 }

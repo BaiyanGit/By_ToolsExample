@@ -1,4 +1,4 @@
-# Recorder SDK 验收摘要
+﻿# Recorder SDK 验收摘要
 
 当前摘要用于替代 Phase1 / Phase2 / Phase3 / Stability 的长篇阶段文档，作为控制台默认展示的验收入口。历史阶段文档已归档到 `Documentation/Archive/`。
 
@@ -28,7 +28,7 @@
 ## UI 工具
 
 - Runtime 脚本不再负责动态创建完整 UI。
-- 基础演示 UI 和设置中心 UI 均通过 Editor 工具生成真实场景对象。
+- 屏幕录制 UI 和设置中心 UI 均通过 Editor 工具生成真实场景对象。
 - 支持导出和应用 UI Layout Profile，便于手动调整后复用布局。
 - 推荐统一从 `ByTools/Recorder SDK控制台` 使用 UI 创建、布局导出和布局应用工具。
 

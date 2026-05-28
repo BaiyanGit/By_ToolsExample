@@ -88,10 +88,9 @@
         [Tooltip("音频采样率")] public Dropdown drAudioSampleRate;
 
         [Tooltip("音频声道数")] public Dropdown drAudioChannel;
-        [Tooltip("录制音量增强开关")] public Toggle togEnableAudioGain;
-        [Tooltip("录制音量增益输入框，单位 dB")] public InputField ifAudioGainDb;
-        [Tooltip("录制音量增益滑动条，范围建议 -20 到 20")] public Slider slAudioGainDb;
-        [Tooltip("音频限幅器开关")] public Toggle togAudioLimiterEnabled;
+        [Tooltip("录制音量增强开关")] public Dropdown drEnableAudioGain;
+        [Tooltip("录制音量增益预设，单位 dB")] public Dropdown drAudioGainDb;
+        [Tooltip("音频限幅器开关")] public Dropdown drAudioLimiterEnabled;
 
         // 视频参数
         [Header("视频参数")] [Tooltip("视频录制帧率。")] public Dropdown videoCaptureFrameRate;
@@ -188,6 +187,10 @@
         private const int USE_MODE_STREAM = 1;
         private const string USE_MODE_LOCAL_NAME = "存储本地";
         private const string USE_MODE_STREAM_NAME = "视频推流";
+        private const string AUDIO_OPTION_USE = "使用";
+        private const string AUDIO_OPTION_NOT_USE = "不使用";
+        private static readonly float[] AudioGainPresetValues = { -20f, -12f, -9f, -6f, -3f, 0f, 3f, 6f, 9f, 12f, 20f };
+        private static readonly List<string> AudioGainPresetLabels = new() { "-20 dB", "-12 dB", "-9 dB", "-6 dB", "-3 dB", "0 dB", "3 dB", "6 dB", "9 dB", "12 dB", "20 dB" };
 
         private sealed class ModePanelBinding
         {
@@ -251,29 +254,9 @@
             BindDropdown(drAudioBitrate, _ => OnAnyParamsChanged());
             BindDropdown(drAudioSampleRate, _ => OnAnyParamsChanged());
             BindDropdown(drAudioChannel, _ => OnAnyParamsChanged());
-            if (togEnableAudioGain != null)
-            {
-                togEnableAudioGain.onValueChanged.RemoveListener(SetAudioGainEnabled);
-                togEnableAudioGain.onValueChanged.AddListener(SetAudioGainEnabled);
-            }
-
-            if (ifAudioGainDb != null)
-            {
-                ifAudioGainDb.onValueChanged.RemoveListener(SetAudioGainDb);
-                ifAudioGainDb.onValueChanged.AddListener(SetAudioGainDb);
-            }
-
-            if (slAudioGainDb != null)
-            {
-                slAudioGainDb.onValueChanged.RemoveListener(SetAudioGainDb);
-                slAudioGainDb.onValueChanged.AddListener(SetAudioGainDb);
-            }
-
-            if (togAudioLimiterEnabled != null)
-            {
-                togAudioLimiterEnabled.onValueChanged.RemoveListener(SetAudioLimiterEnabled);
-                togAudioLimiterEnabled.onValueChanged.AddListener(SetAudioLimiterEnabled);
-            }
+            BindDropdown(drEnableAudioGain, _ => OnAudioGainDropdownChanged());
+            BindDropdown(drAudioGainDb, _ => OnAnyParamsChanged());
+            BindDropdown(drAudioLimiterEnabled, _ => OnAnyParamsChanged());
 
             BindDropdown(videoCaptureFrameRate, _ => OnAnyParamsChanged());
             BindDropdown(videoOutputScale, _ => OnAnyParamsChanged());
@@ -451,6 +434,9 @@
             SetDropdownOptions(drAudioBitrate, new List<string> { "96k", "128k", "192k", "256k" });
             SetDropdownOptions(drAudioSampleRate, new List<string> { "44100", "48000" });
             SetDropdownOptions(drAudioChannel, new List<string> { "1", "2" });
+            SetDropdownOptions(drEnableAudioGain, new List<string> { AUDIO_OPTION_USE, AUDIO_OPTION_NOT_USE });
+            SetDropdownOptions(drAudioGainDb, AudioGainPresetLabels);
+            SetDropdownOptions(drAudioLimiterEnabled, new List<string> { AUDIO_OPTION_USE, AUDIO_OPTION_NOT_USE });
             SetDropdownOptions(videoCaptureFrameRate, new List<string> { "20", "25", "30", "45", "60" });
             SetDropdownOptions(videoOutputScale, new List<string> { "0.5", "0.75", "1" });
             SetDropdownOptions(videoCrf, new List<string> { "20", "23", "26", "30" });
@@ -518,17 +504,9 @@
             SetDropdownValue(drAudioBitrate, config.audioBitrate);
             SetDropdownValue(drAudioSampleRate, config.audioSampleRate.ToString());
             SetDropdownValue(drAudioChannel, config.audioChannels.ToString());
-            if (togEnableAudioGain != null) togEnableAudioGain.isOn = config.enableAudioGain;
-            float gainDb = Mathf.Clamp(config.audioGainDb, -20f, 20f);
-            if (ifAudioGainDb != null) ifAudioGainDb.text = gainDb.ToString("0.###");
-            if (slAudioGainDb != null)
-            {
-                slAudioGainDb.minValue = -20f;
-                slAudioGainDb.maxValue = 20f;
-                slAudioGainDb.value    = gainDb;
-            }
-
-            if (togAudioLimiterEnabled != null) togAudioLimiterEnabled.isOn = config.audioLimiterEnabled;
+            SetDropdownValue(drEnableAudioGain, config.enableAudioGain ? AUDIO_OPTION_USE : AUDIO_OPTION_NOT_USE);
+            SetDropdownValue(drAudioGainDb, GetNearestAudioGainLabel(config.audioGainDb));
+            SetDropdownValue(drAudioLimiterEnabled, config.audioLimiterEnabled ? AUDIO_OPTION_USE : AUDIO_OPTION_NOT_USE);
             SetDropdownValue(videoCaptureFrameRate, config.captureFrameRate.ToString());
             SetDropdownValue(videoOutputScale, config.outputScale.ToString("0.##"));
             SetDropdownValue(videoCrf, config.videoCrf.ToString());
@@ -639,9 +617,9 @@
             config.audioBitrate               = GetDropdownTextOrDefault(drAudioBitrate, config.audioBitrate);
             config.audioSampleRate            = ParseInt(GetDropdownText(drAudioSampleRate), config.audioSampleRate);
             config.audioChannels              = ParseInt(GetDropdownText(drAudioChannel), config.audioChannels);
-            config.enableAudioGain            = togEnableAudioGain == null ? config.enableAudioGain : togEnableAudioGain.isOn;
-            config.audioGainDb                = Mathf.Clamp(slAudioGainDb != null ? slAudioGainDb.value : ParseFloat(ifAudioGainDb != null ? ifAudioGainDb.text : string.Empty, config.audioGainDb), -20f, 20f);
-            config.audioLimiterEnabled        = togAudioLimiterEnabled == null ? config.audioLimiterEnabled : togAudioLimiterEnabled.isOn;
+            config.enableAudioGain            = drEnableAudioGain == null ? config.enableAudioGain : IsUseOptionSelected(drEnableAudioGain);
+            config.audioGainDb                = drAudioGainDb == null ? config.audioGainDb : GetSelectedAudioGainDb();
+            config.audioLimiterEnabled        = drAudioLimiterEnabled == null ? config.audioLimiterEnabled : IsUseOptionSelected(drAudioLimiterEnabled);
             config.captureFrameRate           = ParseInt(GetDropdownText(videoCaptureFrameRate), config.captureFrameRate);
             config.outputScale                = ParseFloat(GetDropdownText(videoOutputScale), config.outputScale);
             config.videoCrf                   = ParseInt(GetDropdownText(videoCrf), config.videoCrf);
@@ -1187,49 +1165,12 @@
         }
 
         /// <summary>
-        /// 录制音量增强开关变化时刷新配置修改状态。
+        /// 录制音量增强下拉框变化时刷新相关控件状态。
         /// </summary>
-        private void SetAudioGainEnabled(bool value)
+        private void OnAudioGainDropdownChanged()
         {
             if (_isRefreshingUI) return;
-            if (value && ifAudioGainDb != null && Mathf.Approximately(ParseFloat(ifAudioGainDb.text, 0f), 0f))
-            {
-                ifAudioGainDb.SetTextWithoutNotify("6");
-                if (slAudioGainDb != null) slAudioGainDb.SetValueWithoutNotify(6f);
-            }
-
             RefreshAudioGainUI();
-            OnAnyParamsChanged();
-        }
-
-        /// <summary>
-        /// 录制音量增益输入框变化时同步滑动条并刷新配置修改状态。
-        /// </summary>
-        private void SetAudioGainDb(string value)
-        {
-            if (_isRefreshingUI) return;
-            float gain = Mathf.Clamp(ParseFloat(value, 0f), -20f, 20f);
-            if (slAudioGainDb != null && !Mathf.Approximately(slAudioGainDb.value, gain)) slAudioGainDb.SetValueWithoutNotify(gain);
-            OnAnyParamsChanged();
-        }
-
-        /// <summary>
-        /// 录制音量增益滑动条变化时同步输入框并刷新配置修改状态。
-        /// </summary>
-        private void SetAudioGainDb(float value)
-        {
-            if (_isRefreshingUI) return;
-            float gain = Mathf.Clamp(value, -20f, 20f);
-            if (ifAudioGainDb != null) ifAudioGainDb.SetTextWithoutNotify(gain.ToString("0.###"));
-            OnAnyParamsChanged();
-        }
-
-        /// <summary>
-        /// 音频限幅器开关变化时刷新配置修改状态。
-        /// </summary>
-        private void SetAudioLimiterEnabled(bool value)
-        {
-            if (_isRefreshingUI) return;
             OnAnyParamsChanged();
         }
 
@@ -1538,10 +1479,9 @@
         /// </summary>
         private void RefreshAudioGainUI()
         {
-            bool enableGain = togEnableAudioGain == null || togEnableAudioGain.isOn;
-            SetControlActive(ifAudioGainDb, enableGain);
-            SetControlActive(slAudioGainDb, enableGain);
-            SetControlActive(togAudioLimiterEnabled, enableGain);
+            bool enableGain = drEnableAudioGain == null || IsUseOptionSelected(drEnableAudioGain);
+            SetControlActive(drAudioGainDb, enableGain);
+            SetControlActive(drAudioLimiterEnabled, enableGain);
         }
 
         /// <summary>
@@ -2002,10 +1942,9 @@
             SetControlModified(drAudioBitrate, current.audioBitrate != baseConfig.audioBitrate);
             SetControlModified(drAudioSampleRate, current.audioSampleRate != baseConfig.audioSampleRate);
             SetControlModified(drAudioChannel, current.audioChannels != baseConfig.audioChannels);
-            SetControlModified(togEnableAudioGain, current.enableAudioGain != baseConfig.enableAudioGain);
-            SetControlModified(ifAudioGainDb, !Mathf.Approximately(current.audioGainDb, baseConfig.audioGainDb));
-            SetControlModified(slAudioGainDb, !Mathf.Approximately(current.audioGainDb, baseConfig.audioGainDb));
-            SetControlModified(togAudioLimiterEnabled, current.audioLimiterEnabled != baseConfig.audioLimiterEnabled);
+            SetControlModified(drEnableAudioGain, current.enableAudioGain != baseConfig.enableAudioGain);
+            SetControlModified(drAudioGainDb, !Mathf.Approximately(current.audioGainDb, baseConfig.audioGainDb));
+            SetControlModified(drAudioLimiterEnabled, current.audioLimiterEnabled != baseConfig.audioLimiterEnabled);
             SetControlModified(videoCaptureFrameRate, current.captureFrameRate != baseConfig.captureFrameRate);
             SetControlModified(videoOutputScale, !Mathf.Approximately(current.outputScale, baseConfig.outputScale));
             SetControlModified(videoCrf, current.videoCrf != baseConfig.videoCrf);
@@ -2071,10 +2010,9 @@
             SetParameterInteractable(drAudioBitrate, canEditFullParams);
             SetParameterInteractable(drAudioSampleRate, canEditFullParams);
             SetParameterInteractable(drAudioChannel, canEditFullParams);
-            SetParameterInteractable(togEnableAudioGain, canEditFullParams);
-            SetParameterInteractable(ifAudioGainDb, canEditFullParams);
-            SetParameterInteractable(slAudioGainDb, canEditFullParams);
-            SetParameterInteractable(togAudioLimiterEnabled, canEditFullParams);
+            SetParameterInteractable(drEnableAudioGain, canEditFullParams);
+            SetParameterInteractable(drAudioGainDb, canEditFullParams);
+            SetParameterInteractable(drAudioLimiterEnabled, canEditFullParams);
             SetParameterInteractable(videoCaptureFrameRate, canEditFullParams);
             SetParameterInteractable(videoOutputScale, canEditFullParams);
             SetParameterInteractable(videoCrf, canEditFullParams);
@@ -2187,6 +2125,42 @@
         {
             string value = GetDropdownText(dropdown);
             return string.IsNullOrWhiteSpace(value) ? defaultValue : value;
+        }
+
+        /// <summary>
+        /// 判断“使用 / 不使用”下拉框是否选择使用。
+        /// </summary>
+        private static bool IsUseOptionSelected(Dropdown dropdown)
+        {
+            return string.Equals(GetDropdownText(dropdown), AUDIO_OPTION_USE, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// 获取当前选择的录制音量增益预设。
+        /// </summary>
+        private float GetSelectedAudioGainDb()
+        {
+            int index = drAudioGainDb == null ? Array.IndexOf(AudioGainPresetValues, 0f) : Mathf.Clamp(drAudioGainDb.value, 0, AudioGainPresetValues.Length - 1);
+            return AudioGainPresetValues[Mathf.Max(0, index)];
+        }
+
+        /// <summary>
+        /// 将配置中的增益值映射到最近的下拉框预设。
+        /// </summary>
+        private static string GetNearestAudioGainLabel(float value)
+        {
+            float clamped = Mathf.Clamp(value, -20f, 20f);
+            int nearestIndex = Array.IndexOf(AudioGainPresetValues, 0f);
+            float nearestDistance = float.MaxValue;
+            for (int i = 0; i < AudioGainPresetValues.Length; i++)
+            {
+                float distance = Mathf.Abs(AudioGainPresetValues[i] - clamped);
+                if (distance >= nearestDistance) continue;
+                nearestDistance = distance;
+                nearestIndex = i;
+            }
+
+            return AudioGainPresetLabels[Mathf.Clamp(nearestIndex, 0, AudioGainPresetLabels.Count - 1)];
         }
 
         /// <summary>

@@ -17,7 +17,7 @@ RecorderSDK_v0.3.0-beta.unitypackage
 导入包包含：
 
 - `Assets/Demos/RecorderSdk/`
-  - `Demo/Scenes/录制器_基础演示.unity`
+  - `Demo/Scenes/录制器_屏幕录制.unity`
   - `Demo/Scenes/录制器_设置中心.unity`
   - `Demo/Scenes/录制器_旧版综合场景.unity`
   - 原始兼容场景
@@ -73,18 +73,18 @@ RecorderSDK_v0.3.0-beta.unitypackage
 导入后建议先打开 Demo 场景：
 
 ```txt
-Assets/Demos/RecorderSdk/Demo/Scenes/录制器_基础演示.unity
+Assets/Demos/RecorderSdk/Demo/Scenes/录制器_屏幕录制.unity
 ```
 
-`录制器_基础演示.unity` 用于验证 SDK 最小使用方式。场景中包含 `RecorderManager`，挂载 `CrossPlatformScreenRecorder` 和 `RecorderDemoBasicController`；UI 应提前存在于场景 Hierarchy 中，运行时脚本只负责绑定和业务逻辑，不默认动态创建 Demo UI。
+`录制器_屏幕录制.unity` 用于验证 SDK 最小使用方式。场景中包含 `RecorderManager`，挂载 `CrossPlatformScreenRecorder` 和 `RecorderDemoBasicController`；UI 应提前存在于场景 Hierarchy 中，运行时脚本只负责绑定和业务逻辑，不默认动态创建 Demo UI。
 
-如果导入后需要重建基础 Demo UI，打开目标场景后执行：
+如果导入后需要重建屏幕录制 Demo UI，打开目标场景后执行：
 
 ```txt
 ByTools/Recorder SDK控制台
 ```
 
-在控制台的 `UI 工具` 页点击 `创建基础演示 UI`。该按钮会一次性创建 Canvas、EventSystem、`开始录制`、`停止录制`、`打开输出目录`、`清空历史` 按钮，`当前状态`、`最近结果`、`当前配置ID`、`输出路径`、`最近错误码`、`会话数量` 文本，以及 Dropdown、Toggle、Slider，并自动绑定到 `RecorderDemoBasicController`。生成完成后请保存场景。
+在控制台的 `UI 工具` 页点击 `创建屏幕录制 UI`。该按钮会一次性创建 Canvas、EventSystem、`开始录制`、`停止录制`、`打开输出目录`、`清空历史` 按钮，`当前状态`、`最近结果`、`当前配置ID`、`输出路径`、`最近错误码`、`会话数量` 文本，以及 Dropdown、Toggle、Slider，并自动绑定到 `RecorderDemoBasicController`。生成完成后请保存场景。
 
 需要编辑完整配置时打开：
 
@@ -102,7 +102,7 @@ Assets/Demos/RecorderSdk/Demo/Scenes/录制视频Recorder.unity
 Assets/Demos/RecorderSdk/Demo/Scenes/录制视频Init.unity
 ```
 
-这些场景仅用于兼容和对照，新用户优先从 `录制器_基础演示.unity` 开始。
+这些场景仅用于兼容和对照，新用户优先从 `录制器_屏幕录制.unity` 开始。
 
 ## 运行 RecorderSdkSmokeTest
 
@@ -114,7 +114,7 @@ Assets/Demos/RecorderSdk/Demo/Scripts/RecorderSdkSmokeTest.cs
 
 运行方式：
 
-1. 打开 `录制器_基础演示.unity` 或 `录制器_设置中心.unity`。
+1. 打开 `录制器_屏幕录制.unity` 或 `录制器_设置中心.unity`。
 2. 在场景中创建一个空对象。
 3. 挂载 `RecorderSdkSmokeTest`。
 4. 绑定或确认场景中存在 `CrossPlatformScreenRecorder`。

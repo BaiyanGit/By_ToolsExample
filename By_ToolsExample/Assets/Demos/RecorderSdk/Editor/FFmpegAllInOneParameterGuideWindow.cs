@@ -26,7 +26,7 @@ using UnityEngine;
 public sealed class FFmpegAllInOneParameterGuideWindow : EditorWindow
 {
     private const string WINDOW_TITLE = "FFmpeg 参数大词典";
-    private readonly FFmpegParameterGuideContent _content = new FFmpegParameterGuideContent();
+    private readonly FFmpegParameterGuideContent _content = new();
 
     public static void ShowWindow()
     {
@@ -60,10 +60,10 @@ public sealed class FFmpegParameterGuideContent
     private const float SEARCH_BAR_HEIGHT = 30f;
 
 
-    private readonly List<ParamInfo> _items = new List<ParamInfo>();
-    private readonly List<string> _categories = new List<string>();
-    private readonly List<ParamInfo> _cachedFilteredItems = new List<ParamInfo>();
-    private readonly Dictionary<string, List<ParamInfo>> _cachedFilteredByCategory = new Dictionary<string, List<ParamInfo>>();
+    private readonly List<ParamInfo> _items = new();
+    private readonly List<string> _categories = new();
+    private readonly List<ParamInfo> _cachedFilteredItems = new();
+    private readonly Dictionary<string, List<ParamInfo>> _cachedFilteredByCategory = new();
 
     private Vector2 _leftScroll;
     private Vector2 _rightScroll;
@@ -435,10 +435,10 @@ public sealed class FFmpegParameterGuideContent
     {
         RebuildFilterCacheIfNeeded();
         if (string.IsNullOrWhiteSpace(category) || category == "全部") return _cachedFilteredItems;
-        return _cachedFilteredByCategory.TryGetValue(category, out var items) ? items : EmptyParamList;
+        return _cachedFilteredByCategory.TryGetValue(category, out var items) ? items : emptyParamList;
     }
 
-    private static readonly List<ParamInfo> EmptyParamList = new List<ParamInfo>();
+    private static readonly List<ParamInfo> emptyParamList = new();
 
     private void RebuildFilterCacheIfNeeded()
     {
@@ -631,7 +631,7 @@ public sealed class FFmpegParameterGuideContent
             margin  = new RectOffset(0, 0, 0, 2)
         };
 
-        _cardHeaderStyle = new GUIStyle()
+        _cardHeaderStyle = new GUIStyle
         {
             padding = new RectOffset(10, 10, 5, 5),
             margin  = new RectOffset(0, 0, 0, 6)

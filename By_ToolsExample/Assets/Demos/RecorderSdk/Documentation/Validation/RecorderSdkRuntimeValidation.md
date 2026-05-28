@@ -26,7 +26,7 @@
 - 操作系统：Windows 10 Pro
 - Unity 版本：6000.0.48f1
 - 项目路径：`E:\UnityProjectsE\Example\By_ToolsExample\By_ToolsExample`
-- 示例场景：`Assets/Demos/RecorderSdk/Demo/Scenes/录制器_基础演示.unity`
+- 示例场景：`Assets/Demos/RecorderSdk/Demo/Scenes/录制器_屏幕录制.unity`
 - FFmpeg 路径：`C:\Program Files\ffmpeg\bin\ffmpeg.exe`
 - SDK 内置 FFmpeg 路径：`Assets/StreamingAssets/FFmpegTools/FFmpegApp/ffmpeg.exe`
 - FFmpeg 版本：`N-121090-g9e4ff4732c-20250916`
@@ -443,7 +443,7 @@ ffmpeg lavfi testsrc 1280x720 25fps -> libx264 ultrafast 10 秒输出
 ## 下一步实机验证清单
 
 1. 在 Unity Hub 中修复 License Client IPC 问题。
-2. 打开 `录制器_基础演示.unity`；需要完整配置 UI 时打开 `录制器_设置中心.unity`。
+2. 打开 `录制器_屏幕录制.unity`；需要完整配置 UI 时打开 `录制器_设置中心.unity`。
 3. 挂载或执行 `RecorderSdkSmokeTest`。
 4. 手动验证 MP4/WebM 本地录制。
 5. 手动验证连续 Start / Stop。

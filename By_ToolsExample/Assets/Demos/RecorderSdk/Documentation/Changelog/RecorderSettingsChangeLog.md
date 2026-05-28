@@ -100,26 +100,26 @@
 ### 收口修正：2026-05-26
 
 - 为什么这么做：RecorderSDK(4) 交付包需要统一正式路径、Editor 菜单命名和项目结构说明，避免导入后用户看到旧路径或旧菜单分组。
-- 做了什么：修正 UI Layout Profile 路径为当前 SDK 路径下的 `UI/Settings/LayoutProfiles`；统一 Editor 菜单根路径为 `ByTools/🔴Recorder SDK/` 并按功能分组；删除旧版基础演示兼容菜单入口；新增 `ProjectStructure.md`；将 README、Validation、Changelog 中的旧版路径文本统一到当时的正式路径。
-- 验证结果：`rg` 未再检出旧版 Demos 路径、带图标的 Recorder SDK 菜单根路径或旧版基础演示菜单名；确认当前工程内存在 `WASAPILoopbackRecorder.dll`，正式导出 unitypackage 时需要包含。
+- 做了什么：修正 UI Layout Profile 路径为当前 SDK 路径下的 `UI/Settings/LayoutProfiles`；统一 Editor 菜单根路径为 `ByTools/🔴Recorder SDK/` 并按功能分组；删除旧版屏幕录制兼容菜单入口；新增 `ProjectStructure.md`；将 README、Validation、Changelog 中的旧版路径文本统一到当时的正式路径。
+- 验证结果：`rg` 未再检出旧版 Demos 路径、带图标的 Recorder SDK 菜单根路径或旧版屏幕录制菜单名；确认当前工程内存在 `WASAPILoopbackRecorder.dll`，正式导出 unitypackage 时需要包含。
 
 ## v0.3.0-beta Runtime Validation
 
 ### 任务计划：2026-05-25 16:20
 
-- 问题：Recorder SDK 后续 UI 创建方式需要从运行时动态创建切换为 Editor 工具一次性生成到场景中；基础演示 UI 和设置中心 UI 职责不同，需要两套独立 Builder，并支持手动调整后导出/应用布局模板。
-- 计划：保留并正规化 `ByTools/🔴Recorder SDK/UI创建/基础演示`；新增 `ByTools/🔴Recorder SDK/UI创建/设置中心`；新增基础演示/设置中心布局导出和应用菜单；新增通用布局 Profile 工具导出 RectTransform、字体、颜色、间距、Panel/按钮/ScrollView 尺寸等信息；将 `UIRecorderParamsSettings` 的运行时 UI 创建改为 Legacy 默认关闭，只做已有对象绑定和 Warning；README 同步新的菜单与工作流。
+- 问题：Recorder SDK 后续 UI 创建方式需要从运行时动态创建切换为 Editor 工具一次性生成到场景中；屏幕录制 UI 和设置中心 UI 职责不同，需要两套独立 Builder，并支持手动调整后导出/应用布局模板。
+- 计划：保留并正规化 `ByTools/🔴Recorder SDK/UI创建/屏幕录制`；新增 `ByTools/🔴Recorder SDK/UI创建/设置中心`；新增屏幕录制/设置中心布局导出和应用菜单；新增通用布局 Profile 工具导出 RectTransform、字体、颜色、间距、Panel/按钮/ScrollView 尺寸等信息；将 `UIRecorderParamsSettings` 的运行时 UI 创建改为 Legacy 默认关闭，只做已有对象绑定和 Warning；README 同步新的菜单与工作流。
 - 风险点：设置中心 Builder 先生成可绑定、可手动调整的基础设置界面骨架，真实项目美术布局仍建议在 Unity Editor 中微调后导出布局模板；新增脚本未生成 `.meta`，Unity 打开后会自动生成。
 
 ### 修改记录：2026-05-25 16:50
 
 - 为什么这么做：UI 必须真实存在于场景 Hierarchy 中，才能被手动调整、保存和复用；运行时动态创建整套 UI 会让布局不可控，也让业务脚本职责过重。
-- 做了什么：`UIRecorderParamsSettings.RuntimeUI` 的按钮/弹窗/说明窗口动态补建改为 `createLegacyRuntimeUI=false` 默认关闭；保留 Legacy 代码但默认只查找已有对象并给 Warning；`RecorderDemoUIBuilderEditor` 菜单正规化为 `创建基础演示UI` 并保留旧菜单兼容；新增 `RecorderSettingsUIBuilderEditor` 负责创建设置中心 Canvas、顶部配置区、左侧菜单、右侧参数页、底部说明、弹窗、RecorderManager、CrossPlatformScreenRecorder 和 UIRecorderParamsSettings 字段绑定；新增 `RecorderUILayoutProfileUtilityEditor` 和 `RecorderUILayoutMenuEditor`，支持导出/应用 `DemoUILayoutProfile.json` 与 `SettingsUILayoutProfile.json`；README 补充 UI Builder 和布局模板工作流。
+- 做了什么：`UIRecorderParamsSettings.RuntimeUI` 的按钮/弹窗/说明窗口动态补建改为 `createLegacyRuntimeUI=false` 默认关闭；保留 Legacy 代码但默认只查找已有对象并给 Warning；`RecorderDemoUIBuilderEditor` 菜单正规化为 `创建屏幕录制UI` 并保留旧菜单兼容；新增 `RecorderSettingsUIBuilderEditor` 负责创建设置中心 Canvas、顶部配置区、左侧菜单、右侧参数页、底部说明、弹窗、RecorderManager、CrossPlatformScreenRecorder 和 UIRecorderParamsSettings 字段绑定；新增 `RecorderUILayoutProfileUtilityEditor` 和 `RecorderUILayoutMenuEditor`，支持导出/应用 `DemoUILayoutProfile.json` 与 `SettingsUILayoutProfile.json`；README 补充 UI Builder 和布局模板工作流。
 - 验证结果：CreateXXXUI、导出/应用布局菜单均位于 Editor 目录；Runtime 脚本默认不再 Instantiate 或 new GameObject 补建设置 UI；RecorderState、ConfigRegistry、SessionHistory、FFmpegCommandBuilder、音量增强和配置 JSON 系统未改动。
 
 ### 任务计划：2026-05-25 15:10
 
-- 问题：旧场景已移动到 `Demo/LegacyScenes/`，后续只维护 `录制器_基础演示` 和 `录制器_设置中心`；当前 `录制器_设置中心` 在切换使用方式为 `视频推流` 后，右侧参数页面没有互斥刷新，音频/视频旧页面可能与推流页面叠加。
+- 问题：旧场景已移动到 `Demo/LegacyScenes/`，后续只维护 `录制器_屏幕录制` 和 `录制器_设置中心`；当前 `录制器_设置中心` 在切换使用方式为 `视频推流` 后，右侧参数页面没有互斥刷新，音频/视频旧页面可能与推流页面叠加。
 - 计划：只修改 `录制器_设置中心` 使用的 UI 脚本，不改 LegacyScenes；在 `UIRecorderParamsSettings` 中增加 `HideAllModePanels()` 和 `ShowPanelByUseMode()`，切换使用方式时先隐藏右侧同级参数页面，再按本地录制/视频推流显示目标页面；增加兜底互斥校验，防止场景旧 Toggle 事件重新打开多个页面；同步 README/ChangeLog 说明。
 - 风险点：当前命令行不直接编辑新场景复杂 YAML，只通过脚本约束场景中已绑定的 `goStreamSettingsRoot` 所在页面列表；如果后续新增新的使用方式，需要扩展 `ShowPanelByUseMode()` 的分支。
 
@@ -142,27 +142,27 @@
 
 ### 任务计划：2026-05-25 14:45
 
-- 问题：`录制器_基础演示` Demo UI 中仍有英文按钮和状态字段文案，运行后会显示 `Enable Audio`、`Start Recording`、`Current State` 等英文，不符合当前中文场景交付要求。
+- 问题：`录制器_屏幕录制` Demo UI 中仍有英文按钮和状态字段文案，运行后会显示 `Enable Audio`、`Start Recording`、`Current State` 等英文，不符合当前中文场景交付要求。
 - 计划：只修改 Demo UI 默认显示文案，不改 Recorder 核心逻辑和 JSON 字段；将 `RecorderDemoBasicController` 的运行时状态刷新文本改为中文；将 `RecorderDemoBasicUIBuilderEditor` 生成 UI 时写入的按钮、Toggle、Dropdown 和状态文本改为中文；README 和 UnityPackageValidation 中涉及 Demo UI 的说明同步使用中文按钮名称。
-- 风险点：如果场景中已经手动保存过旧英文 Text，需要在 Unity 中执行 `ByTools/🔴Recorder SDK/UI创建/基础演示` 或手动修改场景 Text 后保存；本次不会直接重写复杂 Scene YAML。
+- 风险点：如果场景中已经手动保存过旧英文 Text，需要在 Unity 中执行 `ByTools/🔴Recorder SDK/UI创建/屏幕录制` 或手动修改场景 Text 后保存；本次不会直接重写复杂 Scene YAML。
 
 ### 修改记录：2026-05-25 14:55
 
 - 为什么这么做：Demo 场景面向使用者演示 SDK 最小接入方式，按钮和状态字段应保持中文一致，JSON 字段名则继续保留英文以保证配置兼容。
 - 做了什么：`RecorderDemoBasicController` 的状态刷新改为 `当前状态`、`最近结果`、`当前配置ID`、`输出路径`、`最近错误码`、`会话数量`；`RecorderDemoBasicUIBuilderEditor` 生成的按钮、Toggle、Dropdown、状态文本和 Hierarchy 对象名改为中文；README 与 RecorderSdkUnityPackageValidation 的 Demo UI 描述改为中文按钮名称。
-- 验证结果：rg 检查 Controller、Editor 生成工具、README、UnityPackageValidation 和 `录制器_基础演示.unity` 中已无指定英文 UI 文案；`0 dB` 保持不翻译；针对本次改动文件的 `git diff --check` 通过。
+- 验证结果：rg 检查 Controller、Editor 生成工具、README、UnityPackageValidation 和 `录制器_屏幕录制.unity` 中已无指定英文 UI 文案；`0 dB` 保持不翻译；针对本次改动文件的 `git diff --check` 通过。
 
 ### 任务计划：2026-05-25 14:10
 
-- 问题：Unity 新版本中 `Arial.ttf` 不再是有效内置字体，运行时动态创建 Text 会报错；同时基础 Demo Controller 把 UI 创建和业务绑定混在运行时脚本里，导致 Play 后动态生成 UI，不符合 Demo 场景应预先布好 UI 的要求。
-- 计划：统一把动态 Text 字体改为 `LegacyRuntime.ttf`；重写 `RecorderDemoBasicController`，默认只绑定场景中已有 UI 并在缺失时给 Warning，不再运行时创建 UI；新增 `RecorderDemoBasicUIBuilderEditor` 到 Editor 目录，通过 `ByTools/🔴Recorder SDK/UI创建/基础演示` 一次性在当前场景创建 Canvas、EventSystem、基础按钮、状态文本和简单配置控件，并自动挂载与绑定 Controller；README 补充 Demo UI 是场景预制 UI 以及重建菜单。
-- 风险点：当前命令行环境不能可靠打开 Unity Editor 保存场景，因此不直接手写复杂 Scene YAML；用户可在 Unity 内执行菜单生成并保存 `录制器_基础演示.unity`，生成后 UI 会真实存在于 Hierarchy。
+- 问题：Unity 新版本中 `LegacyRuntime.ttf` 才是有效内置 UI 字体，运行时动态创建 Text 若使用旧字体名会报错；同时屏幕录制 Demo Controller 把 UI 创建和业务绑定混在运行时脚本里，导致 Play 后动态生成 UI，不符合 Demo 场景应预先布好 UI 的要求。
+- 计划：统一把动态 Text 字体改为 `LegacyRuntime.ttf`；重写 `RecorderDemoBasicController`，默认只绑定场景中已有 UI 并在缺失时给 Warning，不再运行时创建 UI；新增 `RecorderDemoBasicUIBuilderEditor` 到 Editor 目录，通过 `ByTools/🔴Recorder SDK/UI创建/屏幕录制` 一次性在当前场景创建 Canvas、EventSystem、基础按钮、状态文本和简单配置控件，并自动挂载与绑定 Controller；README 补充 Demo UI 是场景预制 UI 以及重建菜单。
+- 风险点：当前命令行环境不能可靠打开 Unity Editor 保存场景，因此不直接手写复杂 Scene YAML；用户可在 Unity 内执行菜单生成并保存 `录制器_屏幕录制.unity`，生成后 UI 会真实存在于 Hierarchy。
 
 ### 修改记录：2026-05-25 14:35
 
 - 为什么这么做：字体错误会阻塞运行时 UI 显示，Demo Controller 运行时创建 UI 会让场景职责不清晰，也不利于用户在 Hierarchy 中查看和调整演示界面。
-- 做了什么：`UIRecorderParamsSettings.RuntimeUI` 的默认字体只读取 `LegacyRuntime.ttf`；`RecorderDemoBasicController` 删除运行时 Canvas/Button/Text/Dropdown/Toggle/Slider 创建逻辑，改为只绑定 public UI 字段、订阅 Recorder 事件、调用 Start/Stop、保存简单配置并刷新状态；新增 `RecorderDemoBasicUIBuilderEditor`，提供 `ByTools/🔴Recorder SDK/UI创建/基础演示` 菜单，在当前场景一次性创建并绑定 Demo UI；README 和 UnityPackageValidation 补充 Demo UI 是场景预制 UI，以及可用菜单重建。
-- 验证结果：rg 检查 SDK 中已无 `Arial.ttf` 运行时加载；`RecorderDemoBasicController` 中已无 `CreateButton`、`CreateText`、`CreateDropdown`、`CreateToggle`、`CreateSlider`、`new GameObject` UI 创建逻辑；针对本次改动文件的 `git diff --check` 通过。
+- 做了什么：`UIRecorderParamsSettings.RuntimeUI` 的默认字体只读取 `LegacyRuntime.ttf`；`RecorderDemoBasicController` 删除运行时 Canvas/Button/Text/Dropdown/Toggle/Slider 创建逻辑，改为只绑定 public UI 字段、订阅 Recorder 事件、调用 Start/Stop、保存简单配置并刷新状态；新增 `RecorderDemoBasicUIBuilderEditor`，提供 `ByTools/🔴Recorder SDK/UI创建/屏幕录制` 菜单，在当前场景一次性创建并绑定 Demo UI；README 和 UnityPackageValidation 补充 Demo UI 是场景预制 UI，以及可用菜单重建。
+- 验证结果：rg 检查 SDK 中已统一使用 `LegacyRuntime.ttf` 运行时字体加载；`RecorderDemoBasicController` 中已无 `CreateButton`、`CreateText`、`CreateDropdown`、`CreateToggle`、`CreateSlider`、`new GameObject` UI 创建逻辑；针对本次改动文件的 `git diff --check` 通过。
 
 ### 任务计划：2026-05-25 13:20
 
@@ -173,19 +173,19 @@
 ### 修改记录：2026-05-25 13:35
 
 - 为什么这么做：新目录和中文场景名已经成为后续交付基准，旧英文场景名和旧 `Scripts/Core`、`Scripts/UISettings` 路径会让 README、验证文档和 unitypackage 导入说明与实际工程不一致。
-- 做了什么：将全局快捷键加载场景和设置面板关闭卸载场景改为 `录制器_设置中心`；README 的 Scene Guide、关键脚本路径、验收文档路径、SmokeTest/UsageExample/Validation 文档路径统一到 `RecorderSdk` 新目录；RecorderSdkUnityPackageValidation 改为包含 `录制器_基础演示`、`录制器_设置中心`、`录制器_旧版综合场景`，并标注旧 `录制视频Recorder`、`录制视频Init` 为 Legacy；RuntimeValidation 的默认测试场景改为 `录制器_基础演示`；StabilityAcceptance 的 Core 目录说明改为 `RecorderSdk/Core`。
+- 做了什么：将全局快捷键加载场景和设置面板关闭卸载场景改为 `录制器_设置中心`；README 的 Scene Guide、关键脚本路径、验收文档路径、SmokeTest/UsageExample/Validation 文档路径统一到 `RecorderSdk` 新目录；RecorderSdkUnityPackageValidation 改为包含 `录制器_屏幕录制`、`录制器_设置中心`、`录制器_旧版综合场景`，并标注旧 `录制视频Recorder`、`录制视频Init` 为 Legacy；RuntimeValidation 的默认测试场景改为 `录制器_屏幕录制`；StabilityAcceptance 的 Core 目录说明改为 `RecorderSdk/Core`。
 - 验证结果：rg 检查文档和脚本中已无 `Recorder_Demo_Basic`、`Recorder_Settings`、`Recorder_AllInOne_Legacy`、旧 `Scripts/Core`、旧 `Scripts/UISettings` 主引用；保留的 `录制视频Recorder.unity`、`录制视频Init.unity` 均在 Legacy 说明中；没有移动目录，没有重新生成 `.meta`。
 
 ### 任务计划：2026-05-25 12:30
 
 - 问题：Recorder 示例当前把完整配置 UI 和 SDK 使用演示混在同一个场景中，新用户不知道应该打开哪个场景，也不利于开发者学习最小集成方式。
-- 计划：保留原场景不破坏，新建 `录制器_设置中心.unity` 用作完整配置管理工具；新增 `录制器_基础演示.unity` 只包含 RecorderManager、基础按钮、状态文本和少量配置入口；新增 `RecorderDemoBasicController.cs` 订阅 Recorder 事件并调用 Start/Stop Async、展示结果、打开输出目录、清空历史、切换 configId；README 和 UnityPackageValidation 增加 Scene Guide，并重新生成 unitypackage 包含两个新场景。
+- 计划：保留原场景不破坏，新建 `录制器_设置中心.unity` 用作完整配置管理工具；新增 `录制器_屏幕录制.unity` 只包含 RecorderManager、基础按钮、状态文本和少量配置入口；新增 `RecorderDemoBasicController.cs` 订阅 Recorder 事件并调用 Start/Stop Async、展示结果、打开输出目录、清空历史、切换 configId；README 和 UnityPackageValidation 增加 Scene Guide，并重新生成 unitypackage 包含两个新场景。
 - 风险点：Unity Editor 当前仍受许可证环境影响，场景创建以文本序列化方式完成，最终打开/按钮点击验证需要在许可证恢复后进入 Editor 实测。
 
 ### 修改记录：2026-05-25 12:55
 
-- 做了什么：新增 `RecorderDemoBasicController.cs`；新增 `录制器_基础演示.unity`，场景内包含 `RecorderManager` 并挂载 `CrossPlatformScreenRecorder` 与 `RecorderDemoBasicController`，运行时自动创建基础按钮、状态文本、ConfigId 下拉、音频与音量增益入口；复制原完整 UI 场景为 `录制器_设置中心.unity`；复制旧一体化场景为 `录制器_旧版综合场景.unity`，同时保留原 `录制视频Recorder.unity` 不破坏已有引用；README 新增 Scene Guide；RecorderSdkUnityPackageValidation 更新导入后优先打开 Demo 场景；重新生成 `RecorderSDK_v0.3.0-beta.unitypackage`。
-- 验证结果：新场景文件与 meta 已生成；unitypackage 构建路径清单包含 `录制器_基础演示.unity`、`录制器_设置中心.unity`、`录制器_旧版综合场景.unity` 和 `RecorderDemoBasicController.cs`；`git diff --check` 通过，仅有 CRLF 提示。Unity Editor 打开、Console、Start/Stop 实录仍需许可证环境恢复后验证。
+- 做了什么：新增 `RecorderDemoBasicController.cs`；新增 `录制器_屏幕录制.unity`，场景内包含 `RecorderManager` 并挂载 `CrossPlatformScreenRecorder` 与 `RecorderDemoBasicController`，运行时自动创建基础按钮、状态文本、ConfigId 下拉、音频与音量增益入口；复制原完整 UI 场景为 `录制器_设置中心.unity`；复制旧一体化场景为 `录制器_旧版综合场景.unity`，同时保留原 `录制视频Recorder.unity` 不破坏已有引用；README 新增 Scene Guide；RecorderSdkUnityPackageValidation 更新导入后优先打开 Demo 场景；重新生成 `RecorderSDK_v0.3.0-beta.unitypackage`。
+- 验证结果：新场景文件与 meta 已生成；unitypackage 构建路径清单包含 `录制器_屏幕录制.unity`、`录制器_设置中心.unity`、`录制器_旧版综合场景.unity` 和 `RecorderDemoBasicController.cs`；`git diff --check` 通过，仅有 CRLF 提示。Unity Editor 打开、Console、Start/Stop 实录仍需许可证环境恢复后验证。
 
 ### 任务计划：2026-05-25 11:10
 

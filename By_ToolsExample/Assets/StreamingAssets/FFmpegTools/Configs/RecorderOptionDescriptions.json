@@ -97,6 +97,20 @@
             ]
         },
         {
+            "key": "StreamIncludeAudio",
+            "settingName": "推流系统音频",
+            "options": [
+                {
+                    "option": "开",
+                    "description": "Windows 推流包含系统音频需要当前 FFmpeg 支持 wasapi 输入；本地 MP4/WebM 录屏音频由 WASAPILoopbackRecorder.dll 录 WAV 后再 Merge，和实时推流音频不是同一路径。Linux/国产系统按 pulse/alsa/pipewire 或当前系统 FFmpeg 编译能力判断。"
+                },
+                {
+                    "option": "关",
+                    "description": "只推送画面，默认推荐先验证视频推流链路；Windows 当前 FFmpeg 不支持 wasapi 时请保持关闭。Linux 不使用 wasapi 判断。"
+                }
+            ]
+        },
+        {
             "key": "AudioLimiter",
             "settingName": "音频限幅器",
             "options": [

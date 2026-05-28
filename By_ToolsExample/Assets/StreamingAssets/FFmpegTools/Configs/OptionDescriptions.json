@@ -1,54 +1,68 @@
 {
-    "groups": [
+  "groups": [
+    {
+      "key": "AudioGainEnabled",
+      "settingName": "录制音量增强",
+      "options": [
         {
-            "key": "AudioGainEnabled",
-            "settingName": "录制音量增强",
-            "options": [
-                {
-                    "option": "开",
-                    "description": "录制声音偏小时启用，会在 FFmpeg 音频链路中追加 volume 滤镜。"
-                },
-                {
-                    "option": "关",
-                    "description": "不改变录制音量，保持原始采集音量。"
-                }
-            ]
+          "option": "开",
+          "description": "录制声音偏小时启用，会在 FFmpeg 音频链路中追加 volume 滤镜。"
         },
         {
-            "key": "AudioGainDb",
-            "settingName": "录制音量增益",
-            "options": [
-                {
-                    "option": "3",
-                    "description": "轻微增大。"
-                },
-                {
-                    "option": "6",
-                    "description": "明显增大，约 2 倍，是常用起始值。"
-                },
-                {
-                    "option": "9",
-                    "description": "较大增益，需留意是否破音。"
-                },
-                {
-                    "option": "12",
-                    "description": "很大增益，可能失真，建议只在确认不会削波时使用。"
-                }
-            ]
-        },
-        {
-            "key": "AudioLimiter",
-            "settingName": "音频限幅器",
-            "options": [
-                {
-                    "option": "开",
-                    "description": "增益后追加 alimiter=limit=0.95，降低爆音和削波风险；FFmpeg 不支持时会自动降级。"
-                },
-                {
-                    "option": "关",
-                    "description": "只使用 volume 增益，性能更简单但更容易过载。"
-                }
-            ]
+          "option": "关",
+          "description": "不改变录制音量，保持原始采集音量。"
         }
-    ]
+      ]
+    },
+    {
+      "key": "AudioGainDb",
+      "settingName": "录制音量增益",
+      "options": [
+        {
+          "option": "3",
+          "description": "轻微增大。"
+        },
+        {
+          "option": "6",
+          "description": "明显增大，约 2 倍，是常用起始值。"
+        },
+        {
+          "option": "9",
+          "description": "较大增益，需留意是否破音。"
+        },
+        {
+          "option": "12",
+          "description": "很大增益，可能失真，建议只在确认不会削波时使用。"
+        }
+      ]
+    },
+    {
+      "key": "StreamIncludeAudio",
+      "settingName": "推流系统音频",
+      "options": [
+        {
+          "option": "开",
+          "description": "Windows 推流包含系统音频需要当前 FFmpeg 支持 wasapi 输入；本地 MP4/WebM 录屏音频由 WASAPILoopbackRecorder.dll 录 WAV 后再 Merge，和实时推流音频不是同一路径。Linux/国产系统按 pulse/alsa/pipewire 或当前系统 FFmpeg 编译能力判断。"
+        },
+        {
+          "option": "关",
+          "description": "只推送画面，默认推荐先验证视频推流链路；Windows 当前 FFmpeg 不支持 wasapi 时请保持关闭。Linux 不使用 wasapi 判断。"
+        }
+      ]
+    },
+    {
+      "key": "AudioLimiter",
+      "settingName": "音频限幅器",
+      "options": [
+        {
+          "option": "开",
+          "description": "增益后追加 alimiter=limit=0.95，降低爆音和削波风险；FFmpeg 不支持时会自动降级。"
+        },
+        {
+          "option": "关",
+          "description": "只使用 volume 增益，性能更简单但更容易过载。"
+        }
+      ]
+    }
+  ]
 }

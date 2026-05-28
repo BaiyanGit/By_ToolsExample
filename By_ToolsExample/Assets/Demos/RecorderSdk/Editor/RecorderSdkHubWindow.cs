@@ -1,4 +1,4 @@
-//=====================================================
+﻿//=====================================================
 // 文件名称: RecorderSdkHubWindow
 // 创 建 者: wangbaiyan
 // 创建日期: 2026-05-26
@@ -17,18 +17,19 @@ namespace Demos.示例_录制视频Recorder.Editor
     using UnityEditor;
     using UnityEditor.SceneManagement;
     using UnityEngine;
+    using Debug = UnityEngine.Debug;
 
     /// <summary>
     /// Recorder SDK 编辑器统一控制台。
     /// </summary>
     public sealed class RecorderSdkHubWindow : EditorWindow
     {
-        private const string SdkVersion = "Recorder SDK v0.3.0-beta";
-        private const string PreferredSdkRoot = "Assets/Demos/RecorderSdk";
-        private const string StreamingAssetsRoot = "Assets/StreamingAssets/FFmpegTools";
-        private const string WindowTitle = "Recorder SDK 控制台";
-        private const string SdkRootEditorPrefsKey = "RecorderSdkHubWindow.SdkRoot";
-        private const int MaxDocumentDisplayChars = 50000;
+        private const string SDK_VERSION = "Recorder SDK v0.3.0-beta";
+        private const string PREFERRED_SDK_ROOT = "Assets/Demos/RecorderSdk";
+        private const string STREAMING_ASSETS_ROOT = "Assets/StreamingAssets/FFmpegTools";
+        private const string WINDOW_TITLE = "Recorder SDK 控制台";
+        private const string SDK_ROOT_EDITOR_PREFS_KEY = "RecorderSdkHubWindow.SdkRoot";
+        private const int MAX_DOCUMENT_DISPLAY_CHARS = 50000;
 
         private readonly string[] _tabs =
         {
@@ -94,8 +95,8 @@ namespace Demos.示例_录制视频Recorder.Editor
         private GUIStyle _navItemStyle;
         private GUIStyle _selectedNavItemStyle;
         private GUIStyle _navAccentStyle;
-        private global::FFmpegParameterGuideContent _ffmpegGuideContent;
-        private global::VideoEncodingGuideContent _videoEncodingGuideContent;
+        private FFmpegParameterGuideContent _ffmpegGuideContent;
+        private VideoEncodingGuideContent _videoEncodingGuideContent;
         private readonly Dictionary<string, CachedDocument> _documentCache = new();
         private bool _ffmpegGuideInitialized;
         private bool _videoEncodingGuideInitialized;
@@ -106,10 +107,10 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// <summary>
         /// 打开 Recorder SDK 控制台。
         /// </summary>
-        [MenuItem("ByTools/Recorder SDK控制台")]
+        [MenuItem("ByTools/🔴 Recorder SDK控制台")]
         public static void ShowWindow()
         {
-            var window = GetWindow<RecorderSdkHubWindow>(WindowTitle);
+            var window = GetWindow<RecorderSdkHubWindow>(WINDOW_TITLE);
             window.minSize = new Vector2(980f, 640f);
             window.Show();
         }
@@ -243,20 +244,21 @@ namespace Demos.示例_录制视频Recorder.Editor
             DrawPageHeader("Recorder SDK 控制台", "版本：v0.3.0-beta。专业录制 SDK 管理与集成工具。");
 
             bool ffmpegExists = File.Exists(GetDefaultFFmpegPath());
-            bool wasapiExists = File.Exists(ResolveAssetPath("Plugins/Windows/x86_64/WASAPILoopbackRecorder.dll"));
+            bool isWindows = IsWindowsEditorPlatform();
+            bool wasapiExists = isWindows && File.Exists(ResolveAssetPath("Plugins/Windows/x86_64/WASAPILoopbackRecorder.dll"));
             bool configsExists = Directory.Exists(GetConfigsDirectory());
             string currentConfig = _currentConfigIdCache;
-            string outputDirectory = Path.Combine(StreamingAssetsRoot, "Videos").Replace("\\", "/");
+            string outputDirectory = Path.Combine(STREAMING_ASSETS_ROOT, "Videos").Replace("\\", "/");
 
             DrawMainCard("当前环境状态", "先确认依赖和路径是否可用，再进入演示或设置。", () =>
             {
                 DrawStatusLine("FFmpeg", ffmpegExists ? "正常" : "未找到", ffmpegExists ? CheckLevel.Ok : CheckLevel.Error);
-                DrawStatusLine("WASAPI DLL", wasapiExists ? "正常" : "未找到", wasapiExists ? CheckLevel.Ok : CheckLevel.Error);
+                if (isWindows) DrawStatusLine("WASAPI DLL", wasapiExists ? "正常" : "未找到", wasapiExists ? CheckLevel.Ok : CheckLevel.Error);
                 DrawStatusLine("Configs", configsExists ? "正常" : "异常", configsExists ? CheckLevel.Ok : CheckLevel.Error);
                 GUILayout.Space(8f);
                 DrawInfo("SDK 根目录", _sdkRoot);
                 DrawInfo("当前平台", Application.platform.ToString());
-                DrawInfo("当前版本", SdkVersion);
+                DrawInfo("当前版本", SDK_VERSION);
                 DrawInfo("当前配置", string.IsNullOrEmpty(currentConfig) ? "未读取" : currentConfig);
                 DrawInfo("输出目录", outputDirectory);
             });
@@ -264,27 +266,21 @@ namespace Demos.示例_录制视频Recorder.Editor
             GUILayout.Space(12f);
             DrawSectionTitle("快速开始");
             DrawTwoColumnLayout(
-                () => DrawHomeActionGroup("基础演示", "快速验证录制功能。", () =>
+                () => DrawHomeActionGroup("屏幕录制", "快速验证录制功能。", () =>
                 {
-                    if (DrawActionButton("打开基础演示场景", GUILayout.Width(150f), GUILayout.Height(32f))) OpenSceneByName("录制器_基础演示");
-                    if (DrawActionButton("创建基础演示 UI", GUILayout.Width(150f), GUILayout.Height(32f))) RecorderDemoUIBuilderEditor.CreateBasicDemoUI();
+                    if (DrawActionButton("打开屏幕录制场景", GUILayout.Width(150f), GUILayout.Height(32f))) OpenSceneByName("录制器_屏幕录制");
                 }),
                 () => DrawHomeActionGroup("设置中心", "编辑视频、音频、推流、FFmpeg 等参数。", () =>
                 {
                     if (DrawActionButton("打开设置中心场景", GUILayout.Width(150f), GUILayout.Height(32f))) OpenSceneByName("录制器_设置中心");
-                    if (DrawActionButton("打开 UI 工具页", GUILayout.Width(150f), GUILayout.Height(32f)))
-                    {
-                        _selectedTab = 1;
-                        _rightScroll = Vector2.zero;
-                        GUI.FocusControl(null);
-                    }
+                    if (DrawActionButton("打开推流演示场景", GUILayout.Width(150f), GUILayout.Height(32f))) OpenSceneByName("录制器_推流演示");
                 }));
 
             GUILayout.Space(12f);
             DrawSectionTitle("常用工具");
             EditorGUILayout.BeginHorizontal();
             if (DrawActionButton("打开 SDK 根目录", GUILayout.Width(140f), GUILayout.Height(26f))) OpenPath(_sdkRoot);
-            if (DrawActionButton("打开 StreamingAssets", GUILayout.Width(160f), GUILayout.Height(26f))) OpenPath(StreamingAssetsRoot);
+            if (DrawActionButton("打开 StreamingAssets", GUILayout.Width(160f), GUILayout.Height(26f))) OpenPath(STREAMING_ASSETS_ROOT);
             if (DrawActionButton("打开输出目录", GUILayout.Width(130f), GUILayout.Height(26f))) OpenPath(outputDirectory);
             if (DrawActionButton("打开 Configs", GUILayout.Width(110f), GUILayout.Height(26f))) OpenPath(GetConfigsDirectory());
             EditorGUILayout.EndHorizontal();
@@ -305,35 +301,13 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private void DrawUiToolsPage()
         {
-            DrawPageHeader("UI 工具", "在 Editor 中一次性创建真实场景 UI，并管理可复用布局模板。");
+            DrawPageHeader("UI 工具", "当前功能暂未开放。");
 
-            DrawSectionTitle("UI 创建");
-            DrawTwoColumnLayout(
-                () => DrawCard("基础演示 UI", "用于快速生成基础演示界面，包含开始录制、停止录制、状态显示、音频控制。", () =>
-                {
-                    if (DrawActionButton("创建基础演示 UI")) RecorderDemoUIBuilderEditor.CreateBasicDemoUI();
-                }),
-                () => DrawCard("设置中心 UI", "用于生成完整设置界面，包含视频、音频、推流、FFmpeg、配置管理。", () =>
-                {
-                    if (DrawActionButton("创建设置中心 UI")) RecorderSettingsUIBuilderEditor.CreateSettingsUI();
-                }));
-
-            GUILayout.Space(10f);
-            DrawSectionTitle("布局管理");
-            DrawTwoColumnLayout(
-                () => DrawCard("导出布局", "将当前场景 UI 的布局保存为 LayoutProfile，方便备份和同步。", () =>
-                {
-                    if (DrawActionButton("导出基础演示 UI 布局")) RecorderDemoUILayoutExporterEditor.ExportDemoLayout();
-                    if (DrawActionButton("导出设置中心 UI 布局")) RecorderSettingsUILayoutExporterEditor.ExportSettingsLayout();
-                }),
-                () => DrawCard("应用布局", "将已保存的 LayoutProfile 应用到当前场景 UI。", () =>
-                {
-                    if (DrawActionButton("应用基础演示 UI 布局")) RecorderDemoUILayoutApplierEditor.ApplyDemoLayout();
-                    if (DrawActionButton("应用设置中心 UI 布局")) RecorderSettingsUILayoutApplierEditor.ApplySettingsLayout();
-                }));
-
-            GUILayout.Space(10f);
-            DrawInfoBox("UI Builder 仅在 Editor 中创建真实场景 UI；Play 时 Runtime 脚本只负责绑定和业务逻辑。");
+            DrawMainCard("后续规划", "UI 工具页暂时保留入口，不再作为 Beta 收口阶段的主要工作流。", () =>
+            {
+                GUILayout.Label("当前阶段聚焦 Recorder SDK Beta 收口、Runtime 稳定性、实机验证和 UnityPackage 导出检查。", _smallTextStyle);
+                GUILayout.Label("后续如需扩展 Editor 辅助能力，可在此页重新规划独立工具。", _smallTextStyle);
+            });
         }
 
         /// <summary>
@@ -507,7 +481,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             EditorGUILayout.BeginHorizontal();
             if (DrawActionButton("检查必要文件", GUILayout.Width(130f), GUILayout.Height(30f))) RunPackageChecks();
             if (DrawActionButton("复制建议导出清单", GUILayout.Width(150f), GUILayout.Height(30f))) CopySuggestedExportList();
-            if (DrawActionButton("打开 StreamingAssets", GUILayout.Width(150f), GUILayout.Height(30f))) OpenPath(StreamingAssetsRoot);
+            if (DrawActionButton("打开 StreamingAssets", GUILayout.Width(150f), GUILayout.Height(30f))) OpenPath(STREAMING_ASSETS_ROOT);
             GUILayout.Label("最后检查：" + _lastPackageCheckTime, _mutedStyle);
             EditorGUILayout.EndHorizontal();
 
@@ -608,14 +582,14 @@ namespace Demos.示例_录制视频Recorder.Editor
                 () => DrawCard("基本信息", "版本和平台信息。", () =>
                 {
                     DrawInfo("名称", "Recorder SDK");
-                    DrawInfo("版本", SdkVersion);
+                    DrawInfo("版本", SDK_VERSION);
                     DrawInfo("当前阶段", "Beta");
                     DrawInfo("支持平台", "Windows / Linux");
                     DrawInfo("作者/维护者", "wangbaiyan");
                 }),
                 () => DrawCard("推荐入口", "建议新用户优先打开的场景和工具。", () =>
                 {
-                    DrawInfo("基础演示", "录制器_基础演示");
+                    DrawInfo("屏幕录制", "录制器_屏幕录制");
                     DrawInfo("设置中心", "录制器_设置中心");
                     DrawInfo("控制台", "Recorder SDK 控制台");
                 }));
@@ -825,7 +799,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             if (!File.Exists(ffmpegPath))
             {
                 _environmentChecks.Add(CheckItem.Error("ffmpeg -version 是否可执行", "未找到 FFmpeg，无法执行命令检查。"));
-                _environmentChecks.Add(CheckItem.Warning("ffmpeg -devices 是否支持 wasapi", "未找到 FFmpeg，无法检测 wasapi。"));
+                AddPlatformAudioDeviceCheckUnavailable();
                 _environmentChecks.Add(CheckItem.Warning("ffmpeg -filters 是否支持 alimiter", "未找到 FFmpeg，无法检测 alimiter。"));
                 return;
             }
@@ -836,16 +810,73 @@ namespace Demos.示例_录制视频Recorder.Editor
                 : CheckItem.Error("ffmpeg -version 是否可执行", versionOutput));
 
             string devicesOutput = RunProcess(ffmpegPath, "-hide_banner -devices", 8000, out bool devicesOk);
-            bool hasWasapi = devicesOk && devicesOutput.IndexOf("wasapi", StringComparison.OrdinalIgnoreCase) >= 0;
-            _environmentChecks.Add(hasWasapi
-                ? CheckItem.Ok("ffmpeg -devices 是否支持 wasapi", "已检测到 wasapi。")
-                : CheckItem.Warning("ffmpeg -devices 是否支持 wasapi", devicesOk ? "未检测到 wasapi，Windows 系统音频可能不可用。" : devicesOutput));
+            AddPlatformAudioDeviceCheck(devicesOutput, devicesOk);
 
             string filtersOutput = RunProcess(ffmpegPath, "-hide_banner -filters", 8000, out bool filtersOk);
             bool hasAlimiter = filtersOk && filtersOutput.IndexOf("alimiter", StringComparison.OrdinalIgnoreCase) >= 0;
             _environmentChecks.Add(hasAlimiter
                 ? CheckItem.Ok("ffmpeg -filters 是否支持 alimiter", "已检测到 alimiter。")
                 : CheckItem.Warning("ffmpeg -filters 是否支持 alimiter", filtersOk ? "未检测到 alimiter，音量增强 limiter 会降级。" : filtersOutput));
+        }
+
+        /// <summary>
+        /// 根据当前 Editor 平台显示对应的 FFmpeg 实时音频输入能力检查。
+        /// </summary>
+        private void AddPlatformAudioDeviceCheck(string devicesOutput, bool devicesOk)
+        {
+            if (IsWindowsEditorPlatform())
+            {
+                bool hasWasapi = devicesOk && devicesOutput.IndexOf("wasapi", StringComparison.OrdinalIgnoreCase) >= 0;
+                _environmentChecks.Add(hasWasapi
+                    ? CheckItem.Ok("FFmpeg wasapi 输入支持", "支持：Windows 推流音频可用。")
+                    : CheckItem.Warning("FFmpeg wasapi 输入支持", devicesOk ? "不支持：Windows 推流音频不可用，但本地 MP4/WebM 录屏音频仍可能通过 WASAPILoopbackRecorder.dll + Merge 可用。" : devicesOutput));
+                return;
+            }
+
+            if (IsLinuxEditorPlatform())
+            {
+                bool hasPulse = devicesOk && devicesOutput.IndexOf("pulse", StringComparison.OrdinalIgnoreCase) >= 0;
+                bool hasAlsa = devicesOk && devicesOutput.IndexOf("alsa", StringComparison.OrdinalIgnoreCase) >= 0;
+                bool hasPipeWire = devicesOk && devicesOutput.IndexOf("pipewire", StringComparison.OrdinalIgnoreCase) >= 0;
+                bool hasLinuxAudio = hasPulse || hasAlsa || hasPipeWire;
+                _environmentChecks.Add(hasLinuxAudio
+                    ? CheckItem.Ok("FFmpeg Linux 音频输入支持", $"检测到实时音频输入：{BuildLinuxAudioDeviceSummary(hasPulse, hasAlsa, hasPipeWire)}。Linux/国产系统推流音频按当前系统音频源与 FFmpeg 编译能力判断。")
+                    : CheckItem.Warning("FFmpeg Linux 音频输入支持", devicesOk ? "未检测到 pulse/alsa/pipewire 输入；Linux/国产系统推流音频可能不可用，但不会使用 wasapi 判断。" : devicesOutput));
+            }
+        }
+
+        /// <summary>
+        /// FFmpeg 不可用时，按当前 Editor 平台显示对应提示。
+        /// </summary>
+        private void AddPlatformAudioDeviceCheckUnavailable()
+        {
+            if (IsWindowsEditorPlatform())
+            {
+                _environmentChecks.Add(CheckItem.Warning("FFmpeg wasapi 输入支持", "未找到 FFmpeg，无法检测 Windows 推流音频能力。本地录屏音频仍可能通过 WASAPILoopbackRecorder.dll 可用。"));
+            }
+            else if (IsLinuxEditorPlatform())
+            {
+                _environmentChecks.Add(CheckItem.Warning("FFmpeg Linux 音频输入支持", "未找到 FFmpeg，无法检测 pulse/alsa/pipewire。Linux/国产系统不会使用 wasapi 判断。"));
+            }
+        }
+
+        private static string BuildLinuxAudioDeviceSummary(bool hasPulse, bool hasAlsa, bool hasPipeWire)
+        {
+            var parts = new List<string>();
+            if (hasPulse) parts.Add("pulse");
+            if (hasAlsa) parts.Add("alsa");
+            if (hasPipeWire) parts.Add("pipewire");
+            return parts.Count > 0 ? string.Join(" / ", parts) : "未检测到";
+        }
+
+        private static bool IsWindowsEditorPlatform()
+        {
+            return Application.platform == RuntimePlatform.WindowsEditor;
+        }
+
+        private static bool IsLinuxEditorPlatform()
+        {
+            return Application.platform == RuntimePlatform.LinuxEditor;
         }
 
         /// <summary>
@@ -881,10 +912,10 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private void RescanSdkRoot()
         {
-            EditorPrefs.DeleteKey(SdkRootEditorPrefsKey);
+            EditorPrefs.DeleteKey(SDK_ROOT_EDITOR_PREFS_KEY);
             _sdkRoot = DetectSdkRootFromScript();
             _sdkRootSource = IsValidSdkRoot(_sdkRoot) ? "脚本反推" : "fallback";
-            if (!IsValidSdkRoot(_sdkRoot)) _sdkRoot = PreferredSdkRoot;
+            if (!IsValidSdkRoot(_sdkRoot)) _sdkRoot = PREFERRED_SDK_ROOT;
             _documentationRoot = ResolveDocumentationRoot();
             _documentEntries = CreateDocumentEntries();
             RunPackageChecks();
@@ -908,7 +939,7 @@ namespace Demos.示例_录制视频Recorder.Editor
 
             _sdkRoot = assetPath;
             _sdkRootSource = "手动选择";
-            EditorPrefs.SetString(SdkRootEditorPrefsKey, _sdkRoot);
+            EditorPrefs.SetString(SDK_ROOT_EDITOR_PREFS_KEY, _sdkRoot);
             _documentationRoot = ResolveDocumentationRoot();
             _documentEntries = CreateDocumentEntries();
             RunPackageChecks();
@@ -958,7 +989,7 @@ namespace Demos.示例_录制视频Recorder.Editor
                 catch (Exception ex)
                 {
                     invalidCount++;
-                    UnityEngine.Debug.LogWarning(Path.GetFileName(file) + " 解析失败：" + ex.Message);
+                    Debug.LogWarning(Path.GetFileName(file) + " 解析失败：" + ex.Message);
                 }
             }
 
@@ -1006,7 +1037,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private void AddOutputDirectoryCheck()
         {
-            string videosDir = Path.Combine(StreamingAssetsRoot, "Videos").Replace("\\", "/");
+            string videosDir = Path.Combine(STREAMING_ASSETS_ROOT, "Videos").Replace("\\", "/");
             if (!Directory.Exists(videosDir))
             {
                 _environmentChecks.Add(CheckItem.Warning("输出目录是否可写", "输出目录不存在：" + videosDir));
@@ -1055,13 +1086,15 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private void DrawCheckItems(List<CheckItem> checks)
         {
+            if (checks == null || checks.Count == 0)
+            {
+                EditorGUILayout.HelpBox("尚未执行检查。", MessageType.Info);
+                return;
+            }
+
             foreach (var item in checks)
             {
-                EditorGUILayout.BeginVertical("box");
-                GUILayout.Label(item.title, _sectionStyle);
-                GUILayout.Label(item.status, GetStatusStyle(item.level));
-                if (!string.IsNullOrEmpty(item.message)) EditorGUILayout.SelectableLabel(item.message, GUILayout.MinHeight(18f));
-                EditorGUILayout.EndVertical();
+                DrawCheckItemCard(item);
             }
         }
 
@@ -1070,17 +1103,49 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private void DrawCheckTable(List<CheckItem> checks)
         {
-            DrawTableHeader("检查项", "状态", "结果", "操作");
             if (checks == null || checks.Count == 0)
             {
-                DrawTableRow("未检测", CheckLevel.Warning, "请点击重新检查。", null);
+                DrawCheckItemCard(CheckItem.Warning("未检测", "请点击重新检查。"));
                 return;
             }
 
             foreach (var item in checks)
             {
-                DrawTableRow(item.title, item.level, item.message, null);
+                DrawCheckItemCard(item);
             }
+        }
+
+        /// <summary>
+        /// 绘制可换行的检查项卡片，避免长路径和命令输出在横向表格中被裁切。
+        /// </summary>
+        private void DrawCheckItemCard(CheckItem item)
+        {
+            EditorGUILayout.BeginVertical("box", GUILayout.ExpandWidth(true));
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label(item.title, _sectionStyle, GUILayout.ExpandWidth(true));
+            GUILayout.Label(GetCheckLevelText(item.level), GetStatusStyle(item.level), GUILayout.Width(70f));
+            EditorGUILayout.EndHorizontal();
+
+            if (!string.IsNullOrEmpty(item.message))
+            {
+                DrawWrappedText(item.message);
+            }
+
+            EditorGUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// 绘制自动换行文本。
+        /// </summary>
+        private void DrawWrappedText(string text)
+        {
+            var style = new GUIStyle(_smallTextStyle)
+            {
+                wordWrap = true,
+                clipping = TextClipping.Overflow
+            };
+
+            EditorGUILayout.LabelField(text ?? string.Empty, style, GUILayout.ExpandWidth(true));
         }
 
         /// <summary>
@@ -1305,7 +1370,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private void EnsureFFmpegGuideContent()
         {
-            if (_ffmpegGuideContent == null) _ffmpegGuideContent = new global::FFmpegParameterGuideContent();
+            if (_ffmpegGuideContent == null) _ffmpegGuideContent = new FFmpegParameterGuideContent();
             if (_ffmpegGuideInitialized) return;
             _ffmpegGuideContent.Initialize();
             _ffmpegGuideInitialized = true;
@@ -1316,7 +1381,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private void EnsureVideoEncodingGuideContent()
         {
-            if (_videoEncodingGuideContent == null) _videoEncodingGuideContent = new global::VideoEncodingGuideContent();
+            if (_videoEncodingGuideContent == null) _videoEncodingGuideContent = new VideoEncodingGuideContent();
             if (_videoEncodingGuideInitialized) return;
             _videoEncodingGuideContent.Initialize();
             _videoEncodingGuideInitialized = true;
@@ -1329,13 +1394,13 @@ namespace Demos.示例_录制视频Recorder.Editor
         {
             if (_selectedApiTab == 0)
             {
-                _ffmpegGuideContent = new global::FFmpegParameterGuideContent();
+                _ffmpegGuideContent = new FFmpegParameterGuideContent();
                 _ffmpegGuideContent.Initialize();
                 _ffmpegGuideInitialized = true;
                 return;
             }
 
-            _videoEncodingGuideContent = new global::VideoEncodingGuideContent();
+            _videoEncodingGuideContent = new VideoEncodingGuideContent();
             _videoEncodingGuideContent.Initialize();
             _videoEncodingGuideInitialized = true;
         }
@@ -1370,7 +1435,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             if (string.IsNullOrEmpty(path)) return "未找到文档路径。";
             if (!File.Exists(path)) return "未找到：" + path;
 
-            DateTime lastWriteTime = File.GetLastWriteTimeUtc(path);
+            var lastWriteTime = File.GetLastWriteTimeUtc(path);
             if (_documentCache.TryGetValue(path, out var cached) && cached.lastWriteTime == lastWriteTime)
             {
                 return cached.content;
@@ -1384,7 +1449,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private CachedDocument LoadDocumentToCache(string path)
         {
-            DateTime lastWriteTime = File.Exists(path) ? File.GetLastWriteTimeUtc(path) : DateTime.MinValue;
+            var lastWriteTime = File.Exists(path) ? File.GetLastWriteTimeUtc(path) : DateTime.MinValue;
             string content = ReadDocumentFromDisk(path, "未找到：" + path, out _);
             var cached = new CachedDocument(content, lastWriteTime);
             if (!string.IsNullOrEmpty(path)) _documentCache[path] = cached;
@@ -1440,8 +1505,8 @@ namespace Demos.示例_录制视频Recorder.Editor
                 }
 
                 string decoded = DecodeDocumentBytes(File.ReadAllBytes(path));
-                string content = decoded.Length > MaxDocumentDisplayChars ? decoded.Substring(0, MaxDocumentDisplayChars) : decoded;
-                if (decoded.Length <= MaxDocumentDisplayChars) return content;
+                string content = decoded.Length > MAX_DOCUMENT_DISPLAY_CHARS ? decoded.Substring(0, MAX_DOCUMENT_DISPLAY_CHARS) : decoded;
+                if (decoded.Length <= MAX_DOCUMENT_DISPLAY_CHARS) return content;
                 error = "内容过长，已截断显示，可点击打开文件查看完整内容。";
                 return content + "\n\n内容过长，已截断显示，可点击打开文件查看完整内容。";
             }
@@ -1584,7 +1649,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         private static string GetDefaultFFmpegPath()
         {
             string fileName = Application.platform == RuntimePlatform.WindowsEditor ? "ffmpeg.exe" : "ffmpeg";
-            return Path.Combine(StreamingAssetsRoot, "FFmpegApp", fileName).Replace("\\", "/");
+            return Path.Combine(STREAMING_ASSETS_ROOT, "FFmpegApp", fileName).Replace("\\", "/");
         }
 
         /// <summary>
@@ -1592,7 +1657,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private static string GetConfigsDirectory()
         {
-            return Path.Combine(StreamingAssetsRoot, "Configs").Replace("\\", "/");
+            return Path.Combine(STREAMING_ASSETS_ROOT, "Configs").Replace("\\", "/");
         }
 
         /// <summary>
@@ -1600,7 +1665,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private static string GetFFmpegAppDirectory()
         {
-            return Path.Combine(StreamingAssetsRoot, "FFmpegApp").Replace("\\", "/");
+            return Path.Combine(STREAMING_ASSETS_ROOT, "FFmpegApp").Replace("\\", "/");
         }
 
         /// <summary>
@@ -1608,7 +1673,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private static string GetVideosReadmePath()
         {
-            return Path.Combine(StreamingAssetsRoot, "Videos", "README.md").Replace("\\", "/");
+            return Path.Combine(STREAMING_ASSETS_ROOT, "Videos", "README.md").Replace("\\", "/");
         }
 
         /// <summary>
@@ -1670,7 +1735,7 @@ namespace Demos.示例_录制视频Recorder.Editor
                 return detectedRoot;
             }
 
-            string savedRoot = EditorPrefs.GetString(SdkRootEditorPrefsKey, string.Empty);
+            string savedRoot = EditorPrefs.GetString(SDK_ROOT_EDITOR_PREFS_KEY, string.Empty);
             if (IsValidSdkRoot(savedRoot))
             {
                 _sdkRootSource = "EditorPrefs";
@@ -1689,7 +1754,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             }
 
             _sdkRootSource = "fallback";
-            return PreferredSdkRoot;
+            return PREFERRED_SDK_ROOT;
         }
 
         /// <summary>
@@ -1736,7 +1801,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private string ResolveDocumentationRoot()
         {
-            string preferred = PreferredSdkRoot + "/Documentation";
+            string preferred = PREFERRED_SDK_ROOT + "/Documentation";
             if (File.Exists(preferred + "/README.md")) return preferred;
             string detected = ResolveAssetPath("Documentation");
             return Directory.Exists(detected) ? detected : preferred;
@@ -1750,7 +1815,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             string detected = (_sdkRoot + "/" + relativePath).Replace("\\", "/");
             if (File.Exists(detected) || Directory.Exists(detected)) return detected;
 
-            string preferred = (PreferredSdkRoot + "/" + relativePath).Replace("\\", "/");
+            string preferred = (PREFERRED_SDK_ROOT + "/" + relativePath).Replace("\\", "/");
             if (File.Exists(preferred) || Directory.Exists(preferred)) return preferred;
 
             string fileName = Path.GetFileName(relativePath);
@@ -1775,7 +1840,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             string detected = (_documentationRoot + "/" + relativePath).Replace("\\", "/");
             if (File.Exists(detected)) return detected;
 
-            string preferred = (PreferredSdkRoot + "/Documentation/" + relativePath).Replace("\\", "/");
+            string preferred = (PREFERRED_SDK_ROOT + "/Documentation/" + relativePath).Replace("\\", "/");
             if (File.Exists(preferred)) return preferred;
 
             string fileName = Path.GetFileName(relativePath);

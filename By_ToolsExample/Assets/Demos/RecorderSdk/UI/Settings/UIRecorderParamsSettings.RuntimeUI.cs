@@ -229,6 +229,7 @@
             var input = go.GetComponent<InputField>();
             input.textComponent = text;
             input.placeholder   = hint;
+            DisableNavigation(input);
             return input;
         }
 
@@ -244,7 +245,18 @@
             rect.anchoredPosition          = anchoredPosition;
             go.GetComponent<Image>().color = new Color(0.22f, 0.45f, 0.78f, 1f);
             CreateText("Text", go.transform, label, size, Vector2.zero, 16, TextAnchor.MiddleCenter);
-            return go.GetComponent<Button>();
+            var button = go.GetComponent<Button>();
+            DisableNavigation(button);
+            return button;
+        }
+
+        private static void DisableNavigation(Selectable selectable)
+        {
+            if (selectable == null) return;
+
+            Navigation navigation = selectable.navigation;
+            navigation.mode = Navigation.Mode.None;
+            selectable.navigation = navigation;
         }
 
         /// <summary>

@@ -1,8 +1,8 @@
-//=====================================================
+﻿//=====================================================
 // 文件名称: RecorderDemoBasicController
 // 创 建 者: wangbaiyan
 // 创建日期: 2026-05-25
-// 描    述: Recorder SDK 基础 Demo 控制器，只负责绑定场景 UI、调用 SDK 和刷新状态。
+// 描    述: Recorder SDK 屏幕录制 Demo 控制器，只负责绑定场景 UI、调用 SDK 和刷新状态。
 //=====================================================
 
 namespace Demos.示例_录制视频Recorder.Scripts.Core
@@ -55,13 +55,15 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         [Header("简单配置入口")]
         [Tooltip("配置 ID 下拉框。")]
         public Dropdown drConfigId;
-        [Tooltip("是否录制音频。")]
+
+        [Header("已停用的旧音频控件")]
+        [SerializeField, HideInInspector, Tooltip("旧版屏幕录制音频开关。当前音频参数统一由配置文件控制。")]
         public Toggle togEnableAudio;
-        [Tooltip("是否启用录制音量增强。")]
+        [SerializeField, HideInInspector, Tooltip("旧版屏幕录制音量增强开关。当前音频参数统一由配置文件控制。")]
         public Toggle togEnableAudioGain;
-        [Tooltip("录制音量增益滑动条。")]
+        [SerializeField, HideInInspector, Tooltip("旧版屏幕录制音量增益滑动条。当前音频参数统一由配置文件控制。")]
         public Slider slAudioGainDb;
-        [Tooltip("录制音量增益文本。")]
+        [SerializeField, HideInInspector, Tooltip("旧版屏幕录制音量增益文本。当前音频参数统一由配置文件控制。")]
         public Text txtAudioGainDb;
 
         private readonly List<RecorderParamsConfig> _dropdownConfigs = new List<RecorderParamsConfig>();
@@ -82,13 +84,14 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
 
             if (!ValidateUIBindings())
             {
-                Debug.LogWarning("RecorderDemoBasicController: Demo UI 未完整绑定。请在场景中提前放置 UI，或执行菜单 ByTools/🔴Recorder SDK/UI创建/基础演示 后保存场景。");
+                Debug.LogWarning("RecorderDemoBasicController: Demo UI 未完整绑定。请在场景中提前放置 UI，或执行菜单 ByTools/🔴Recorder SDK/UI创建/屏幕录制 后保存场景。");
                 if (createUiAtRuntime)
                 {
                     Debug.LogWarning("RecorderDemoBasicController: createUiAtRuntime 已保留为 Legacy 兼容开关，但当前版本不再在运行时动态创建 Demo UI。");
                 }
             }
 
+            HideObsoleteAudioControls();
             BindUIEvents();
             LoadConfigs();
             SubscribeRecorderEvents();
@@ -104,13 +107,13 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         }
 
         /// <summary>
-        /// 检查基础 Demo UI 是否已经在场景中绑定。
+        /// 检查屏幕录制 Demo UI 是否已经在场景中绑定。
         /// </summary>
         private bool ValidateUIBindings()
         {
             bool hasButtons = btnStartRecording != null && btnStopRecording != null && btnOpenOutputFolder != null && btnClearSessionHistory != null;
             bool hasTexts = txtCurrentState != null && txtLastResult != null && txtCurrentConfigId != null && txtOutputPath != null && txtLastErrorCode != null && txtSessionCount != null;
-            bool hasSimpleConfig = drConfigId != null && togEnableAudio != null && togEnableAudioGain != null && slAudioGainDb != null && txtAudioGainDb != null;
+            bool hasSimpleConfig = drConfigId != null;
             return hasButtons && hasTexts && hasSimpleConfig;
         }
 
@@ -149,25 +152,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                 drConfigId.onValueChanged.AddListener(ChangeConfigId);
             }
 
-            if (togEnableAudio != null)
-            {
-                togEnableAudio.onValueChanged.RemoveListener(SetEnableAudio);
-                togEnableAudio.onValueChanged.AddListener(SetEnableAudio);
-            }
-
-            if (togEnableAudioGain != null)
-            {
-                togEnableAudioGain.onValueChanged.RemoveListener(SetEnableAudioGain);
-                togEnableAudioGain.onValueChanged.AddListener(SetEnableAudioGain);
-            }
-
-            if (slAudioGainDb != null)
-            {
-                slAudioGainDb.minValue = -20f;
-                slAudioGainDb.maxValue = 20f;
-                slAudioGainDb.onValueChanged.RemoveListener(SetAudioGainDb);
-                slAudioGainDb.onValueChanged.AddListener(SetAudioGainDb);
-            }
+            UnbindObsoleteAudioEvents();
         }
 
         /// <summary>
@@ -206,7 +191,6 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         /// </summary>
         private async void StartRecording()
         {
-            ApplySimpleConfigChanges();
             _lastResult = await recorder.StartRecordingAsync();
             _lastErrorCode = _lastResult.errorCode;
             RefreshStatus(_lastResult.message);
@@ -274,73 +258,57 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         }
 
         /// <summary>
-        /// 切换是否录制系统音频。
-        /// </summary>
-        private void SetEnableAudio(bool value)
-        {
-            if (_isRefreshingUI || _currentConfig == null) return;
-            _currentConfig.audioMode = value ? 1 : 0;
-            SaveCurrentConfig();
-        }
-
-        /// <summary>
-        /// 切换是否启用录制音量增强。
-        /// </summary>
-        private void SetEnableAudioGain(bool value)
-        {
-            if (_isRefreshingUI || _currentConfig == null) return;
-            _currentConfig.enableAudioGain = value;
-            if (value && Mathf.Approximately(_currentConfig.audioGainDb, 0f)) _currentConfig.audioGainDb = 6f;
-            SaveCurrentConfig();
-            ApplyConfigToSimpleUI();
-        }
-
-        /// <summary>
-        /// 设置录制音量增益。
-        /// </summary>
-        private void SetAudioGainDb(float value)
-        {
-            if (_isRefreshingUI || _currentConfig == null) return;
-            _currentConfig.audioGainDb = Mathf.Clamp(value, -20f, 20f);
-            SaveCurrentConfig();
-            RefreshGainText();
-        }
-
-        /// <summary>
-        /// 保存当前简单配置。
-        /// </summary>
-        private void SaveCurrentConfig()
-        {
-            if (_registry == null || _currentConfig == null) return;
-            _registry.SaveConfig(_currentConfig);
-            _registry.SetCurrentConfig(_currentConfig.configId);
-            recorder.ReloadConfig();
-        }
-
-        /// <summary>
-        /// 启动前同步简单配置改动。
-        /// </summary>
-        private void ApplySimpleConfigChanges()
-        {
-            if (_currentConfig == null) return;
-            SaveCurrentConfig();
-        }
-
-        /// <summary>
         /// 将当前配置同步到简单 UI。
         /// </summary>
         private void ApplyConfigToSimpleUI()
         {
             _isRefreshingUI = true;
-            if (_currentConfig != null)
-            {
-                if (togEnableAudio != null) togEnableAudio.SetIsOnWithoutNotify(_currentConfig.audioMode == 1);
-                if (togEnableAudioGain != null) togEnableAudioGain.SetIsOnWithoutNotify(_currentConfig.enableAudioGain);
-                if (slAudioGainDb != null) slAudioGainDb.SetValueWithoutNotify(Mathf.Clamp(_currentConfig.audioGainDb, -20f, 20f));
-            }
-
-            RefreshGainText();
+            HideObsoleteAudioControls();
             _isRefreshingUI = false;
+        }
+
+        /// <summary>
+        /// 隐藏旧版屏幕录制里的音频快捷控件，音频参数统一由配置文件控制。
+        /// </summary>
+        private void HideObsoleteAudioControls()
+        {
+            SetObsoleteControlActive(togEnableAudio, false);
+            SetObsoleteControlActive(togEnableAudioGain, false);
+            SetObsoleteControlActive(slAudioGainDb, false);
+            SetObsoleteControlActive(txtAudioGainDb, false);
+            HideObsoleteObjectByName("启用音频开关");
+            HideObsoleteObjectByName("启用音量增强开关");
+            HideObsoleteObjectByName("音量增益滑动条");
+            HideObsoleteObjectByName("音量增益文本");
+            UnbindObsoleteAudioEvents();
+        }
+
+        /// <summary>
+        /// 解除旧版音频控件事件，避免屏幕录制覆盖配置文件。
+        /// </summary>
+        private void UnbindObsoleteAudioEvents()
+        {
+            if (togEnableAudio != null) togEnableAudio.onValueChanged.RemoveAllListeners();
+            if (togEnableAudioGain != null) togEnableAudioGain.onValueChanged.RemoveAllListeners();
+            if (slAudioGainDb != null) slAudioGainDb.onValueChanged.RemoveAllListeners();
+        }
+
+        private static void SetObsoleteControlActive(Selectable selectable, bool active)
+        {
+            if (selectable == null) return;
+            selectable.gameObject.SetActive(active);
+        }
+
+        private static void SetObsoleteControlActive(Graphic graphic, bool active)
+        {
+            if (graphic == null) return;
+            graphic.gameObject.SetActive(active);
+        }
+
+        private static void HideObsoleteObjectByName(string objectName)
+        {
+            var target = GameObject.Find(objectName);
+            if (target != null) target.SetActive(false);
         }
 
         /// <summary>
@@ -392,13 +360,5 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             if (txtSessionCount != null) txtSessionCount.text = "会话数量：" + recorder.SessionHistory.Count;
         }
 
-        /// <summary>
-        /// 刷新增益数值文本。
-        /// </summary>
-        private void RefreshGainText()
-        {
-            float gain = _currentConfig == null ? 0f : Mathf.Clamp(_currentConfig.audioGainDb, -20f, 20f);
-            if (txtAudioGainDb != null) txtAudioGainDb.text = $"{gain:0.###} dB";
-        }
     }
 }

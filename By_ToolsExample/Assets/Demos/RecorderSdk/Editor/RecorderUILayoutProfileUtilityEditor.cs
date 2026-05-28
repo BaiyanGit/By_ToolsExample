@@ -1,4 +1,4 @@
-//=====================================================
+﻿//=====================================================
 // 文件名称: RecorderUILayoutProfileUtilityEditor
 // 创 建 者: wangbaiyan
 // 创建日期: 2026-05-25
@@ -198,7 +198,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         }
 
         /// <summary>
-        /// 查找基础演示 UI 根对象。
+        /// 查找屏幕录制 UI 根对象。
         /// </summary>
         public static GameObject FindDemoRoot()
         {

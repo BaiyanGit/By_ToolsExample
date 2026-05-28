@@ -1,4 +1,4 @@
-# Recorder SDK 项目结构
+﻿# Recorder SDK 项目结构
 
 本文档说明 Recorder SDK 当前交付目录的职责边界。正式 SDK 主路径以：
 
@@ -18,12 +18,12 @@
 
 `Demo` 保存示例场景和示例脚本。当前推荐场景包括：
 
-- `录制器_基础演示`：最小 SDK 调用示例。
+- `录制器_屏幕录制`：最小 SDK 调用示例。
 - `录制器_设置中心`：完整配置管理界面。
 
 ## Editor
 
-`Editor` 保存 Unity 编辑器工具，包括 `RecorderSdkHubWindow` 统一控制台、基础演示 UI Builder、设置中心 UI Builder、布局导出、布局应用、API 参数内容和打包发布检查工具。
+`Editor` 保存 Unity 编辑器工具，包括 `RecorderSdkHubWindow` 统一控制台、屏幕录制 UI Builder、设置中心 UI Builder、布局导出、布局应用、API 参数内容和打包发布检查工具。
 
 推荐入口：
 

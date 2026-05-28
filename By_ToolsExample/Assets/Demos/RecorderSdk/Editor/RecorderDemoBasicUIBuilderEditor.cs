@@ -1,35 +1,36 @@
-//=====================================================
+﻿//=====================================================
 // 文件名称: RecorderDemoUIBuilderEditor
 // 创 建 者: wangbaiyan
 // 创建日期: 2026-05-25
-// 描    述: Recorder SDK 基础演示界面编辑器生成工具，用于一次性创建并绑定场景 UI。
+// 描    述: Recorder SDK 屏幕录制界面编辑器生成工具，用于一次性创建并绑定场景 UI。
 //=====================================================
 
 #if UNITY_EDITOR
 namespace Demos.示例_录制视频Recorder.Editor
 {
-    using Demos.示例_录制视频Recorder.Scripts.Core;
     using System.IO;
+    using Scripts.Core;
     using UnityEditor;
     using UnityEditor.SceneManagement;
     using UnityEngine;
     using UnityEngine.EventSystems;
+    using UnityEngine.InputSystem.UI;
     using UnityEngine.SceneManagement;
     using UnityEngine.UI;
 
     /// <summary>
-    /// 在当前打开场景中创建基础 Demo UI，并绑定到 RecorderDemoBasicController。
+    /// 在当前打开场景中创建屏幕录制 Demo UI，并绑定到 RecorderDemoBasicController。
     /// </summary>
     public static class RecorderDemoUIBuilderEditor
     {
         private const string CANVAS_NAME = "Recorder Demo Canvas";
         private const string PANEL_NAME = "Recorder Demo Panel";
         private const string RECORDER_MANAGER_NAME = "RecorderManager";
-        private const int ActiveInputHandlerInputSystem = 1;
-        private const int ActiveInputHandlerBoth = 2;
+        private const int ACTIVE_INPUT_HANDLER_INPUT_SYSTEM = 1;
+        private const int ACTIVE_INPUT_HANDLER_BOTH = 2;
 
         /// <summary>
-        /// 创建基础演示 UI 并保存引用到控制器。
+        /// 创建屏幕录制 UI 并保存引用到控制器。
         /// </summary>
         public static void CreateBasicDemoUI()
         {
@@ -45,28 +46,24 @@ namespace Demos.示例_录制视频Recorder.Editor
             var panel  = GetOrCreatePanel(canvas.transform);
 
             controller.drConfigId         = GetOrCreateDropdown(panel, "当前配置ID下拉框", new Vector2(0f, -24f), "当前配置ID");
-            controller.togEnableAudio     = GetOrCreateToggle(panel, "启用音频开关", new Vector2(0f, -68f), "启用音频");
-            controller.togEnableAudioGain = GetOrCreateToggle(panel, "启用音量增强开关", new Vector2(0f, -104f), "启用音量增强");
-            controller.slAudioGainDb      = GetOrCreateSlider(panel, "音量增益滑动条", new Vector2(0f, -146f));
-            controller.txtAudioGainDb     = GetOrCreateText(panel, "音量增益文本", new Vector2(240f, -146f), new Vector2(130f, 28f), "0 dB", 14, TextAnchor.MiddleLeft);
+            HideObsoleteAudioControls(panel, controller);
 
-            controller.btnStartRecording      = GetOrCreateButton(panel, "开始录制按钮", new Vector2(0f, -198f), "开始录制");
-            controller.btnStopRecording       = GetOrCreateButton(panel, "停止录制按钮", new Vector2(170f, -198f), "停止录制");
-            controller.btnOpenOutputFolder    = GetOrCreateButton(panel, "打开输出目录按钮", new Vector2(0f, -240f), "打开输出目录");
-            controller.btnClearSessionHistory = GetOrCreateButton(panel, "清空历史按钮", new Vector2(170f, -240f), "清空历史");
+            controller.btnStartRecording      = GetOrCreateButton(panel, "开始录制按钮", new Vector2(0f, -78f), "开始录制");
+            controller.btnStopRecording       = GetOrCreateButton(panel, "停止录制按钮", new Vector2(170f, -78f), "停止录制");
+            controller.btnOpenOutputFolder    = GetOrCreateButton(panel, "打开输出目录按钮", new Vector2(0f, -120f), "打开输出目录");
+            controller.btnClearSessionHistory = GetOrCreateButton(panel, "清空历史按钮", new Vector2(170f, -120f), "清空历史");
 
-            controller.txtCurrentState    = GetOrCreateText(panel, "当前状态文本", new Vector2(0f, -294f), new Vector2(380f, 26f), "当前状态：-", 14, TextAnchor.MiddleLeft);
-            controller.txtLastResult      = GetOrCreateText(panel, "最近结果文本", new Vector2(0f, -324f), new Vector2(380f, 44f), "最近结果：-", 14, TextAnchor.UpperLeft);
-            controller.txtCurrentConfigId = GetOrCreateText(panel, "当前配置ID文本", new Vector2(0f, -372f), new Vector2(380f, 26f), "当前配置ID：-", 14, TextAnchor.MiddleLeft);
-            controller.txtOutputPath      = GetOrCreateText(panel, "输出路径文本", new Vector2(0f, -402f), new Vector2(380f, 44f), "输出路径：-", 14, TextAnchor.UpperLeft);
-            controller.txtLastErrorCode   = GetOrCreateText(panel, "最近错误码文本", new Vector2(0f, -450f), new Vector2(380f, 26f), "最近错误码：None", 14, TextAnchor.MiddleLeft);
-            controller.txtSessionCount    = GetOrCreateText(panel, "会话数量文本", new Vector2(0f, -480f), new Vector2(380f, 26f), "会话数量：0", 14, TextAnchor.MiddleLeft);
+            controller.txtCurrentState    = GetOrCreateText(panel, "当前状态文本", new Vector2(0f, -174f), new Vector2(380f, 26f), "当前状态：-", 14, TextAnchor.MiddleLeft);
+            controller.txtLastResult      = GetOrCreateText(panel, "最近结果文本", new Vector2(0f, -204f), new Vector2(380f, 44f), "最近结果：-", 14, TextAnchor.UpperLeft);
+            controller.txtCurrentConfigId = GetOrCreateText(panel, "当前配置ID文本", new Vector2(0f, -252f), new Vector2(380f, 26f), "当前配置ID：-", 14, TextAnchor.MiddleLeft);
+            controller.txtOutputPath      = GetOrCreateText(panel, "输出路径文本", new Vector2(0f, -282f), new Vector2(380f, 44f), "输出路径：-", 14, TextAnchor.UpperLeft);
+            controller.txtLastErrorCode   = GetOrCreateText(panel, "最近错误码文本", new Vector2(0f, -330f), new Vector2(380f, 26f), "最近错误码：None", 14, TextAnchor.MiddleLeft);
+            controller.txtSessionCount    = GetOrCreateText(panel, "会话数量文本", new Vector2(0f, -360f), new Vector2(380f, 26f), "会话数量：0", 14, TextAnchor.MiddleLeft);
 
             EnsureEventSystem();
-            RecorderUILayoutProfileUtilityEditor.ApplyProfileIfExists(canvas.gameObject, RecorderUILayoutProfileUtilityEditor.DEMO_PROFILE_FILE_NAME);
             EditorUtility.SetDirty(controller);
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
-            Debug.Log("Recorder SDK 基础演示界面已创建并绑定。请保存当前场景。");
+            Debug.Log("Recorder SDK 屏幕录制界面已创建并绑定。请保存当前场景。");
         }
 
         /// <summary>
@@ -105,7 +102,12 @@ namespace Demos.示例_录制视频Recorder.Editor
         private static RectTransform GetOrCreatePanel(Transform parent)
         {
             var existing = FindChild(parent, PANEL_NAME);
-            if (existing != null) return existing.GetComponent<RectTransform>();
+            if (existing != null)
+            {
+                var existingRect = existing.GetComponent<RectTransform>();
+                existingRect.sizeDelta = new Vector2(420f, 400f);
+                return existingRect;
+            }
 
             var go = new GameObject(PANEL_NAME, typeof(RectTransform), typeof(Image));
             Undo.RegisterCreatedObjectUndo(go, "Create Recorder Demo Panel");
@@ -114,10 +116,37 @@ namespace Demos.示例_录制视频Recorder.Editor
             rect.anchorMin                 = new Vector2(0f, 1f);
             rect.anchorMax                 = new Vector2(0f, 1f);
             rect.pivot                     = new Vector2(0f, 1f);
-            rect.sizeDelta                 = new Vector2(420f, 520f);
+            rect.sizeDelta                 = new Vector2(420f, 400f);
             rect.anchoredPosition          = new Vector2(24f, -24f);
             go.GetComponent<Image>().color = new Color(0.08f, 0.1f, 0.12f, 0.92f);
             return rect;
+        }
+
+        /// <summary>
+        /// 隐藏旧版屏幕录制音频快捷控件，音频参数统一从配置文件读取。
+        /// </summary>
+        private static void HideObsoleteAudioControls(Transform panel, RecorderDemoBasicController controller)
+        {
+            controller.togEnableAudio = HideObsoleteSelectable<Toggle>(panel, "启用音频开关");
+            controller.togEnableAudioGain = HideObsoleteSelectable<Toggle>(panel, "启用音量增强开关");
+            controller.slAudioGainDb = HideObsoleteSelectable<Slider>(panel, "音量增益滑动条");
+            controller.txtAudioGainDb = HideObsoleteGraphic<Text>(panel, "音量增益文本");
+        }
+
+        private static T HideObsoleteSelectable<T>(Transform parent, string name) where T : Selectable
+        {
+            var existing = FindChild(parent, name);
+            if (existing == null || !existing.TryGetComponent(out T selectable)) return null;
+            selectable.gameObject.SetActive(false);
+            return selectable;
+        }
+
+        private static T HideObsoleteGraphic<T>(Transform parent, string name) where T : Graphic
+        {
+            var existing = FindChild(parent, name);
+            if (existing == null || !existing.TryGetComponent(out T graphic)) return null;
+            graphic.gameObject.SetActive(false);
+            return graphic;
         }
 
         /// <summary>
@@ -126,7 +155,11 @@ namespace Demos.示例_录制视频Recorder.Editor
         private static Button GetOrCreateButton(Transform parent, string name, Vector2 position, string label)
         {
             var existing = FindChild(parent, name);
-            if (existing != null && existing.TryGetComponent(out Button existingButton)) return existingButton;
+            if (existing != null && existing.TryGetComponent(out Button existingButton))
+            {
+                DisableNavigation(existingButton);
+                return existingButton;
+            }
 
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             Undo.RegisterCreatedObjectUndo(go, "Create " + name);
@@ -134,7 +167,9 @@ namespace Demos.示例_录制视频Recorder.Editor
             var rect = SetupTopLeftRect(go, new Vector2(150f, 32f), position);
             go.GetComponent<Image>().color = new Color(0.18f, 0.32f, 0.52f, 1f);
             GetOrCreateText(rect, "Text", Vector2.zero, rect.sizeDelta, label, 14, TextAnchor.MiddleCenter);
-            return go.GetComponent<Button>();
+            var button = go.GetComponent<Button>();
+            DisableNavigation(button);
+            return button;
         }
 
         /// <summary>
@@ -169,7 +204,11 @@ namespace Demos.示例_录制视频Recorder.Editor
         private static Toggle GetOrCreateToggle(Transform parent, string name, Vector2 position, string label)
         {
             var existing = FindChild(parent, name);
-            if (existing != null && existing.TryGetComponent(out Toggle existingToggle)) return existingToggle;
+            if (existing != null && existing.TryGetComponent(out Toggle existingToggle))
+            {
+                DisableNavigation(existingToggle);
+                return existingToggle;
+            }
 
             var go = new GameObject(name, typeof(RectTransform), typeof(Toggle));
             Undo.RegisterCreatedObjectUndo(go, "Create " + name);
@@ -192,6 +231,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             toggle.targetGraphic = background.GetComponent<Image>();
             toggle.graphic       = checkmark.GetComponent<Image>();
             GetOrCreateText(go.transform, "Label", new Vector2(36f, 0f), new Vector2(220f, 28f), label, 14, TextAnchor.MiddleLeft);
+            DisableNavigation(toggle);
             return toggle;
         }
 
@@ -201,7 +241,11 @@ namespace Demos.示例_录制视频Recorder.Editor
         private static Slider GetOrCreateSlider(Transform parent, string name, Vector2 position)
         {
             var existing = FindChild(parent, name);
-            if (existing != null && existing.TryGetComponent(out Slider existingSlider)) return existingSlider;
+            if (existing != null && existing.TryGetComponent(out Slider existingSlider))
+            {
+                DisableNavigation(existingSlider);
+                return existingSlider;
+            }
 
             var go = new GameObject(name, typeof(RectTransform), typeof(Slider));
             Undo.RegisterCreatedObjectUndo(go, "Create " + name);
@@ -231,6 +275,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             slider.minValue      = -20f;
             slider.maxValue      = 20f;
             slider.value         = 6f;
+            DisableNavigation(slider);
             return slider;
         }
 
@@ -240,7 +285,11 @@ namespace Demos.示例_录制视频Recorder.Editor
         private static Dropdown GetOrCreateDropdown(Transform parent, string name, Vector2 position, string label)
         {
             var existing = FindChild(parent, name);
-            if (existing != null && existing.TryGetComponent(out Dropdown existingDropdown)) return existingDropdown;
+            if (existing != null && existing.TryGetComponent(out Dropdown existingDropdown))
+            {
+                DisableNavigation(existingDropdown);
+                return existingDropdown;
+            }
 
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Dropdown));
             Undo.RegisterCreatedObjectUndo(go, "Create " + name);
@@ -252,6 +301,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             dropdown.captionText   = caption;
             dropdown.targetGraphic = go.GetComponent<Image>();
             dropdown.template      = CreateDropdownTemplate(go.transform, dropdown);
+            DisableNavigation(dropdown);
             return dropdown;
         }
 
@@ -308,6 +358,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             var itemToggle = item.GetComponent<Toggle>();
             itemToggle.targetGraphic = itemBackground.GetComponent<Image>();
             itemToggle.graphic       = itemCheckmark.GetComponent<Image>();
+            DisableNavigation(itemToggle);
 
             var scrollRect = template.GetComponent<ScrollRect>();
             scrollRect.content    = contentRect;
@@ -317,6 +368,15 @@ namespace Demos.示例_录制视频Recorder.Editor
             dropdown.itemText  = itemLabel;
             dropdown.itemImage = null;
             return templateRect;
+        }
+
+        private static void DisableNavigation(Selectable selectable)
+        {
+            if (selectable == null) return;
+
+            var navigation = selectable.navigation;
+            navigation.mode = Navigation.Mode.None;
+            selectable.navigation = navigation;
         }
 
         /// <summary>
@@ -381,7 +441,7 @@ namespace Demos.示例_录制视频Recorder.Editor
 #if ENABLE_INPUT_SYSTEM
             if (ShouldUseInputSystemUiInputModule())
             {
-                eventSystem.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+                eventSystem.AddComponent<InputSystemUIInputModule>();
                 return;
             }
 #endif
@@ -394,7 +454,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         private static bool ShouldUseInputSystemUiInputModule()
         {
             int activeInputHandler = ReadActiveInputHandler();
-            return activeInputHandler == ActiveInputHandlerInputSystem || activeInputHandler == ActiveInputHandlerBoth;
+            return activeInputHandler == ACTIVE_INPUT_HANDLER_INPUT_SYSTEM || activeInputHandler == ACTIVE_INPUT_HANDLER_BOTH;
         }
 
         /// <summary>

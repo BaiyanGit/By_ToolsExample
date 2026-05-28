@@ -1,4 +1,4 @@
-# Recorder SDK Project Context
+﻿# Recorder SDK Project Context
 
 本文档用于在新会话中快速恢复 Recorder SDK 当前上下文。它记录当前版本、目录结构、已完成阶段、验证状态、禁止修改范围和后续建议。
 
@@ -52,7 +52,7 @@ StreamingAssets 路径保持固定：
 
 新用户推荐先打开：
 
-- `Assets/Demos/RecorderSdk/Demo/Scenes/录制器_基础演示.unity`
+- `Assets/Demos/RecorderSdk/Demo/Scenes/录制器_屏幕录制.unity`
 
 配置管理推荐打开：
 

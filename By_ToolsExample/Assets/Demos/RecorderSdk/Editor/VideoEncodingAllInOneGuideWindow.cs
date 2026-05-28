@@ -27,7 +27,7 @@ using UnityEngine;
 public sealed class VideoEncodingAllInOneGuideWindow : EditorWindow
 {
     private const string WINDOW_TITLE = "视频编码参数大词典";
-    private readonly VideoEncodingGuideContent _content = new VideoEncodingGuideContent();
+    private readonly VideoEncodingGuideContent _content = new();
 
     public static void ShowWindow()
     {
@@ -61,10 +61,10 @@ public sealed class VideoEncodingGuideContent
     private const float SEARCH_BAR_HEIGHT = 30f;
 
 
-    private readonly List<EncodingItem> _items = new List<EncodingItem>();
-    private readonly List<string> _categories = new List<string>();
-    private readonly List<EncodingItem> _cachedFilteredItems = new List<EncodingItem>();
-    private readonly Dictionary<string, List<EncodingItem>> _cachedFilteredByCategory = new Dictionary<string, List<EncodingItem>>();
+    private readonly List<EncodingItem> _items = new();
+    private readonly List<string> _categories = new();
+    private readonly List<EncodingItem> _cachedFilteredItems = new();
+    private readonly Dictionary<string, List<EncodingItem>> _cachedFilteredByCategory = new();
 
     private Vector2 _leftScroll;
     private Vector2 _rightScroll;
@@ -425,10 +425,10 @@ public sealed class VideoEncodingGuideContent
     {
         RebuildFilterCacheIfNeeded();
         if (string.IsNullOrWhiteSpace(category) || category == "全部") return _cachedFilteredItems;
-        return _cachedFilteredByCategory.TryGetValue(category, out var items) ? items : EmptyEncodingItemList;
+        return _cachedFilteredByCategory.TryGetValue(category, out var items) ? items : emptyEncodingItemList;
     }
 
-    private static readonly List<EncodingItem> EmptyEncodingItemList = new List<EncodingItem>();
+    private static readonly List<EncodingItem> emptyEncodingItemList = new();
 
     private void RebuildFilterCacheIfNeeded()
     {
@@ -615,7 +615,7 @@ public sealed class VideoEncodingGuideContent
             margin  = new RectOffset(0, 0, 0, 2)
         };
 
-        _cardHeaderStyle = new GUIStyle()
+        _cardHeaderStyle = new GUIStyle
         {
             padding = new RectOffset(10, 10, 5, 5),
             margin  = new RectOffset(0, 0, 0, 6)

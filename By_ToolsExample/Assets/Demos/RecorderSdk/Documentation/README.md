@@ -102,13 +102,14 @@ create_linux_***.json
 推荐新用户先打开：
 
 ```txt
-Assets/Demos/RecorderSdk/Demo/Scenes/录制器_基础演示.unity
+Assets/Demos/RecorderSdk/Demo/Scenes/录制器_屏幕录制.unity
 ```
 
 场景职责：
 
-- `录制器_基础演示.unity`：SDK 最小使用 Demo。只包含 `RecorderManager`、基础 `开始录制` / `停止录制` / `打开输出目录` / `清空历史` 按钮、状态文本，以及少量配置入口，适合开发者学习如何集成 `StartRecordingAsync()` / `StopRecordingAsync()`。
+- `录制器_屏幕录制.unity`：SDK 最小使用 Demo。只包含 `RecorderManager`、基础 `开始录制` / `停止录制` / `打开输出目录` / `清空历史` 按钮、状态文本，以及少量配置入口，适合开发者学习如何集成 `StartRecordingAsync()` / `StopRecordingAsync()`。
 - `录制器_设置中心.unity`：完整配置管理工具。用于编辑 Recorder 配置、切换 `configId`、保存/另存为/删除配置、调整 FFmpeg、音频、推流、音量增益等参数。
+- `录制器_推流演示.unity`：独立 RTMP/RTMPS 推流 Demo。包含简单 3D 测试画面、旋转 Cube、推流地址输入框、配置选择、开始/停止推流按钮和状态/错误文本，适合单独验证推流链路。
 - `录制器_旧版综合场景.unity`：旧一体化场景备份，仅用于兼容和对照；新集成不建议从该场景开始。
 - `录制视频Recorder.unity`、`录制视频Init.unity`：保留原始 Legacy 场景文件，避免破坏已有引用。
 
@@ -119,9 +120,9 @@ Demo UI 说明：
 - 开发者调用说明已内置在控制台的 `SDK API` 页，包含 `StartRecordingAsync()`、`StopRecordingAsync()`、事件、错误码、SessionHistory 和配置系统说明。
 - 文档中心使用中文分类和中文文档按钮，文档内容按点击懒加载并缓存；API 参数页也会按首次进入的页签初始化内容，避免控制台打开时一次性读取或构建全部内容。
 - 打包发布页默认只包含 SDK 必要目录、`Configs`、可选 `FFmpegApp` 和 `Videos/README.md` 空目录说明，不会把 `Assets/StreamingAssets/FFmpegTools/Videos` 中的实际录制视频打进 unitypackage。
-- `录制器_基础演示.unity` 的 UI 应提前存在于场景 Hierarchy 中，`RecorderDemoBasicController` 只负责绑定按钮、文本、Dropdown、Toggle、Slider 并调用 SDK。
+- `录制器_屏幕录制.unity` 的 UI 应提前存在于场景 Hierarchy 中，`RecorderDemoBasicController` 只负责绑定按钮、文本、Dropdown、Toggle、Slider 并调用 SDK。
 - Play 后不会默认动态创建 Demo UI；如果 UI 字段未绑定，Controller 会输出 Warning，避免直接 NullReferenceException。
-- 如需在当前场景重建基础 Demo UI，请进入控制台的 `UI 工具` 页点击 `创建基础演示 UI`。该工具只在 Editor 中一次性创建 UI、RecorderManager、CrossPlatformScreenRecorder 和 RecorderDemoBasicController，并自动绑定字段；生成后请保存场景。
+- 如需在当前场景重建屏幕录制 Demo UI，请进入控制台的 `UI 工具` 页点击 `创建屏幕录制 UI`。该工具只在 Editor 中一次性创建 UI、RecorderManager、CrossPlatformScreenRecorder 和 RecorderDemoBasicController，并自动绑定字段；生成后请保存场景。
 - 手动调整 Demo UI 后，可在控制台的 `UI 工具` 页导出为 `DemoUILayoutProfile.json`；后续应用布局或重新创建 Demo UI 时会复用该布局。
 
 ## UI 使用说明
@@ -155,7 +156,7 @@ RecorderParamsSettings
 - 切换使用方式时，脚本会先刷新左侧菜单可见性，再根据当前仍有效的菜单刷新右侧页面。
 - 如果当前选中的菜单仍然可见，会保持当前选中；只有当前菜单被隐藏时，才自动切换到第一个可见菜单。
 - 右侧页面始终和左侧菜单一一对应，不允许多个参数页面叠加。
-- 旧场景已移动到 `RecorderSdk/Demo/LegacyScenes/`，后续扩展只维护 `录制器_基础演示.unity` 与 `录制器_设置中心.unity`。
+- 旧场景已移动到 `RecorderSdk/Demo/LegacyScenes/`，后续扩展只维护 `录制器_屏幕录制.unity` 与 `录制器_设置中心.unity`。
 
 基础流程：
 
@@ -167,6 +168,41 @@ RecorderParamsSettings
 6. 点击 `使用`，录制器会读取当前配置。
 7. 调用 `CrossPlatformScreenRecorder.ins.StartRecording()` 开始。
 8. 调用 `CrossPlatformScreenRecorder.ins.StopRecording()` 停止。
+
+## 推流演示
+
+场景：
+
+```txt
+Assets/Demos/RecorderSdk/Demo/Scenes/录制器_推流演示.unity
+```
+
+使用步骤：
+
+1. 打开 `ByTools/Recorder SDK控制台`，在首页点击 `打开推流演示场景`，或直接打开上面的场景路径。
+2. Play 场景，确认画面中有旋转 Cube 和 `Recorder SDK 推流演示` UI。
+3. 在 `RTMP / RTMPS 地址` 输入框填写有效地址，例如 `rtmp://server/app/streamKey` 或 `rtmps://server/app/streamKey`。
+4. 在配置 Dropdown 中选择一个现有 `configId`。Demo 会复用该配置的视频、FFmpeg、推流码率等参数。
+5. Beta 阶段默认建议先验证视频推流链路；Windows 推流 Demo 创建临时配置时会保持 `streamIncludeAudio=false`，不会把输入框内容或临时音频策略写回正式配置。Linux/国产系统保留所选配置中的推流音频设置，并继续按现有 Linux 音频能力判断。
+6. 点击 `开始推流`，Demo 会创建临时推流配置并调用 `StartRecordingAsync()`。
+7. 点击 `停止推流`，Demo 会调用 `StopRecordingAsync()`。
+
+安全说明：
+
+- 推流地址通常包含 stream key，不建议提交到 Git。
+- Demo 不内置真实推流密钥。
+- Demo 不会把输入框里的临时推流地址永久保存到正式配置文件；启动推流时会创建临时配置，启动请求结束后恢复原配置并删除临时配置。
+- Windows 推流音频依赖 FFmpeg `wasapi` 输入。本地录屏能录到声音，不代表 Windows 推流一定能带声音。
+- Linux/国产系统推流音频不使用 `wasapi` 判断，依赖 `pulse` / `alsa` / `pipewire` 或当前系统 FFmpeg 编译能力。
+- Windows 当前 FFmpeg 不支持 `wasapi` 时，请保持 `streamIncludeAudio=false`，先只测试视频推流链路。
+
+常见失败原因：
+
+- 地址不是 `rtmp://` 或 `rtmps://`。
+- 推流服务器不可达、网络被防火墙拦截，或服务器拒绝 stream key。
+- FFmpeg 路径无效，或当前 FFmpeg 不支持对应协议。
+- 当前配置不是有效录制配置，例如显示器不可用、帧率/缩放参数非法。
+- 推流包含系统音频时，当前平台或 FFmpeg 不支持所需音频输入。Windows 下常见原因是当前 FFmpeg 不支持 `wasapi`；Linux/国产系统请检查 `pulse` / `alsa` / `pipewire` 与 FFmpeg 编译能力。
 
 代码调用推荐使用可等待接口：
 
@@ -255,15 +291,17 @@ rtmps://
 - `streamAutoReconnect`：是否启用自动重连配置。
 - `streamReconnectCount`：重连次数。
 - `streamReconnectIntervalMs`：重连间隔。
-- `streamIncludeAudio`：推流是否包含系统音频。
+- `streamIncludeAudio`：推流是否包含系统音频。默认模板保持 `false`，优先保证首次推流只验证视频链路。
 
 推流默认使用 `libx264 + flv` 输出，优先保证 Windows/Linux 和国产硬件环境下的兼容性。推流时 FFmpeg 进程会降低优先级，减少对 Unity 主程序的影响。
 
 ### 推流音频
 
-- Linux：开启 `streamIncludeAudio` 且音频模式为系统音频时，会尝试解析 Pulse 音频源并推送音频。
-- Windows：开启 `streamIncludeAudio` 且音频模式为系统音频时，会在启动前执行 `ffmpeg -devices` 检测是否支持 `wasapi`。如果当前 FFmpeg 不支持 WASAPI，会返回明确错误并阻止启动；后续可扩展为 dshow 可配置输入源。
-- 如果只需要画面推流，关闭 `streamIncludeAudio` 可降低性能压力。
+- Linux/国产系统：开启 `streamIncludeAudio` 且音频模式为系统音频时，会沿用当前 Linux 音频源解析逻辑，优先按 `pulse`，也受 `alsa` / `pipewire` 和当前 FFmpeg 编译能力影响；不会检查或依赖 `wasapi`。
+- Windows：开启 `streamIncludeAudio` 且音频模式为系统音频时，会在启动前执行 `ffmpeg -hide_banner -devices` 检测是否支持 `wasapi`。如果当前 FFmpeg 不支持 WASAPI，会返回明确错误并阻止启动。
+- Windows 本地 MP4/WebM 录屏声音和推流声音不是同一路径。本地录屏声音由 `WASAPILoopbackRecorder.dll` 录制临时 WAV，停止后再由 FFmpeg Merge；推流声音由 FFmpeg 实时 `wasapi` 输入直接进入 FLV/RTMP 管线。
+- 如果 Windows 当前 FFmpeg 不支持 `wasapi`，推流请先走视频；如需 Windows 推流带音频，需要替换为支持 `wasapi` 的 Windows FFmpeg。Linux/国产系统不要用 `wasapi` 结论判断音频可用性。
+- 如果只需要画面推流，关闭 `streamIncludeAudio` 可降低性能压力，并避免 wasapi 能力缺失导致启动失败。
 
 ## JSON 字段保留规则
 
@@ -413,7 +451,18 @@ Assets/Demos/RecorderSdk/Documentation/Validation/RecorderSdkUnityPackageValidat
 
 - 推流对 CPU、网络和目标服务器稳定性更敏感，建议先从 `2M` 或 `3M` 码率测试。
 - 国产硬件环境优先使用默认 `libx264` 软件编码保证兼容；如果后续需要硬件编码，需要按实际机器和 FFmpeg 编译能力增加独立策略。
-- Windows 推流带系统音频依赖 FFmpeg WASAPI 输入；当前版本会在启动前检测，不支持时返回错误，后续可改为 dshow 可配置输入源。
+- Windows 推流带系统音频依赖 FFmpeg WASAPI 输入；本地录屏声音由原生 DLL + Merge 实现，两者能力不要混淆。Linux/国产系统推流音频依赖 `pulse` / `alsa` / `pipewire` 或当前 FFmpeg 编译能力，不受 Windows `wasapi` 检测限制。当前 Beta 阶段默认只保证视频推流稳定。
+
+## FAQ
+
+### 本地录屏有声音，为什么推流开启音频会失败？
+
+本地 MP4/WebM 录屏声音由 `WASAPILoopbackRecorder.dll` 录制为临时 WAV，停止录制后再与视频文件 Merge。Windows 推流声音走的是 FFmpeg 实时 `wasapi` 输入，也就是 `-f wasapi -i default`。如果当前 FFmpeg 没有编译 `wasapi` 输入，本地录屏仍可能有声音，但推流音频会不可用。
+
+### Windows 当前 FFmpeg 不支持 wasapi 时怎么办？
+
+在 Windows 上保持 `streamIncludeAudio=false`，先验证视频推流链路；如果业务必须推流带系统音频，请替换为支持 `wasapi` 的 Windows FFmpeg 构建，再在环境检查页确认“FFmpeg wasapi 输入支持”为支持。Linux/国产系统不检查 `wasapi`，请检查 `pulse` / `alsa` / `pipewire` 或系统 FFmpeg 编译能力。
+
 ## 录制声音太小怎么办？
 
 音频配置区域新增：

@@ -1,4 +1,4 @@
-//=====================================================
+﻿//=====================================================
 // File: RecorderStreamDemoController
 // Description: Recorder SDK streaming demo controller.
 //=====================================================
@@ -115,7 +115,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                 var config = _registry.Configs[i];
                 if (config == null || IsTemporaryStreamDemoConfig(config.configId)) continue;
                 _configs.Add(config);
-                options.Add(string.IsNullOrWhiteSpace(config.displayName) ? config.configId : $"{config.displayName} ({config.configId})");
+                options.Add(GetConfigDropdownLabel(config));
                 if (_selectedConfig != null && config.configId == _selectedConfig.configId) selectedIndex = _configs.Count - 1;
             }
 
@@ -140,7 +140,14 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                 ifStreamUrl.SetTextWithoutNotify(_selectedConfig.streamUrl);
             }
 
-            RefreshStatus("已选择配置：" + (_selectedConfig?.configId ?? "-"));
+            RefreshStatus("Selected config: " + (_selectedConfig?.configId ?? "-"));
+        }
+
+        private static string GetConfigDropdownLabel(RecorderParamsConfig config)
+        {
+            if (config == null) return "Unnamed Config";
+            if (!string.IsNullOrWhiteSpace(config.displayName)) return config.displayName;
+            return string.IsNullOrWhiteSpace(config.configId) ? "Unnamed Config" : config.configId;
         }
 
         private async void StartStream()
@@ -148,15 +155,15 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             string streamUrl = ifStreamUrl != null ? ifStreamUrl.text.Trim() : string.Empty;
             if (!IsRtmpUrl(streamUrl))
             {
-                SetWarningOrError("请输入有效的 RTMP / RTMPS 推流地址。");
-                RefreshStatus("推流地址无效。");
+                SetWarningOrError("Enter a valid RTMP / RTMPS stream URL.");
+                RefreshStatus("Invalid stream URL.");
                 return;
             }
 
             if (_selectedConfig == null)
             {
-                SetWarningOrError("未找到可用配置，请先在设置中心创建或选择配置。");
-                RefreshStatus("没有可用配置。");
+                SetWarningOrError("No available config. Create or select one in settings first.");
+                RefreshStatus("No available config.");
                 return;
             }
 
@@ -182,7 +189,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                 if (!save.success)
                 {
                     SetWarningOrError(save.message);
-                    RefreshStatus("临时推流配置创建失败。");
+                    RefreshStatus("Temporary stream config create failed.");
                     return;
                 }
 
@@ -190,7 +197,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                 if (!use.success)
                 {
                     SetWarningOrError(use.message);
-                    RefreshStatus("临时推流配置切换失败。");
+                    RefreshStatus("Temporary stream config switch failed.");
                     return;
                 }
 
@@ -202,7 +209,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             catch (Exception exception)
             {
                 SetWarningOrError(exception.Message);
-                RefreshStatus("启动推流失败。");
+                RefreshStatus("Start stream failed.");
             }
             finally
             {
@@ -287,12 +294,12 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             if (txtCurrentState != null)
             {
                 string configId = _selectedConfig != null ? _selectedConfig.configId : "-";
-                txtCurrentState.text = $"当前状态：{recorder.State}\n配置：{configId}\n最近结果：{(string.IsNullOrWhiteSpace(message) ? "-" : message)}\nSession：{recorder.SessionHistory.Count}";
+                txtCurrentState.text = $"State: {recorder.State}\nConfig: {configId}\nLast: {(string.IsNullOrWhiteSpace(message) ? "-" : message)}\nSession: {recorder.SessionHistory.Count}";
             }
 
             if (txtLastWarningOrError != null)
             {
-                txtLastWarningOrError.text = $"最近错误/警告：{_lastErrorCode}\n{_lastWarningOrError}";
+                txtLastWarningOrError.text = $"Last error/warning: {_lastErrorCode}\n{_lastWarningOrError}";
             }
         }
 
@@ -380,19 +387,19 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             var image = panel.gameObject.GetComponent<Image>() ?? panel.gameObject.AddComponent<Image>();
             image.color = new Color(0.07f, 0.09f, 0.11f, 0.92f);
 
-            CreateText("TxtTitle", panel, new Vector2(20f, -18f), new Vector2(420f, 32f), "Recorder SDK 推流演示", 22, TextAnchor.MiddleLeft);
-            CreateText("TxtUrlLabel", panel, new Vector2(20f, -64f), new Vector2(420f, 24f), "RTMP / RTMPS 地址", 14, TextAnchor.MiddleLeft);
+            CreateText("TxtTitle", panel, new Vector2(20f, -18f), new Vector2(420f, 32f), "Recorder SDK 鎺ㄦ祦婕旂ず", 22, TextAnchor.MiddleLeft);
+            CreateText("TxtUrlLabel", panel, new Vector2(20f, -64f), new Vector2(420f, 24f), "RTMP / RTMPS 鍦板潃", 14, TextAnchor.MiddleLeft);
             ifStreamUrl = CreateInputField("IfStreamUrl", panel, new Vector2(20f, -92f), new Vector2(420f, 34f), "rtmp://server/app/streamKey");
 
-            CreateText("TxtConfigLabel", panel, new Vector2(20f, -136f), new Vector2(420f, 24f), "配置选择", 14, TextAnchor.MiddleLeft);
+            CreateText("TxtConfigLabel", panel, new Vector2(20f, -136f), new Vector2(420f, 24f), "Config", 14, TextAnchor.MiddleLeft);
             drConfigId = CreateDropdown("DrConfigId", panel, new Vector2(20f, -164f), new Vector2(420f, 34f));
 
-            btnStartStream = CreateButton("BtnStartStream", panel, new Vector2(20f, -214f), new Vector2(190f, 36f), "开始推流");
-            btnStopStream = CreateButton("BtnStopStream", panel, new Vector2(250f, -214f), new Vector2(190f, 36f), "停止推流");
+            btnStartStream = CreateButton("BtnStartStream", panel, new Vector2(20f, -214f), new Vector2(190f, 36f), "Start Stream");
+            btnStopStream = CreateButton("BtnStopStream", panel, new Vector2(250f, -214f), new Vector2(190f, 36f), "Stop Stream");
 
-            txtCurrentState = CreateText("TxtCurrentState", panel, new Vector2(20f, -268f), new Vector2(420f, 72f), "当前状态：-", 14, TextAnchor.UpperLeft);
-            txtLastWarningOrError = CreateText("TxtLastWarningOrError", panel, new Vector2(20f, -344f), new Vector2(420f, 52f), "最近错误/警告：-", 14, TextAnchor.UpperLeft);
-            txtDescription = CreateText("TxtDescription", panel, new Vector2(20f, -396f), new Vector2(420f, 88f), "需要有效 RTMP/RTMPS 地址；地址可能包含推流密钥，不建议提交到 Git。Windows 默认只推视频；推流音频依赖 FFmpeg wasapi，本地录屏有声音不代表推流一定带声音。Linux/国产系统按 pulse/alsa/pipewire 与当前配置判断。", 12, TextAnchor.UpperLeft);
+            txtCurrentState = CreateText("TxtCurrentState", panel, new Vector2(20f, -268f), new Vector2(420f, 72f), "State: -", 14, TextAnchor.UpperLeft);
+            txtLastWarningOrError = CreateText("TxtLastWarningOrError", panel, new Vector2(20f, -344f), new Vector2(420f, 52f), "Last error/warning: -", 14, TextAnchor.UpperLeft);
+            txtDescription = CreateText("TxtDescription", panel, new Vector2(20f, -396f), new Vector2(420f, 88f), "Use a valid RTMP/RTMPS URL. Do not commit stream keys. Test video first; Windows stream audio requires FFmpeg wasapi support.", 12, TextAnchor.UpperLeft);
         }
 
         private static void EnsureEventSystem()

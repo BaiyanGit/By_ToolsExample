@@ -3,7 +3,7 @@
 ## 当前验证状态
 
 - Editor 控制台文档懒加载、更新日志滚动、验证记录滚动已完成代码侧检查。
-- unitypackage 打包路径已调整为 SDK 根目录、Configs、FFmpegApp 等必要项，不包含 `Videos` 实际录制输出。
+- unitypackage 打包路径已调整为 SDK 根目录、Configs、FFmpeg 等必要项，不包含 `Videos` 实际录制输出。
 - FFmpeg 控制组检查已覆盖 `-version`、`-devices`、`-filters`，用于识别 wasapi / alimiter 支持情况。
 - `RecorderSdkSmokeTest` 已覆盖状态、事件、SessionHistory、配置迁移和音量增益命令检查。
 

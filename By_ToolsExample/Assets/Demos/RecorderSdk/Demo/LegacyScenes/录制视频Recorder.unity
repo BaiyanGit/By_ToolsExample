@@ -54265,7 +54265,7 @@ MonoBehaviour:
   optionDescWindowRoot: {fileID: 841618372}
   txtOptionDescTitle: {fileID: 1429168970}
   txtOptionDescContent: {fileID: 767462617}
-  toolsFolderName: FFmpegTools
+  toolsFolderName: RecorderSDK
   configFolderName: Configs
   videosFolderName: Videos
 --- !u!1 &1903041659

@@ -30,13 +30,13 @@ namespace Demos.RecorderSdk.Editor
         [MenuItem(FIX_MENU_PATH)]
         private static void FixObviousIssues()
         {
-            var beforeFix = CollectIssues();
+            var beforeFix  = CollectIssues();
             int fixedCount = 0;
 
             foreach (var go in GetLoadedSceneObjects())
             {
-                var transform = go.transform;
-                string path = GetHierarchyPath(transform);
+                var    transform = go.transform;
+                string path      = GetHierarchyPath(transform);
 
                 if (FixTransform(path, transform)) fixedCount++;
                 if (FixNavigation(path, go)) fixedCount++;
@@ -102,8 +102,8 @@ namespace Demos.RecorderSdk.Editor
         {
             var localPosition = transform.localPosition;
             var localRotation = transform.localRotation;
-            var localScale = transform.localScale;
-            var lossyScale = transform.lossyScale;
+            var localScale    = transform.localScale;
+            var lossyScale    = transform.lossyScale;
 
             if (HasInvalidValue(localRotation))
             {
@@ -234,7 +234,7 @@ namespace Demos.RecorderSdk.Editor
         private static void ScanLayout(GameObject go, string path, List<Issue> issues)
         {
             var layoutGroup = go.GetComponent<LayoutGroup>();
-            var fitter = go.GetComponent<ContentSizeFitter>();
+            var fitter      = go.GetComponent<ContentSizeFitter>();
             if (layoutGroup == null && fitter == null) return;
 
             var rect = go.transform as RectTransform;
@@ -250,15 +250,15 @@ namespace Demos.RecorderSdk.Editor
 
         private static bool FixTransform(string path, Transform transform)
         {
-            bool changed = false;
-            var rotation = transform.localRotation;
+            bool changed  = false;
+            var  rotation = transform.localRotation;
 
             if (HasInvalidValue(rotation) || QuaternionLength(rotation) <= SCALE_EPSILON)
             {
                 Debug.LogWarning($"[Recorder SDK] 修复非法 Quaternion：{path} {Format(rotation)} -> identity");
                 Undo.RecordObject(transform, "Fix invalid transform");
                 transform.localRotation = Quaternion.identity;
-                changed = true;
+                changed                 = true;
             }
             else if (QuaternionLength(rotation) < QUATERNION_MIN_LENGTH || QuaternionLength(rotation) > QUATERNION_MAX_LENGTH)
             {
@@ -266,7 +266,7 @@ namespace Demos.RecorderSdk.Editor
                 Debug.LogWarning($"[Recorder SDK] 归一化 Quaternion：{path} {Format(rotation)} -> {Format(normalized)}");
                 Undo.RecordObject(transform, "Fix invalid transform");
                 transform.localRotation = normalized;
-                changed = true;
+                changed                 = true;
             }
 
             if (HasInvalidValue(transform.localPosition))
@@ -274,7 +274,7 @@ namespace Demos.RecorderSdk.Editor
                 Debug.LogWarning($"[Recorder SDK] 修复非法 localPosition：{path} {Format(transform.localPosition)} -> (0,0,0)");
                 Undo.RecordObject(transform, "Fix invalid transform");
                 transform.localPosition = Vector3.zero;
-                changed = true;
+                changed                 = true;
             }
 
             if (HasInvalidValue(transform.localScale))
@@ -282,14 +282,14 @@ namespace Demos.RecorderSdk.Editor
                 Debug.LogWarning($"[Recorder SDK] 修复非法 localScale：{path} {Format(transform.localScale)} -> (1,1,1)");
                 Undo.RecordObject(transform, "Fix invalid transform");
                 transform.localScale = Vector3.one;
-                changed = true;
+                changed              = true;
             }
             else if (IsZeroVector(transform.localScale) && !IsCanvasRoot(transform))
             {
                 Debug.LogWarning($"[Recorder SDK] 修复 0 localScale：{path} {Format(transform.localScale)} -> (1,1,1)");
                 Undo.RecordObject(transform, "Fix invalid transform");
                 transform.localScale = Vector3.one;
-                changed = true;
+                changed              = true;
             }
             else if (IsZeroVector(transform.localScale) && IsCanvasRoot(transform))
             {
@@ -304,18 +304,37 @@ namespace Demos.RecorderSdk.Editor
             var selectable = go.GetComponent<Selectable>();
             if (selectable == null) return false;
 
-            var navigation = selectable.navigation;
-            bool changed = false;
+            var  navigation = selectable.navigation;
+            bool changed    = false;
             if (navigation.mode == Navigation.Mode.Automatic)
             {
                 navigation.mode = Navigation.Mode.None;
-                changed = true;
+                changed         = true;
             }
 
-            if (navigation.selectOnUp == selectable) { navigation.selectOnUp = null; changed = true; }
-            if (navigation.selectOnDown == selectable) { navigation.selectOnDown = null; changed = true; }
-            if (navigation.selectOnLeft == selectable) { navigation.selectOnLeft = null; changed = true; }
-            if (navigation.selectOnRight == selectable) { navigation.selectOnRight = null; changed = true; }
+            if (navigation.selectOnUp == selectable)
+            {
+                navigation.selectOnUp = null;
+                changed               = true;
+            }
+
+            if (navigation.selectOnDown == selectable)
+            {
+                navigation.selectOnDown = null;
+                changed                 = true;
+            }
+
+            if (navigation.selectOnLeft == selectable)
+            {
+                navigation.selectOnLeft = null;
+                changed                 = true;
+            }
+
+            if (navigation.selectOnRight == selectable)
+            {
+                navigation.selectOnRight = null;
+                changed                  = true;
+            }
 
             if (!changed) return false;
 
@@ -362,11 +381,11 @@ namespace Demos.RecorderSdk.Editor
         {
             issues.Add(new Issue
             {
-                path = path,
+                path          = path,
                 componentType = component != null ? component.GetType().FullName : "(missing component)",
-                field = field,
-                value = value,
-                suggestion = suggestion
+                field         = field,
+                value         = value,
+                suggestion    = suggestion
             });
         }
 

@@ -29,9 +29,9 @@ RecorderSDK_v0.3.0-beta.unitypackage
   - Release Notes
   - 阶段验收文档
   - 运行时验证文档
-- `Assets/StreamingAssets/FFmpegTools/`
+- `Assets/StreamingAssets/RecorderSDK/`
   - `Configs/`
-  - `FFmpegApp/`
+  - `FFmpeg/`
   - `Videos/`
 
 ## 不包含目录
@@ -49,13 +49,13 @@ RecorderSDK_v0.3.0-beta.unitypackage
 
 本包内置 FFmpeg：
 
-- Windows：`Assets/StreamingAssets/FFmpegTools/FFmpegApp/ffmpeg.exe`
-- Linux：`Assets/StreamingAssets/FFmpegTools/FFmpegApp/ffmpeg`
+- Windows：`Assets/StreamingAssets/RecorderSDK/FFmpeg/ffmpeg.exe`
+- Linux：`Assets/StreamingAssets/RecorderSDK/FFmpeg/ffmpeg`
 
 导入后默认模板中的 `customFFmpegPath` 为空，Recorder 会回退到当前平台默认路径：
 
-- Windows：`Application.streamingAssetsPath/FFmpegTools/FFmpegApp/ffmpeg.exe`
-- Linux：`Application.streamingAssetsPath/FFmpegTools/FFmpegApp/ffmpeg`
+- Windows：`Application.streamingAssetsPath/RecorderSDK/FFmpeg/ffmpeg.exe`
+- Linux：`Application.streamingAssetsPath/RecorderSDK/FFmpeg/ffmpeg`
 
 如果导入后不希望使用内置 FFmpeg，也可以在 UI 中选择自定义 FFmpeg 可执行文件路径。
 
@@ -135,7 +135,7 @@ Assets/Demos/RecorderSdk/Demo/Scripts/RecorderSdkSmokeTest.cs
 默认输出目录：
 
 ```txt
-Assets/StreamingAssets/FFmpegTools/Videos/
+Assets/StreamingAssets/RecorderSDK/Videos/
 ```
 
 验证步骤：
@@ -160,7 +160,7 @@ Windows 本地录制需要当前环境允许 FFmpeg `gdigrab` 抓屏。
 
 处理：
 
-- 确认 `Assets/StreamingAssets/FFmpegTools/FFmpegApp/ffmpeg.exe` 存在。
+- 确认 `Assets/StreamingAssets/RecorderSDK/FFmpeg/ffmpeg.exe` 存在。
 - 或在 UI 中选择自定义 FFmpeg 路径。
 
 ### AudioStartFailed
@@ -215,6 +215,7 @@ Windows 本地录制需要当前环境允许 FFmpeg `gdigrab` 抓屏。
 - 确认账号已登录。
 - 确认许可证已激活。
 - 重启 Unity Hub 和 Unity Editor 后重试。
+
 
 
 

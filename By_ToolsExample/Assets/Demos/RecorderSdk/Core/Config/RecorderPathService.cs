@@ -24,8 +24,8 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         {
             return Application.platform switch
             {
-                RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsEditor => Path.Combine(Application.streamingAssetsPath, "FFmpegTools", "FFmpegApp", "ffmpeg.exe"),
-                RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxEditor     => Path.Combine(Application.streamingAssetsPath, "FFmpegTools", "FFmpegApp", "ffmpeg"),
+                RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsEditor => Path.Combine(Application.streamingAssetsPath, "RecorderSDK", "FFmpeg", "ffmpeg.exe"),
+                RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxEditor     => Path.Combine(Application.streamingAssetsPath, "RecorderSDK", "FFmpeg", "ffmpeg"),
                 _                                                              => string.Empty
             };
         }
@@ -35,7 +35,15 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         /// </summary>
         public static string GetDefaultVideoDirectory()
         {
-            return Path.Combine(Application.streamingAssetsPath, "FFmpegTools", "Videos");
+            return Path.Combine(Application.streamingAssetsPath, "RecorderSDK", "Videos");
+        }
+
+        /// <summary>
+        /// 鑾峰彇 RecorderSDK 褰曞埗涓存椂鐩綍銆?
+        /// </summary>
+        public static string GetDefaultTempDirectory()
+        {
+            return Path.Combine(Application.temporaryCachePath, "RecorderSDK");
         }
 
         /// <summary>
@@ -65,6 +73,8 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
 
             string realOutputDirectory = string.IsNullOrWhiteSpace(outputDirectory) ? GetDefaultVideoDirectory() : outputDirectory;
             Directory.CreateDirectory(realOutputDirectory);
+            string realTempDirectory = Path.Combine(GetDefaultTempDirectory(), sessionId);
+            Directory.CreateDirectory(realTempDirectory);
             string outputFilePrefix = config == null || string.IsNullOrWhiteSpace(config.outputFilePrefix) ? "recording" : config.outputFilePrefix;
             string stamp = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
             string extension = config == null || config.outputAsWebm ? ".webm" : ".mp4";
@@ -74,8 +84,8 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                 sessionId = sessionId,
                 startTime = DateTime.Now,
                 outputPath = Path.Combine(realOutputDirectory, $"{outputFilePrefix}_{stamp}{extension}"),
-                videoTempPath = Path.Combine(realOutputDirectory, $"{outputFilePrefix}_{stamp}_video_tmp{extension}"),
-                audioTempPath = Path.Combine(realOutputDirectory, $"{outputFilePrefix}_{stamp}_audio_tmp.wav"),
+                videoTempPath = Path.Combine(realTempDirectory, $"{outputFilePrefix}_{stamp}_video_tmp{extension}"),
+                audioTempPath = Path.Combine(realTempDirectory, $"{outputFilePrefix}_{stamp}_audio_tmp.wav"),
                 isStreaming = false,
                 resolvedLinuxAudioSource = string.Empty,
                 configId = config?.configId,

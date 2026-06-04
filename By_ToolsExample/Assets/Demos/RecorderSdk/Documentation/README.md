@@ -36,54 +36,60 @@
 配置和输出目录位于：
 
 ```txt
-Assets/StreamingAssets/FFmpegTools/
+Assets/StreamingAssets/RecorderSDK/
 ```
 
 主要子目录：
 
 ```txt
-FFmpegTools/
-  Configs/       配置文件
-  FFmpegApp/     FFmpeg 可执行文件
-  Videos/        默认本地视频输出目录
+RecorderSDK/
+  Configs/
+    DefaultTemplate/  SDK 默认模板
+    CustomTemplate/   用户克隆或另存配置
+    UseTemplate/      当前使用配置引用
+  FFmpeg/             FFmpeg 可执行文件
+  Videos/             默认本地视频输出目录
+  OptionDesc/         参数说明 JSON
 ```
 
 ## 配置文件命名
 
-所有录制配置都放在：
+录制配置按用途拆分为：
 
 ```txt
-Assets/StreamingAssets/FFmpegTools/Configs/
+Assets/StreamingAssets/RecorderSDK/Configs/DefaultTemplate/
+Assets/StreamingAssets/RecorderSDK/Configs/CustomTemplate/
+Assets/StreamingAssets/RecorderSDK/Configs/UseTemplate/
 ```
 
-模板配置：
+默认模板位于 `DefaultTemplate`：
 
 ```txt
-template_win_low.json
-template_win_medium.json
-template_win_high.json
-template_linux_low.json
-template_linux_medium.json
-template_linux_high.json
+Template_Win_Low.json
+Template_Win_Medium.json
+Template_Win_High.json
+Template_Linux_Low.json
+Template_Linux_Medium.json
+Template_Linux_High.json
 ```
 
-当前使用配置引用：
+当前使用配置引用位于 `UseTemplate`：
 
 ```txt
 UseWinRecordConfig.json
 UseLinuxRecordConfig.json
 ```
 
-用户另存配置：
+用户另存配置位于 `CustomTemplate`：
 
 ```txt
-create_win_***.json
-create_linux_***.json
+Custom_Win_高质量直播.json
+Custom_Linux_国产系统录制.json
 ```
 
 `UseWinRecordConfig.json` 和 `UseLinuxRecordConfig.json` 只记录当前正在使用哪个源配置文件，不复制完整参数。录制端读取旧配置时会补全推流码率、GOP、缓冲区、重连次数和重连间隔等默认值，避免旧 JSON 缺字段导致推流参数为空。
 
-新版配置结构使用 `schemaVersion = 2`。配置身份由 `configId` 表示，界面显示名由 `displayName` 表示；配置文件名由 `configId` 自动推导为 `configId.json`。`configName`、`fileName`、`Creat_` 前缀均为 Legacy 兼容字段/命名，只用于读取旧配置；新版保存不再写入 `configName` / `fileName`，用户新建配置统一生成 `create_` 前缀的 `configId`。
+新版配置结构使用 `schemaVersion = 2`。配置身份由 `configId` 表示，界面显示名由 `displayName` 表示；默认模板文件使用 `Template_<Platform>_<Level>.json`，用户新建/克隆配置统一生成 `Custom_<Platform>_<Name>.json` 并保存到 `CustomTemplate`。`configName`、`fileName`、`Creat_` / `create_` 前缀均为 Legacy 兼容字段/命名，只用于读取旧配置；新版保存不再写入 `configName` / `fileName`。
 
 `UseWinRecordConfig.json` 和 `UseLinuxRecordConfig.json` 新版优先保存 `currentConfigId`：
 
@@ -115,15 +121,14 @@ Assets/Demos/RecorderSdk/Demo/Scenes/录制器_屏幕录制.unity
 
 Demo UI 说明：
 
-- 推荐先打开统一入口：`ByTools/Recorder SDK控制台`。控制台集中提供 UI 创建、布局导出/应用、API 参数参考、SDK API、环境检查、打包发布和文档查看。
+- 推荐先打开统一入口：`ByTools/Recorder SDK控制台`。控制台集中提供 API 参数参考、SDK API、环境检查、打包发布和文档查看。
 - API 参数参考已内置在控制台的 `API 参数` 页，可在 `FFmpeg 参数` 和 `视频编码参数` 两个页签之间切换。
 - 开发者调用说明已内置在控制台的 `SDK API` 页，包含 `StartRecordingAsync()`、`StopRecordingAsync()`、事件、错误码、SessionHistory 和配置系统说明。
 - 文档中心使用中文分类和中文文档按钮，文档内容按点击懒加载并缓存；API 参数页也会按首次进入的页签初始化内容，避免控制台打开时一次性读取或构建全部内容。
-- 打包发布页默认只包含 SDK 必要目录、`Configs`、可选 `FFmpegApp` 和 `Videos/README.md` 空目录说明，不会把 `Assets/StreamingAssets/FFmpegTools/Videos` 中的实际录制视频打进 unitypackage。
+- 打包发布页默认只包含 SDK 必要目录、`Configs`、可选 `FFmpeg` 和 `Videos/README.md` 空目录说明，不会把 `Assets/StreamingAssets/RecorderSDK/Videos` 中的实际录制视频打进 unitypackage。
 - `录制器_屏幕录制.unity` 的 UI 应提前存在于场景 Hierarchy 中，`RecorderDemoBasicController` 只负责绑定按钮、文本、Dropdown、Toggle、Slider 并调用 SDK。
 - Play 后不会默认动态创建 Demo UI；如果 UI 字段未绑定，Controller 会输出 Warning，避免直接 NullReferenceException。
-- 如需在当前场景重建屏幕录制 Demo UI，请进入控制台的 `UI 工具` 页点击 `创建屏幕录制 UI`。该工具只在 Editor 中一次性创建 UI、RecorderManager、CrossPlatformScreenRecorder 和 RecorderDemoBasicController，并自动绑定字段；生成后请保存场景。
-- 手动调整 Demo UI 后，可在控制台的 `UI 工具` 页导出为 `DemoUILayoutProfile.json`；后续应用布局或重新创建 Demo UI 时会复用该布局。
+- `UI 工具` 页当前仅作为后续扩展入口保留，不再作为 Beta 阶段主工作流。
 
 ## UI 使用说明
 
@@ -247,7 +252,7 @@ Core 中新增了插件化接口边界：`IRecorderBackend`、`IAudioCaptureBack
 本地录制会保存到配置中的 `videoSaveDirectory`。如果未配置，默认使用：
 
 ```txt
-Assets/StreamingAssets/FFmpegTools/Videos/
+Assets/StreamingAssets/RecorderSDK/Videos/
 ```
 
 ### MP4 参数
@@ -483,6 +488,3 @@ Assets/Demos/RecorderSdk/Documentation/Validation/RecorderSdkUnityPackageValidat
 - 不建议超过 `12`，除非确认源声音不会削波。
 - 没有音频输入时不会拼接 `-af`，关闭 `enableAudioGain` 时也不会改变 FFmpeg 音频滤镜。
 - 旧场景如果还没有挂载新增的音量增强 UI 控件，运行时仍然安全；可以直接在 JSON 配置中设置 `enableAudioGain`、`audioGainDb`、`audioLimiterEnabled` 来启用该功能。
-
-
-

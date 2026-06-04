@@ -26,7 +26,7 @@ namespace Demos.示例_录制视频Recorder.Editor
     {
         private const string SDK_VERSION = "Recorder SDK v0.3.0-beta";
         private const string PREFERRED_SDK_ROOT = "Assets/Demos/RecorderSdk";
-        private const string STREAMING_ASSETS_ROOT = "Assets/StreamingAssets/FFmpegTools";
+        private const string STREAMING_ASSETS_ROOT = "Assets/StreamingAssets/RecorderSDK";
         private const string WINDOW_TITLE = "Recorder SDK 控制台";
         private const string SDK_ROOT_EDITOR_PREFS_KEY = "RecorderSdkHubWindow.SdkRoot";
         private const int MAX_DOCUMENT_DISPLAY_CHARS = 50000;
@@ -76,7 +76,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         private string _unityPackageValidationPath = string.Empty;
         private DateTime _changeLogLastWriteTime;
         private bool _changeLogLoaded;
-        private bool _includeFFmpegApp = true;
+        private bool _includeFFmpeg = true;
         private bool _includeWasapiDll = true;
         private bool _includeDocumentation = true;
         private bool _includeDemoScenes = true;
@@ -107,7 +107,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// <summary>
         /// 打开 Recorder SDK 控制台。
         /// </summary>
-        [MenuItem("ByTools/🔴 Recorder SDK控制台")]
+        [MenuItem("ByTools/🔴 Recorder SDK/控制台")]
         public static void ShowWindow()
         {
             var window = GetWindow<RecorderSdkHubWindow>(WINDOW_TITLE);
@@ -120,16 +120,16 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private void OnEnable()
         {
-            _sdkRoot = ResolveSdkRoot();
-            _documentationRoot = ResolveDocumentationRoot();
-            _documentEntries = CreateDocumentEntries();
-            _sdkApiEntries = CreateDetailedSdkApiEntries();
-            _changeLogPath = ResolveDocumentPath("Changelog/RecorderSdkChangeLogSummary.md");
-            _fullChangeLogPath = ResolveDocumentPath("Changelog/RecorderSettingsChangeLog.md");
-            _validationSummaryPath = ResolveDocumentPath("Validation/RecorderSdkValidationSummary.md");
-            _runtimeValidationPath = ResolveDocumentPath("Validation/RecorderSdkRuntimeValidation.md");
+            _sdkRoot                    = ResolveSdkRoot();
+            _documentationRoot          = ResolveDocumentationRoot();
+            _documentEntries            = CreateDocumentEntries();
+            _sdkApiEntries              = CreateDetailedSdkApiEntries();
+            _changeLogPath              = ResolveDocumentPath("Changelog/RecorderSdkChangeLogSummary.md");
+            _fullChangeLogPath          = ResolveDocumentPath("Changelog/RecorderSettingsChangeLog.md");
+            _validationSummaryPath      = ResolveDocumentPath("Validation/RecorderSdkValidationSummary.md");
+            _runtimeValidationPath      = ResolveDocumentPath("Validation/RecorderSdkRuntimeValidation.md");
             _unityPackageValidationPath = ResolveDocumentPath("Validation/RecorderSdkUnityPackageValidation.md");
-            _selectedDocumentIndex = 0;
+            _selectedDocumentIndex      = 0;
             RefreshDocumentContent();
             RunBasicEnvironmentChecks();
             RunPackageChecks();
@@ -243,11 +243,11 @@ namespace Demos.示例_录制视频Recorder.Editor
         {
             DrawPageHeader("Recorder SDK 控制台", "版本：v0.3.0-beta。专业录制 SDK 管理与集成工具。");
 
-            bool ffmpegExists = File.Exists(GetDefaultFFmpegPath());
-            bool isWindows = IsWindowsEditorPlatform();
-            bool wasapiExists = isWindows && File.Exists(ResolveAssetPath("Plugins/Windows/x86_64/WASAPILoopbackRecorder.dll"));
-            bool configsExists = Directory.Exists(GetConfigsDirectory());
-            string currentConfig = _currentConfigIdCache;
+            bool   ffmpegExists    = File.Exists(GetDefaultFFmpegPath());
+            bool   isWindows       = IsWindowsEditorPlatform();
+            bool   wasapiExists    = isWindows && File.Exists(ResolveAssetPath("Plugins/Windows/x86_64/WASAPILoopbackRecorder.dll"));
+            bool   configsExists   = Directory.Exists(GetDefaultTemplateDirectory()) && Directory.Exists(GetCustomTemplateDirectory()) && Directory.Exists(GetUseTemplateDirectory());
+            string currentConfig   = _currentConfigIdCache;
             string outputDirectory = Path.Combine(STREAMING_ASSETS_ROOT, "Videos").Replace("\\", "/");
 
             DrawMainCard("当前环境状态", "先确认依赖和路径是否可用，再进入演示或设置。", () =>
@@ -341,7 +341,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             DrawInfoBox("左侧分类用于快速定位参数组，右侧参数说明可滚动查看。");
 
             GUILayout.Space(6f);
-            float contentWidth = Mathf.Max(position.width - 230f, 720f);
+            float contentWidth  = Mathf.Max(position.width - 230f, 720f);
             float contentHeight = Mathf.Max(position.height - 150f, 480f);
             if (_selectedApiTab == 0)
             {
@@ -371,12 +371,12 @@ namespace Demos.示例_录制视频Recorder.Editor
             _sdkApiCategoryScroll = EditorGUILayout.BeginScrollView(_sdkApiCategoryScroll, GUILayout.Height(Mathf.Max(260f, position.height - 130f)));
             for (int i = 0; i < _sdkApiEntries.Count; i++)
             {
-                bool selected = _selectedSdkApiCategory == i;
+                bool selected     = _selectedSdkApiCategory == i;
                 bool nextSelected = GUILayout.Toggle(selected, _sdkApiEntries[i].title, "Button", GUILayout.Height(30f));
                 if (nextSelected && !selected)
                 {
                     _selectedSdkApiCategory = i;
-                    _sdkApiContentScroll = Vector2.zero;
+                    _sdkApiContentScroll    = Vector2.zero;
                 }
             }
 
@@ -443,11 +443,11 @@ namespace Demos.示例_录制视频Recorder.Editor
                 GUILayout.Toggle(true, "Configs（必选）");
             }
 
-            _includeFFmpegApp = GUILayout.Toggle(_includeFFmpegApp, "包含 FFmpegApp");
-            _includeWasapiDll = GUILayout.Toggle(_includeWasapiDll, "包含 WASAPI 原生 DLL");
+            _includeFFmpeg        = GUILayout.Toggle(_includeFFmpeg, "包含 FFmpeg");
+            _includeWasapiDll     = GUILayout.Toggle(_includeWasapiDll, "包含 WASAPI 原生 DLL");
             _includeDocumentation = GUILayout.Toggle(_includeDocumentation, "包含 Documentation");
-            _includeDemoScenes = GUILayout.Toggle(_includeDemoScenes, "包含 Demo 场景");
-            _includeVideosReadme = GUILayout.Toggle(_includeVideosReadme, "包含 Videos 空目录说明");
+            _includeDemoScenes    = GUILayout.Toggle(_includeDemoScenes, "包含 Demo 场景");
+            _includeVideosReadme  = GUILayout.Toggle(_includeVideosReadme, "包含 Videos 空目录说明");
 
             GUILayout.Space(8f);
             DrawCheckItems(_packageChecks);
@@ -490,14 +490,14 @@ namespace Demos.示例_录制视频Recorder.Editor
             using (new EditorGUI.DisabledScope(true))
             {
                 GUILayout.Toggle(true, "SDK 根目录（必选）");
-                GUILayout.Toggle(true, "Configs（必选）");
+                GUILayout.Toggle(true, "Configs/DefaultTemplate、CustomTemplate、UseTemplate（必选）");
             }
 
-            _includeFFmpegApp = GUILayout.Toggle(_includeFFmpegApp, "包含 FFmpegApp");
-            _includeWasapiDll = GUILayout.Toggle(_includeWasapiDll, "包含 WASAPI 原生 DLL");
+            _includeFFmpeg        = GUILayout.Toggle(_includeFFmpeg, "包含 FFmpeg");
+            _includeWasapiDll     = GUILayout.Toggle(_includeWasapiDll, "包含 WASAPI 原生 DLL");
             _includeDocumentation = GUILayout.Toggle(_includeDocumentation, "包含 Documentation");
-            _includeDemoScenes = GUILayout.Toggle(_includeDemoScenes, "包含 Demo 场景");
-            _includeVideosReadme = GUILayout.Toggle(_includeVideosReadme, "包含 Videos 空目录说明");
+            _includeDemoScenes    = GUILayout.Toggle(_includeDemoScenes, "包含 Demo 场景");
+            _includeVideosReadme  = GUILayout.Toggle(_includeVideosReadme, "包含 Videos 空目录说明");
 
             GUILayout.Space(8f);
             DrawCheckTable(_packageChecks);
@@ -561,9 +561,10 @@ namespace Demos.示例_录制视频Recorder.Editor
             _selectedValidationTab = GUILayout.Toolbar(_selectedValidationTab, new[] { "验证摘要", "完整运行时验证", "完整 UnityPackage 验证" }, GUILayout.Height(28f));
             GUILayout.Space(6f);
 
-            string path = _selectedValidationTab == 0 ? _validationSummaryPath : _selectedValidationTab == 1 ? _runtimeValidationPath : _unityPackageValidationPath;
-            string title = _selectedValidationTab == 0 ? "验证摘要" : _selectedValidationTab == 1 ? "运行时验证记录" : "UnityPackage 验证记录";
-            string fileName = _selectedValidationTab == 0 ? "RecorderSdkValidationSummary.md" : _selectedValidationTab == 1 ? "RecorderSdkRuntimeValidation.md" : "RecorderSdkUnityPackageValidation.md";
+            string path  = _selectedValidationTab == 0 ? _validationSummaryPath : _selectedValidationTab == 1 ? _runtimeValidationPath : _unityPackageValidationPath;
+            string title = _selectedValidationTab == 0 ? "验证摘要" : _selectedValidationTab == 1                 ? "运行时验证记录" : "UnityPackage 验证记录";
+            string fileName = _selectedValidationTab == 0 ? "RecorderSdkValidationSummary.md" :
+                              _selectedValidationTab == 1 ? "RecorderSdkRuntimeValidation.md" : "RecorderSdkUnityPackageValidation.md";
             if (!_documentCache.TryGetValue(path, out var cached))
             {
                 cached = LoadDocumentToCache(path);
@@ -595,10 +596,7 @@ namespace Demos.示例_录制视频Recorder.Editor
                 }));
 
             GUILayout.Space(8f);
-            DrawCard("能力说明", "当前 Beta 版本已提供的主要能力。", () =>
-            {
-                GUILayout.Label("本地录制、系统音频录制、推流、配置管理、SessionHistory、Editor 工具、unitypackage 分发检查。", _smallTextStyle);
-            });
+            DrawCard("能力说明", "当前 Beta 版本已提供的主要能力。", () => { GUILayout.Label("本地录制、系统音频录制、推流、配置管理、SessionHistory、Editor 工具、unitypackage 分发检查。", _smallTextStyle); });
         }
 
         /// <summary>
@@ -694,7 +692,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             if (GUILayout.Button("打开所在目录", GUILayout.Width(120f))) RevealPath(path);
             EditorGUILayout.EndHorizontal();
 
-            float scrollHeight = Mathf.Max(220f, position.height - 190f);
+            float  scrollHeight  = Mathf.Max(220f, position.height - 190f);
             string viewerContent = RemoveRepeatedDocumentHeading(title, content);
             DrawScrollableText(viewerContent, ref scrollPosition, scrollHeight, Mathf.Max(420f, position.width - 260f));
         }
@@ -705,9 +703,9 @@ namespace Demos.示例_录制视频Recorder.Editor
         private void DrawScrollableText(string content, ref Vector2 scrollPosition, float scrollHeight, float contentWidth)
         {
             string safeContent = content ?? string.Empty;
-            float width = Mathf.Max(300f, contentWidth);
-            var guiContent = new GUIContent(safeContent);
-            float textHeight = Mathf.Max(24f, _markdownStyle.CalcHeight(guiContent, width) + 40f);
+            float  width       = Mathf.Max(300f, contentWidth);
+            var    guiContent  = new GUIContent(safeContent);
+            float  textHeight  = Mathf.Max(24f, _markdownStyle.CalcHeight(guiContent, width) + 40f);
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, true, true, GUILayout.Height(scrollHeight), GUILayout.ExpandWidth(true));
             EditorGUILayout.SelectableLabel(safeContent, _markdownStyle, GUILayout.Width(width), GUILayout.Height(textHeight));
             EditorGUILayout.EndScrollView();
@@ -719,9 +717,9 @@ namespace Demos.示例_录制视频Recorder.Editor
         private void DrawSdkApiDocument(string title, string content, ref Vector2 scrollPosition, float scrollHeight)
         {
             string safeContent = RemoveRepeatedDocumentHeading(title, content ?? string.Empty);
-            float width = Mathf.Max(360f, position.width - 470f);
-            var guiContent = new GUIContent(safeContent);
-            float textHeight = Mathf.Max(120f, _markdownStyle.CalcHeight(guiContent, width) + 48f);
+            float  width       = Mathf.Max(360f, position.width - 470f);
+            var    guiContent  = new GUIContent(safeContent);
+            float  textHeight  = Mathf.Max(120f, _markdownStyle.CalcHeight(guiContent, width) + 48f);
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, true, true, GUILayout.Height(scrollHeight), GUILayout.ExpandWidth(true));
             EditorGUILayout.SelectableLabel(safeContent, _markdownStyle, GUILayout.Width(width), GUILayout.Height(textHeight));
             EditorGUILayout.EndScrollView();
@@ -733,9 +731,9 @@ namespace Demos.示例_录制视频Recorder.Editor
         private static string RemoveRepeatedDocumentHeading(string title, string content)
         {
             if (string.IsNullOrWhiteSpace(content)) return "暂无内容。";
-            string normalized = content.Replace("\r\n", "\n");
-            string[] lines = normalized.Split('\n');
-            int start = 0;
+            string   normalized = content.Replace("\r\n", "\n");
+            string[] lines      = normalized.Split('\n');
+            int      start      = 0;
             while (start < lines.Length && string.IsNullOrWhiteSpace(lines[start])) start++;
             while (start < lines.Length && IsRepeatedDocumentHeading(title, lines[start])) start++;
             return string.Join("\n", lines.Skip(start)).Trim();
@@ -756,8 +754,8 @@ namespace Demos.示例_录制视频Recorder.Editor
             if (string.Equals(headingText, title, StringComparison.OrdinalIgnoreCase)) return true;
 
             return headingLevel == 1
-                && headingText.StartsWith("Recorder SDK", StringComparison.OrdinalIgnoreCase)
-                && !string.IsNullOrWhiteSpace(title);
+                   && headingText.StartsWith("Recorder SDK", StringComparison.OrdinalIgnoreCase)
+                   && !string.IsNullOrWhiteSpace(title);
         }
 
         /// <summary>
@@ -782,7 +780,10 @@ namespace Demos.示例_录制视频Recorder.Editor
             _currentConfigIdCache = ReadCurrentConfigId();
             AddPathCheck(_environmentChecks, "ffmpeg.exe 是否存在", GetDefaultFFmpegPath(), false);
             AddPathCheck(_environmentChecks, "WASAPILoopbackRecorder.dll 是否存在", ResolveAssetPath("Plugins/Windows/x86_64/WASAPILoopbackRecorder.dll"), false);
-            AddPathCheck(_environmentChecks, "StreamingAssets/FFmpegTools/Configs 是否存在", GetConfigsDirectory(), true);
+            AddPathCheck(_environmentChecks, "RecorderSDK/Configs/DefaultTemplate 是否存在", GetDefaultTemplateDirectory(), true);
+            AddPathCheck(_environmentChecks, "RecorderSDK/Configs/CustomTemplate 是否存在", GetCustomTemplateDirectory(), true);
+            AddPathCheck(_environmentChecks, "RecorderSDK/Configs/UseTemplate 是否存在", GetUseTemplateDirectory(), true);
+            AddPathCheck(_environmentChecks, "RecorderSDK/OptionDesc 是否存在", GetOptionDescDirectory(), true);
             AddConfigJsonCheck();
             AddCurrentConfigCheck();
             AddOutputDirectoryCheck();
@@ -806,17 +807,17 @@ namespace Demos.示例_录制视频Recorder.Editor
 
             string versionOutput = RunProcess(ffmpegPath, "-version", 5000, out bool versionOk);
             _environmentChecks.Add(versionOk
-                ? CheckItem.Ok("ffmpeg -version 是否可执行", FirstLine(versionOutput))
-                : CheckItem.Error("ffmpeg -version 是否可执行", versionOutput));
+                                       ? CheckItem.Ok("ffmpeg -version 是否可执行", FirstLine(versionOutput))
+                                       : CheckItem.Error("ffmpeg -version 是否可执行", versionOutput));
 
             string devicesOutput = RunProcess(ffmpegPath, "-hide_banner -devices", 8000, out bool devicesOk);
             AddPlatformAudioDeviceCheck(devicesOutput, devicesOk);
 
             string filtersOutput = RunProcess(ffmpegPath, "-hide_banner -filters", 8000, out bool filtersOk);
-            bool hasAlimiter = filtersOk && filtersOutput.IndexOf("alimiter", StringComparison.OrdinalIgnoreCase) >= 0;
+            bool   hasAlimiter   = filtersOk && filtersOutput.IndexOf("alimiter", StringComparison.OrdinalIgnoreCase) >= 0;
             _environmentChecks.Add(hasAlimiter
-                ? CheckItem.Ok("ffmpeg -filters 是否支持 alimiter", "已检测到 alimiter。")
-                : CheckItem.Warning("ffmpeg -filters 是否支持 alimiter", filtersOk ? "未检测到 alimiter，音量增强 limiter 会降级。" : filtersOutput));
+                                       ? CheckItem.Ok("ffmpeg -filters 是否支持 alimiter", "已检测到 alimiter。")
+                                       : CheckItem.Warning("ffmpeg -filters 是否支持 alimiter", filtersOk ? "未检测到 alimiter，音量增强 limiter 会降级。" : filtersOutput));
         }
 
         /// <summary>
@@ -828,20 +829,20 @@ namespace Demos.示例_录制视频Recorder.Editor
             {
                 bool hasWasapi = devicesOk && devicesOutput.IndexOf("wasapi", StringComparison.OrdinalIgnoreCase) >= 0;
                 _environmentChecks.Add(hasWasapi
-                    ? CheckItem.Ok("FFmpeg wasapi 输入支持", "支持：Windows 推流音频可用。")
-                    : CheckItem.Warning("FFmpeg wasapi 输入支持", devicesOk ? "不支持：Windows 推流音频不可用，但本地 MP4/WebM 录屏音频仍可能通过 WASAPILoopbackRecorder.dll + Merge 可用。" : devicesOutput));
+                                           ? CheckItem.Ok("FFmpeg wasapi 输入支持", "支持：Windows 推流音频可用。")
+                                           : CheckItem.Warning("FFmpeg wasapi 输入支持", devicesOk ? "不支持：Windows 推流音频不可用，但本地 MP4/WebM 录屏音频仍可能通过 WASAPILoopbackRecorder.dll + Merge 可用。" : devicesOutput));
                 return;
             }
 
             if (IsLinuxEditorPlatform())
             {
-                bool hasPulse = devicesOk && devicesOutput.IndexOf("pulse", StringComparison.OrdinalIgnoreCase) >= 0;
-                bool hasAlsa = devicesOk && devicesOutput.IndexOf("alsa", StringComparison.OrdinalIgnoreCase) >= 0;
-                bool hasPipeWire = devicesOk && devicesOutput.IndexOf("pipewire", StringComparison.OrdinalIgnoreCase) >= 0;
+                bool hasPulse      = devicesOk && devicesOutput.IndexOf("pulse", StringComparison.OrdinalIgnoreCase) >= 0;
+                bool hasAlsa       = devicesOk && devicesOutput.IndexOf("alsa", StringComparison.OrdinalIgnoreCase) >= 0;
+                bool hasPipeWire   = devicesOk && devicesOutput.IndexOf("pipewire", StringComparison.OrdinalIgnoreCase) >= 0;
                 bool hasLinuxAudio = hasPulse || hasAlsa || hasPipeWire;
                 _environmentChecks.Add(hasLinuxAudio
-                    ? CheckItem.Ok("FFmpeg Linux 音频输入支持", $"检测到实时音频输入：{BuildLinuxAudioDeviceSummary(hasPulse, hasAlsa, hasPipeWire)}。Linux/国产系统推流音频按当前系统音频源与 FFmpeg 编译能力判断。")
-                    : CheckItem.Warning("FFmpeg Linux 音频输入支持", devicesOk ? "未检测到 pulse/alsa/pipewire 输入；Linux/国产系统推流音频可能不可用，但不会使用 wasapi 判断。" : devicesOutput));
+                                           ? CheckItem.Ok("FFmpeg Linux 音频输入支持", $"检测到实时音频输入：{BuildLinuxAudioDeviceSummary(hasPulse, hasAlsa, hasPipeWire)}。Linux/国产系统推流音频按当前系统音频源与 FFmpeg 编译能力判断。")
+                                           : CheckItem.Warning("FFmpeg Linux 音频输入支持", devicesOk ? "未检测到 pulse/alsa/pipewire 输入；Linux/国产系统推流音频可能不可用，但不会使用 wasapi 判断。" : devicesOutput));
             }
         }
 
@@ -887,8 +888,11 @@ namespace Demos.示例_录制视频Recorder.Editor
             _packageChecks.Clear();
             AddPathCheck(_packageChecks, "Recorder SDK 根目录（必选）", _sdkRoot, true);
             AddSdkRootStructureCheck();
-            AddPathCheck(_packageChecks, "Configs（必选）", GetConfigsDirectory(), true);
-            if (_includeFFmpegApp) AddPathCheck(_packageChecks, "FFmpegApp", GetFFmpegAppDirectory(), true);
+            AddPathCheck(_packageChecks, "Configs/DefaultTemplate（必选）", GetDefaultTemplateDirectory(), true);
+            AddPathCheck(_packageChecks, "Configs/CustomTemplate（必选）", GetCustomTemplateDirectory(), true);
+            AddPathCheck(_packageChecks, "Configs/UseTemplate（必选）", GetUseTemplateDirectory(), true);
+            AddPathCheck(_packageChecks, "OptionDesc（必选）", GetOptionDescDirectory(), true);
+            if (_includeFFmpeg) AddPathCheck(_packageChecks, "FFmpeg", GetFFmpegDirectory(), true);
             AddPathCheck(_packageChecks, "WASAPILoopbackRecorder.dll（正式包必须存在）", ResolveAssetPath("Plugins/Windows/x86_64/WASAPILoopbackRecorder.dll"), false);
             if (_includeDocumentation) AddPathCheck(_packageChecks, "Documentation", ResolveAssetPath("Documentation"), true);
             if (_includeDemoScenes) AddPathCheck(_packageChecks, "Demo 场景目录", ResolveAssetPath("Demo/Scenes"), true);
@@ -913,11 +917,11 @@ namespace Demos.示例_录制视频Recorder.Editor
         private void RescanSdkRoot()
         {
             EditorPrefs.DeleteKey(SDK_ROOT_EDITOR_PREFS_KEY);
-            _sdkRoot = DetectSdkRootFromScript();
+            _sdkRoot       = DetectSdkRootFromScript();
             _sdkRootSource = IsValidSdkRoot(_sdkRoot) ? "脚本反推" : "fallback";
             if (!IsValidSdkRoot(_sdkRoot)) _sdkRoot = PREFERRED_SDK_ROOT;
             _documentationRoot = ResolveDocumentationRoot();
-            _documentEntries = CreateDocumentEntries();
+            _documentEntries   = CreateDocumentEntries();
             RunPackageChecks();
         }
 
@@ -926,7 +930,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private void SelectSdkRoot()
         {
-            string currentPath = AssetPathToAbsolutePath(_sdkRoot);
+            string currentPath  = AssetPathToAbsolutePath(_sdkRoot);
             string selectedPath = EditorUtility.OpenFolderPanel("选择 Recorder SDK 根目录", currentPath, string.Empty);
             if (string.IsNullOrEmpty(selectedPath)) return;
 
@@ -937,11 +941,11 @@ namespace Demos.示例_录制视频Recorder.Editor
                 return;
             }
 
-            _sdkRoot = assetPath;
+            _sdkRoot       = assetPath;
             _sdkRootSource = "手动选择";
             EditorPrefs.SetString(SDK_ROOT_EDITOR_PREFS_KEY, _sdkRoot);
             _documentationRoot = ResolveDocumentationRoot();
-            _documentEntries = CreateDocumentEntries();
+            _documentEntries   = CreateDocumentEntries();
             RunPackageChecks();
         }
 
@@ -961,8 +965,8 @@ namespace Demos.示例_录制视频Recorder.Editor
         {
             string warning = GetSdkRootStructureWarning();
             _packageChecks.Add(string.IsNullOrEmpty(warning)
-                ? CheckItem.Ok("SDK 内部目录结构", "Core / UI / Editor / Demo / Documentation / Plugins 目录可识别。")
-                : CheckItem.Warning("SDK 内部目录结构", warning));
+                                   ? CheckItem.Ok("SDK 内部目录结构", "Core / UI / Editor / Demo / Documentation / Plugins 目录可识别。")
+                                   : CheckItem.Warning("SDK 内部目录结构", warning));
         }
 
         /// <summary>
@@ -977,7 +981,7 @@ namespace Demos.示例_录制视频Recorder.Editor
                 return;
             }
 
-            var files = Directory.GetFiles(configsDir, "*.json", SearchOption.TopDirectoryOnly);
+            var files        = Directory.GetFiles(configsDir, "*.json", SearchOption.AllDirectories);
             int invalidCount = 0;
             foreach (string file in files)
             {
@@ -994,8 +998,8 @@ namespace Demos.示例_录制视频Recorder.Editor
             }
 
             _environmentChecks.Add(invalidCount == 0
-                ? CheckItem.Ok("Config JSON 是否能解析", "共检查 " + files.Length + " 个 JSON。")
-                : CheckItem.Error("Config JSON 是否能解析", "解析失败数量：" + invalidCount));
+                                       ? CheckItem.Ok("Config JSON 是否能解析", "共检查 " + files.Length + " 个 JSON。")
+                                       : CheckItem.Error("Config JSON 是否能解析", "解析失败数量：" + invalidCount));
         }
 
         /// <summary>
@@ -1011,7 +1015,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             }
 
             string useConfigName = Application.platform == RuntimePlatform.LinuxEditor ? "UseLinuxRecordConfig.json" : "UseWinRecordConfig.json";
-            string useConfigPath = Path.Combine(configsDir, useConfigName);
+            string useConfigPath = Path.Combine(GetUseTemplateDirectory(), useConfigName);
             if (!File.Exists(useConfigPath))
             {
                 _environmentChecks.Add(CheckItem.Warning("当前配置 currentConfigId 是否有效", "未找到：" + useConfigName));
@@ -1025,11 +1029,11 @@ namespace Demos.示例_录制视频Recorder.Editor
                 return;
             }
 
-            bool exists = Directory.GetFiles(configsDir, "*.json", SearchOption.TopDirectoryOnly)
+            bool exists = Directory.GetFiles(configsDir, "*.json", SearchOption.AllDirectories)
                 .Any(file => ExtractJsonString(File.ReadAllText(file, Encoding.UTF8), "configId") == currentConfigId);
             _environmentChecks.Add(exists
-                ? CheckItem.Ok("当前配置 currentConfigId 是否有效", currentConfigId)
-                : CheckItem.Error("当前配置 currentConfigId 是否有效", "未找到 configId：" + currentConfigId));
+                                       ? CheckItem.Ok("当前配置 currentConfigId 是否有效", currentConfigId)
+                                       : CheckItem.Error("当前配置 currentConfigId 是否有效", "未找到 configId：" + currentConfigId));
         }
 
         /// <summary>
@@ -1069,7 +1073,7 @@ namespace Demos.示例_录制视频Recorder.Editor
                 return;
             }
 
-            var files = Directory.GetFiles(configsDir, "*.json", SearchOption.TopDirectoryOnly);
+            var files = Directory.GetFiles(configsDir, "*.json", SearchOption.AllDirectories);
             bool hasLegacy = files.Any(file =>
             {
                 string json = File.ReadAllText(file, Encoding.UTF8);
@@ -1077,8 +1081,8 @@ namespace Demos.示例_录制视频Recorder.Editor
             });
 
             _packageChecks.Add(hasLegacy
-                ? CheckItem.Warning("Configs 是否干净", "检测到 Legacy 字段 fileName/configName。")
-                : CheckItem.Ok("Configs 是否干净", "未检测到 Legacy 身份字段。"));
+                                   ? CheckItem.Warning("Configs 是否干净", "检测到 Legacy 字段 fileName/configName。")
+                                   : CheckItem.Ok("Configs 是否干净", "未检测到 Legacy 身份字段。"));
         }
 
         /// <summary>
@@ -1422,8 +1426,8 @@ namespace Demos.示例_录制视频Recorder.Editor
                 return;
             }
 
-            var selected = _documentEntries[Mathf.Clamp(_selectedDocumentIndex, 0, _documentEntries.Count - 1)];
-            string path = ResolveDocumentPath(selected.relativePath);
+            var    selected = _documentEntries[Mathf.Clamp(_selectedDocumentIndex, 0, _documentEntries.Count - 1)];
+            string path     = ResolveDocumentPath(selected.relativePath);
             _selectedDocumentContent = GetDocumentContent(path);
         }
 
@@ -1449,9 +1453,9 @@ namespace Demos.示例_录制视频Recorder.Editor
         /// </summary>
         private CachedDocument LoadDocumentToCache(string path)
         {
-            var lastWriteTime = File.Exists(path) ? File.GetLastWriteTimeUtc(path) : DateTime.MinValue;
-            string content = ReadDocumentFromDisk(path, "未找到：" + path, out _);
-            var cached = new CachedDocument(content, lastWriteTime);
+            var    lastWriteTime                                  = File.Exists(path) ? File.GetLastWriteTimeUtc(path) : DateTime.MinValue;
+            string content                                        = ReadDocumentFromDisk(path, "未找到：" + path, out _);
+            var    cached                                         = new CachedDocument(content, lastWriteTime);
             if (!string.IsNullOrEmpty(path)) _documentCache[path] = cached;
             return cached;
         }
@@ -1471,23 +1475,23 @@ namespace Demos.示例_录制视频Recorder.Editor
         private void ReloadChangeLog()
         {
             _changeLogLoaded = true;
-            _changeLogError = string.Empty;
+            _changeLogError  = string.Empty;
             if (string.IsNullOrEmpty(_changeLogPath))
             {
-                _changeLogText = "未找到更新日志文件。";
+                _changeLogText  = "未找到更新日志文件。";
                 _changeLogError = "更新日志路径为空。";
                 return;
             }
 
             if (!File.Exists(_changeLogPath))
             {
-                _changeLogText = "未找到更新日志文件。";
+                _changeLogText  = "未找到更新日志文件。";
                 _changeLogError = "未找到：" + _changeLogPath;
                 return;
             }
 
             _changeLogLastWriteTime = File.GetLastWriteTimeUtc(_changeLogPath);
-            _changeLogText = ReadDocumentFromDisk(_changeLogPath, "未找到更新日志文件。", out _changeLogError);
+            _changeLogText          = ReadDocumentFromDisk(_changeLogPath, "未找到更新日志文件。", out _changeLogError);
         }
 
         /// <summary>
@@ -1525,7 +1529,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             if (bytes == null || bytes.Length == 0) return string.Empty;
 
             string utf8Text = FixMojibakeIfNeeded(Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF'));
-            string gbkText = string.Empty;
+            string gbkText  = string.Empty;
             try
             {
                 gbkText = Encoding.GetEncoding(936).GetString(bytes);
@@ -1649,7 +1653,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         private static string GetDefaultFFmpegPath()
         {
             string fileName = Application.platform == RuntimePlatform.WindowsEditor ? "ffmpeg.exe" : "ffmpeg";
-            return Path.Combine(STREAMING_ASSETS_ROOT, "FFmpegApp", fileName).Replace("\\", "/");
+            return Path.Combine(STREAMING_ASSETS_ROOT, "FFmpeg", fileName).Replace("\\", "/");
         }
 
         /// <summary>
@@ -1661,11 +1665,31 @@ namespace Demos.示例_录制视频Recorder.Editor
         }
 
         /// <summary>
-        /// 获取 FFmpegApp 目录。
+        /// 获取 FFmpeg 目录。
         /// </summary>
-        private static string GetFFmpegAppDirectory()
+        private static string GetFFmpegDirectory()
         {
-            return Path.Combine(STREAMING_ASSETS_ROOT, "FFmpegApp").Replace("\\", "/");
+            return Path.Combine(STREAMING_ASSETS_ROOT, "FFmpeg").Replace("\\", "/");
+        }
+
+        private static string GetDefaultTemplateDirectory()
+        {
+            return Path.Combine(GetConfigsDirectory(), "DefaultTemplate").Replace("\\", "/");
+        }
+
+        private static string GetCustomTemplateDirectory()
+        {
+            return Path.Combine(GetConfigsDirectory(), "CustomTemplate").Replace("\\", "/");
+        }
+
+        private static string GetUseTemplateDirectory()
+        {
+            return Path.Combine(GetConfigsDirectory(), "UseTemplate").Replace("\\", "/");
+        }
+
+        private static string GetOptionDescDirectory()
+        {
+            return Path.Combine(STREAMING_ASSETS_ROOT, "OptionDesc").Replace("\\", "/");
         }
 
         /// <summary>
@@ -1683,9 +1707,9 @@ namespace Demos.示例_录制视频Recorder.Editor
         {
             try
             {
-                string configsDir = GetConfigsDirectory();
+                string configsDir    = GetConfigsDirectory();
                 string useConfigName = Application.platform == RuntimePlatform.LinuxEditor ? "UseLinuxRecordConfig.json" : "UseWinRecordConfig.json";
-                string useConfigPath = Path.Combine(configsDir, useConfigName);
+                string useConfigPath = Path.Combine(GetUseTemplateDirectory(), useConfigName);
                 if (!File.Exists(useConfigPath)) return string.Empty;
                 return ExtractJsonString(File.ReadAllText(useConfigPath, Encoding.UTF8), "currentConfigId");
             }
@@ -1708,7 +1732,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             if (_includeDemoScenes) AddExportPathIfExists(paths, ResolveAssetPath("Demo"));
             AddExportPathIfExists(paths, ResolveAssetPath("Plugins"));
             AddExportPathIfExists(paths, GetConfigsDirectory());
-            if (_includeFFmpegApp) AddExportPathIfExists(paths, GetFFmpegAppDirectory());
+            if (_includeFFmpeg) AddExportPathIfExists(paths, GetFFmpegDirectory());
             if (_includeVideosReadme) AddExportPathIfExists(paths, GetVideosReadmePath());
 
             return paths.Distinct().ToList();
@@ -1765,7 +1789,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             string editorPath = ResolveEditorScriptPath();
             if (string.IsNullOrEmpty(editorPath)) return string.Empty;
             string marker = "/RecorderSdk/Editor/";
-            int index = editorPath.IndexOf(marker, StringComparison.Ordinal);
+            int    index  = editorPath.IndexOf(marker, StringComparison.Ordinal);
             if (index >= 0) return editorPath.Substring(0, index + "/RecorderSdk".Length);
             string editorDirectory = Path.GetDirectoryName(editorPath)?.Replace("\\", "/");
             return string.IsNullOrEmpty(editorDirectory) ? string.Empty : Path.GetDirectoryName(editorDirectory)?.Replace("\\", "/");
@@ -1779,8 +1803,8 @@ namespace Demos.示例_录制视频Recorder.Editor
             if (string.IsNullOrEmpty(path)) return false;
             path = path.Replace("\\", "/");
             return AssetDatabase.IsValidFolder(path)
-                && AssetDatabase.IsValidFolder(path + "/Core")
-                && AssetDatabase.IsValidFolder(path + "/Editor");
+                   && AssetDatabase.IsValidFolder(path + "/Core")
+                   && AssetDatabase.IsValidFolder(path + "/Editor");
         }
 
         /// <summary>
@@ -1790,10 +1814,10 @@ namespace Demos.示例_录制视频Recorder.Editor
         {
             if (string.IsNullOrEmpty(_sdkRoot) || !AssetDatabase.IsValidFolder(_sdkRoot)) return "未找到 SDK 根目录。";
             string[] standardFolders = { "Core", "UI", "Editor", "Demo", "Documentation", "Plugins" };
-            var missingFolders = standardFolders.Where(folder => !AssetDatabase.IsValidFolder((_sdkRoot + "/" + folder).Replace("\\", "/"))).ToList();
+            var      missingFolders  = standardFolders.Where(folder => !AssetDatabase.IsValidFolder((_sdkRoot + "/" + folder).Replace("\\", "/"))).ToList();
             return missingFolders.Count == 0
-                ? string.Empty
-                : "检测到 SDK 内部标准目录缺失或被改名：" + string.Join(", ", missingFolders) + "。不建议修改 Core/UI/Editor/Demo/Documentation/Plugins 等内部目录名。";
+                       ? string.Empty
+                       : "检测到 SDK 内部标准目录缺失或被改名：" + string.Join(", ", missingFolders) + "。不建议修改 Core/UI/Editor/Demo/Documentation/Plugins 等内部目录名。";
         }
 
         /// <summary>
@@ -1843,8 +1867,8 @@ namespace Demos.示例_录制视频Recorder.Editor
             string preferred = (PREFERRED_SDK_ROOT + "/Documentation/" + relativePath).Replace("\\", "/");
             if (File.Exists(preferred)) return preferred;
 
-            string fileName = Path.GetFileName(relativePath);
-            string[] guids = AssetDatabase.FindAssets(Path.GetFileNameWithoutExtension(fileName));
+            string   fileName = Path.GetFileName(relativePath);
+            string[] guids    = AssetDatabase.FindAssets(Path.GetFileNameWithoutExtension(fileName));
             foreach (string guid in guids)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid).Replace("\\", "/");
@@ -1879,7 +1903,7 @@ namespace Demos.示例_录制视频Recorder.Editor
         private static string AbsolutePathToAssetPath(string absolutePath)
         {
             if (string.IsNullOrEmpty(absolutePath)) return string.Empty;
-            string normalized = absolutePath.Replace("\\", "/");
+            string normalized  = absolutePath.Replace("\\", "/");
             string projectRoot = Path.GetDirectoryName(Application.dataPath)?.Replace("\\", "/") ?? string.Empty;
             if (string.IsNullOrEmpty(projectRoot) || !normalized.StartsWith(projectRoot + "/", StringComparison.OrdinalIgnoreCase)) return string.Empty;
             return normalized.Substring(projectRoot.Length + 1);
@@ -1915,7 +1939,7 @@ namespace Demos.示例_录制视频Recorder.Editor
             return new List<SdkApiDocEntry>
             {
                 new("快速接入流程", "从场景对象到 Start / Stop 的最短接入路径。",
-@"快速接入流程
+                    @"快速接入流程
 
 1. 在场景中创建 RecorderManager。
 2. 给 RecorderManager 挂载 CrossPlatformScreenRecorder。
@@ -1929,7 +1953,7 @@ namespace Demos.示例_录制视频Recorder.Editor
 推荐新代码使用 async API。StartRecording() / StopRecording() 主要用于 Unity Button 兼容。"),
 
                 new("核心组件", "Recorder SDK 主要类型和职责。",
-@"CrossPlatformScreenRecorder
+                    @"CrossPlatformScreenRecorder
 - Recorder SDK 的 Unity 层入口。
 - 负责 Start / Stop、状态流转、事件派发、SessionHistory、调用 FFmpeg 命令。
 - 建议挂载在 RecorderManager 对象上。
@@ -1955,7 +1979,7 @@ WindowsLoopbackAudioRecorder
 - 依赖 WASAPI 能力或原生插件。缺失时应通过错误码或 Warning 提示。"),
 
                 new("生命周期接口", "Start / Stop 相关函数、时机和失败处理。",
-@"StartRecordingAsync()
+                    @"StartRecordingAsync()
 作用：异步开始录制或推流。
 调用时机：Recorder 处于 Ready / Completed / 部分允许状态时调用。
 返回值：RecorderResult，包含 success、message、errorCode、sessionId、outputPath。
@@ -1989,7 +2013,7 @@ StopRecording()
 建议：开发者代码优先使用 StopRecordingAsync()。"),
 
                 new("状态机", "RecorderState 各状态含义和进入时机。",
-@"RecorderState
+                    @"RecorderState
 
 Uninitialized
 - 录制器尚未初始化。
@@ -2017,7 +2041,7 @@ Error
 - 出现致命错误，RecorderResult 和事件中会带 RecorderErrorCode。"),
 
                 new("事件系统", "推荐事件和 Legacy 兼容事件说明。",
-@"OnRecorderStateChanged
+                    @"OnRecorderStateChanged
 - 触发时机：RecorderState 发生变化。
 - 参数：RecorderEventArgs，含 sessionId、state、message。
 - 推荐新代码使用。
@@ -2054,7 +2078,7 @@ OnMergeCompleted
 - 合并完成时触发。"),
 
                 new("返回结果", "异步调用返回结果字段说明。",
-@"RecorderResult 字段
+                    @"RecorderResult 字段
 
 success
 - 本次调用是否成功。
@@ -2078,14 +2102,14 @@ exception
 - 捕获到的异常对象。没有异常时为空。"),
 
                 new("错误码", "常用错误码含义和处理建议。",
-@"None
+                    @"None
 - 无错误。
 
 InvalidConfig
 - 配置无效。检查 FFmpeg 路径、输出目录、推流地址、帧率、编码器。
 
 FFmpegNotFound
-- 未找到 FFmpeg。请放入 FFmpegApp 或在设置中心选择路径。
+- 未找到 FFmpeg。请放入 RecorderSDK/FFmpeg 或在设置中心选择路径。
 
 ProcessLaunchFailed
 - FFmpeg 进程启动失败。检查权限、路径、命令参数。
@@ -2113,7 +2137,7 @@ AudioFilterInvalid
 - 音频滤镜不可用或拼接异常。可关闭 limiter 或检查 FFmpeg filters。"),
 
                 new("会话历史", "会话历史读取、清空和写入规则。",
-@"GetSessionHistory()
+                    @"GetSessionHistory()
 - 获取最近会话历史。
 - 返回只读列表，适合 UI 展示、日志上传和排错。
 
@@ -2145,7 +2169,7 @@ RecorderSessionInfo 常用字段
 - 后台 Merge 完成时会写入旧 session，不覆盖新录制状态。"),
 
                 new("配置系统", "configId 配置体系和常用操作。",
-@"核心字段
+                    @"核心字段
 
 configId
 - 内部唯一 ID，用于查找配置和生成文件名。
@@ -2175,7 +2199,7 @@ user 配置
 - SetCurrentConfig：切换当前 configId。"),
 
                 new("音量增强", "录制声音偏小时的音频增益配置。",
-@"JSON 字段
+                    @"JSON 字段
 
 enableAudioGain
 - 是否启用录制音量增强。
@@ -2203,7 +2227,7 @@ FFmpeg 滤镜
 - 不建议超过 12dB，除非确认不会削波。"),
 
                 new("示例代码", "可复制到 Unity C# 脚本中的常用示例。",
-@"示例 1：最小 Start / Stop
+                    @"示例 1：最小 Start / Stop
 
 using UnityEngine;
 
@@ -2313,7 +2337,7 @@ if (!string.IsNullOrEmpty(outputPath))
             return new List<SdkApiDocEntry>
             {
                 new("核心组件", "CrossPlatformScreenRecorder 的职责和挂载方式。",
-@"CrossPlatformScreenRecorder
+                    @"CrossPlatformScreenRecorder
 
 - 负责 Recorder SDK 的录制生命周期。
 - 建议挂载在场景中的 RecorderManager 对象上。
@@ -2321,7 +2345,7 @@ if (!string.IsNullOrEmpty(outputPath))
 - Settings UI 和 Demo UI 都应引用同一个 RecorderManager 上的 CrossPlatformScreenRecorder。"),
 
                 new("常用函数", "开发者最常用的 Start / Stop / History API。",
-@"StartRecordingAsync()
+                    @"StartRecordingAsync()
 
 - 异步开始录制。
 - 返回 RecorderResult。
@@ -2354,7 +2378,7 @@ ClearSessionHistory()
 - 不会影响当前正在录制的会话。"),
 
                 new("常用属性", "状态、输出路径和当前会话。",
-@"CurrentState
+                    @"CurrentState
 
 - 当前 Recorder 状态。
 - 常见值：Ready、Starting、Recording、Stopping、Merging、Completed、Error。
@@ -2370,7 +2394,7 @@ CurrentSession
 - 包含 sessionId、configId、displayName、输出路径、是否推流等信息。"),
 
                 new("常用事件", "SDK 调用方监听 Recorder 变化的统一入口。",
-@"OnRecorderStateChanged
+                    @"OnRecorderStateChanged
 
 - 状态变化时触发。
 - 例如 Ready、Starting、Recording、Stopping、Merging、Completed、Error。
@@ -2409,7 +2433,7 @@ OnMergeCompleted
 - 合并完成时触发。"),
 
                 new("返回结果", "RecorderResult 字段说明。",
-@"RecorderResult
+                    @"RecorderResult
 
 success
 - 本次调用是否成功。
@@ -2433,7 +2457,7 @@ exception
 - 捕获到的异常对象。没有异常时为空。"),
 
                 new("错误码", "常见 RecorderErrorCode 含义和处理建议。",
-@"RecorderErrorCode
+                    @"RecorderErrorCode
 
 None
 - 无错误。
@@ -2442,7 +2466,7 @@ InvalidConfig
 - 配置无效。检查 FFmpeg 路径、输出目录、推流地址、帧率、编码器等。
 
 FFmpegNotFound
-- 未找到 FFmpeg。请放入 FFmpegApp 或在 Settings UI 中选择自定义路径。
+- 未找到 FFmpeg。请放入 RecorderSDK/FFmpeg 或在 Settings UI 中选择自定义路径。
 
 ProcessLaunchFailed
 - FFmpeg 进程启动失败。检查路径、权限和命令参数。
@@ -2469,7 +2493,7 @@ AudioFilterInvalid
 - 音频滤镜不可用或拼接异常。音量增强可能降级或需要检查 alimiter 支持。"),
 
                 new("会话历史", "RecorderSessionInfo 字段说明。",
-@"RecorderSessionInfo
+                    @"RecorderSessionInfo
 
 sessionId
 - 会话唯一 ID。
@@ -2517,7 +2541,7 @@ audioGainDb
 - 本次录制使用的音量增益 dB。"),
 
                 new("配置系统", "配置管理相关类型。",
-@"RecorderConfigRegistry
+                    @"RecorderConfigRegistry
 
 - 通过 configId 管理配置。
 - 支持扫描、切换、保存、删除、克隆配置。
@@ -2535,7 +2559,7 @@ RecorderParamsConfig
 - 新版配置使用 schemaVersion = 2、configId、displayName、captureDisplayName。"),
 
                 new("最小示例", "异步 Start / Stop 调用示例。",
-@"using UnityEngine;
+                    @"using UnityEngine;
 
 public sealed class RecorderExample : MonoBehaviour
 {
@@ -2568,16 +2592,16 @@ public sealed class RecorderExample : MonoBehaviour
                 using var process = new Process();
                 process.StartInfo = new ProcessStartInfo
                 {
-                    FileName = executablePath,
-                    Arguments = arguments,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
+                    FileName               = executablePath,
+                    Arguments              = arguments,
+                    UseShellExecute        = false,
+                    CreateNoWindow         = true,
                     RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    RedirectStandardError  = true
                 };
                 process.Start();
                 var outputBuilder = new StringBuilder();
-                var errorBuilder = new StringBuilder();
+                var errorBuilder  = new StringBuilder();
                 process.OutputDataReceived += (_, args) =>
                 {
                     if (args.Data != null) outputBuilder.AppendLine(args.Data);
@@ -2597,7 +2621,7 @@ public sealed class RecorderExample : MonoBehaviour
 
                 success = process.ExitCode == 0;
                 string output = outputBuilder.ToString();
-                string error = errorBuilder.ToString();
+                string error  = errorBuilder.ToString();
                 return string.IsNullOrWhiteSpace(output) ? error : output + Environment.NewLine + error;
             }
             catch (Exception ex)
@@ -2611,8 +2635,8 @@ public sealed class RecorderExample : MonoBehaviour
         /// </summary>
         private static string ExtractJsonString(string json, string fieldName)
         {
-            string token = "\"" + fieldName + "\"";
-            int fieldIndex = json.IndexOf(token, StringComparison.Ordinal);
+            string token      = "\"" + fieldName + "\"";
+            int    fieldIndex = json.IndexOf(token, StringComparison.Ordinal);
             if (fieldIndex < 0) return string.Empty;
             int colonIndex = json.IndexOf(':', fieldIndex);
             if (colonIndex < 0) return string.Empty;
@@ -2639,9 +2663,9 @@ public sealed class RecorderExample : MonoBehaviour
         {
             return level switch
             {
-                CheckLevel.Ok => _statusOkStyle,
+                CheckLevel.Ok      => _statusOkStyle,
                 CheckLevel.Warning => _statusWarningStyle,
-                _ => _statusErrorStyle
+                _                  => _statusErrorStyle
             };
         }
 
@@ -2652,9 +2676,9 @@ public sealed class RecorderExample : MonoBehaviour
         {
             return level switch
             {
-                CheckLevel.Ok => "正常",
+                CheckLevel.Ok      => "正常",
                 CheckLevel.Warning => "警告",
-                _ => "错误"
+                _                  => "错误"
             };
         }
 
@@ -2663,26 +2687,26 @@ public sealed class RecorderExample : MonoBehaviour
         /// </summary>
         private void EnsureStyles()
         {
-            _headerStyle ??= new GUIStyle(EditorStyles.boldLabel) { fontSize = 18 };
+            _headerStyle  ??= new GUIStyle(EditorStyles.boldLabel) { fontSize = 18 };
             _sectionStyle ??= new GUIStyle(EditorStyles.boldLabel) { fontSize = 13 };
-            _mutedStyle ??= new GUIStyle(EditorStyles.label) { normal = { textColor = new Color(0.62f, 0.62f, 0.62f) } };
+            _mutedStyle   ??= new GUIStyle(EditorStyles.label) { normal       = { textColor = new Color(0.62f, 0.62f, 0.62f) } };
             _smallTextStyle ??= new GUIStyle(EditorStyles.wordWrappedLabel)
             {
                 fontSize = 11,
-                normal = { textColor = new Color(0.70f, 0.70f, 0.70f) }
+                normal   = { textColor = new Color(0.70f, 0.70f, 0.70f) }
             };
-            _statusOkStyle ??= new GUIStyle(EditorStyles.boldLabel) { normal = { textColor = new Color(0.15f, 0.65f, 0.25f) } };
+            _statusOkStyle      ??= new GUIStyle(EditorStyles.boldLabel) { normal = { textColor = new Color(0.15f, 0.65f, 0.25f) } };
             _statusWarningStyle ??= new GUIStyle(EditorStyles.boldLabel) { normal = { textColor = new Color(0.9f, 0.58f, 0.12f) } };
-            _statusErrorStyle ??= new GUIStyle(EditorStyles.boldLabel) { normal = { textColor = new Color(0.9f, 0.25f, 0.2f) } };
+            _statusErrorStyle   ??= new GUIStyle(EditorStyles.boldLabel) { normal = { textColor = new Color(0.9f, 0.25f, 0.2f) } };
             _cardStyle ??= new GUIStyle(EditorStyles.helpBox)
             {
                 padding = new RectOffset(12, 12, 10, 10),
-                margin = new RectOffset(0, 0, 4, 8)
+                margin  = new RectOffset(0, 0, 4, 8)
             };
             _mainCardStyle ??= new GUIStyle(EditorStyles.helpBox)
             {
                 padding = new RectOffset(14, 14, 12, 12),
-                margin = new RectOffset(0, 0, 4, 8)
+                margin  = new RectOffset(0, 0, 4, 8)
             };
             _tableHeaderStyle ??= new GUIStyle(EditorStyles.boldLabel)
             {
@@ -2690,14 +2714,14 @@ public sealed class RecorderExample : MonoBehaviour
             };
             _navItemStyle ??= new GUIStyle(EditorStyles.label)
             {
-                padding = new RectOffset(8, 4, 4, 4),
+                padding   = new RectOffset(8, 4, 4, 4),
                 alignment = TextAnchor.MiddleLeft,
-                normal = { textColor = new Color(0.72f, 0.72f, 0.72f) }
+                normal    = { textColor = new Color(0.72f, 0.72f, 0.72f) }
             };
             _selectedNavItemStyle ??= new GUIStyle(_navItemStyle)
             {
                 fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(0.92f, 0.92f, 0.92f) }
+                normal    = { textColor = new Color(0.92f, 0.92f, 0.92f) }
             };
             _navAccentStyle ??= new GUIStyle(EditorStyles.label)
             {
@@ -2707,7 +2731,7 @@ public sealed class RecorderExample : MonoBehaviour
             {
                 richText = false,
                 wordWrap = true,
-                padding = new RectOffset(4, 8, 4, 8)
+                padding  = new RectOffset(4, 8, 4, 8)
             };
         }
 
@@ -2728,9 +2752,9 @@ public sealed class RecorderExample : MonoBehaviour
 
             public DocumentEntry(string category, string title, string fileName, string relativePath)
             {
-                this.category = category;
-                this.title = title;
-                this.fileName = fileName;
+                this.category     = category;
+                this.title        = title;
+                this.fileName     = fileName;
                 this.relativePath = relativePath;
             }
         }
@@ -2743,9 +2767,9 @@ public sealed class RecorderExample : MonoBehaviour
 
             public SdkApiDocEntry(string title, string description, string content)
             {
-                this.title = title;
+                this.title       = title;
                 this.description = description;
-                this.content = content;
+                this.content     = content;
             }
         }
 
@@ -2756,7 +2780,7 @@ public sealed class RecorderExample : MonoBehaviour
 
             public CachedDocument(string content, DateTime lastWriteTime)
             {
-                this.content = content;
+                this.content       = content;
                 this.lastWriteTime = lastWriteTime;
             }
         }
@@ -2770,14 +2794,14 @@ public sealed class RecorderExample : MonoBehaviour
 
             private CheckItem(CheckLevel level, string title, string message)
             {
-                this.level = level;
-                this.title = title;
+                this.level   = level;
+                this.title   = title;
                 this.message = message;
                 status = level switch
                 {
-                    CheckLevel.Ok => "正常",
+                    CheckLevel.Ok      => "正常",
                     CheckLevel.Warning => "警告",
-                    _ => "错误"
+                    _                  => "错误"
                 };
             }
 

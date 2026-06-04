@@ -61,11 +61,15 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                     AddWarning("配置目录不存在，已自动创建: " + configDirectory);
                 }
 
-                foreach (string file in Directory.GetFiles(configDirectory, "*.json", SearchOption.TopDirectoryOnly))
+                foreach (string directory in GetConfigScanDirectories())
                 {
-                    string fileName = Path.GetFileName(file);
-                    if (!IsRecordConfigFile(fileName)) continue;
-                    LoadConfigFile(file, fileName);
+                    if (!Directory.Exists(directory)) continue;
+                    foreach (string file in Directory.GetFiles(directory, "*.json", SearchOption.TopDirectoryOnly))
+                    {
+                        string fileName = Path.GetFileName(file);
+                        if (!IsRecordConfigFile(fileName)) continue;
+                        LoadConfigFile(file, fileName);
+                    }
                 }
 
                 if (_configs.Count == 0)
@@ -148,7 +152,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             var clone = source.Clone();
             clone.isDefault = false;
             clone.displayName = string.IsNullOrWhiteSpace(displayName) ? source.displayName + "_Copy" : displayName.Trim();
-            clone.configId = GenerateUniqueConfigId($"create_{platform}_{clone.displayName}");
+            clone.configId = GenerateUniqueConfigId(BuildCustomConfigId(platform, clone.displayName));
             clone.fileName = BuildConfigFileName(clone.configId);
             return SaveConfig(clone);
         }
@@ -218,12 +222,12 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
 
             try
             {
-                Directory.CreateDirectory(configDirectory);
+                Directory.CreateDirectory(GetWritableConfigDirectory(config));
                 var result = RecorderConfigResult.Success(config, "配置保存成功。");
                 string originalFileName = config.fileName;
                 AutoFixConfig(config, config.fileName, result.warnings);
                 string targetFileName = BuildConfigFileName(config.configId);
-                if (File.Exists(Path.Combine(configDirectory, targetFileName)) &&
+                if (ConfigFileExists(targetFileName) &&
                     !string.Equals(originalFileName, targetFileName, StringComparison.OrdinalIgnoreCase))
                 {
                     string oldId = config.configId;
@@ -329,7 +333,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             {
                 config.configId = !string.IsNullOrWhiteSpace(sourceFileName)
                                       ? RecorderConfigMigrator.GetConfigIdFromFileName(sourceFileName)
-                                      : GenerateUniqueConfigId($"create_{config.platform}_{config.displayName}");
+                                      : GenerateUniqueConfigId(BuildCustomConfigId(config.platform, config.displayName));
                 AddFixWarning(warnings, "configId 为空，已自动生成: " + config.configId);
             }
 
@@ -473,7 +477,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         /// </summary>
         private RecorderParamsConfig CreateDefaultConfig(string configId, string displayName, bool isTemplate)
         {
-            string safeId = string.IsNullOrWhiteSpace(configId) ? GenerateUniqueConfigId($"create_{platform}_{displayName}") : RecorderConfigMigrator.NormalizeConfigId(configId);
+            string safeId = string.IsNullOrWhiteSpace(configId) ? GenerateUniqueConfigId(BuildCustomConfigId(platform, displayName)) : RecorderConfigMigrator.NormalizeConfigId(configId);
             return new RecorderParamsConfig
             {
                 schemaVersion = 2,
@@ -533,7 +537,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             string baseId = RecorderConfigMigrator.NormalizeConfigId(rawId);
             string id = baseId;
             int index = 1;
-            while (_configsById.ContainsKey(id) || File.Exists(Path.Combine(configDirectory, BuildConfigFileName(id))))
+            while (_configsById.ContainsKey(id) || ConfigFileExists(BuildConfigFileName(id)))
             {
                 id = $"{baseId}_{index++}";
             }
@@ -574,7 +578,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         {
             string fileName = BuildConfigFileName(config.configId);
             config.fileName = fileName;
-            return Path.Combine(configDirectory, fileName);
+            return Path.Combine(GetWritableConfigDirectory(config), fileName);
         }
 
         /// <summary>
@@ -609,7 +613,69 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         /// </summary>
         private static string BuildConfigFileName(string configId)
         {
-            return RecorderConfigMigrator.BuildConfigFileName(configId);
+            string normalizedId = RecorderConfigMigrator.NormalizeConfigId(configId);
+            if (normalizedId.StartsWith("template_", StringComparison.OrdinalIgnoreCase))
+            {
+                string[] parts = normalizedId.Split('_');
+                if (parts.Length >= 3)
+                {
+                    string platformPart = ToTitlePart(parts[1]);
+                    string presetPart = ToTitlePart(parts[2]);
+                    return $"Template_{platformPart}_{presetPart}.json";
+                }
+            }
+
+            if (normalizedId.StartsWith("Custom_", StringComparison.OrdinalIgnoreCase))
+            {
+                string[] parts = normalizedId.Split(new[] { '_' }, 3);
+                if (parts.Length >= 3)
+                {
+                    return BuildSafeFileName($"Custom_{NormalizeCustomPlatform(parts[1])}_{parts[2]}.json");
+                }
+            }
+
+            if (normalizedId.StartsWith("create_", StringComparison.OrdinalIgnoreCase))
+            {
+                string[] parts = normalizedId.Split(new[] { '_' }, 3);
+                if (parts.Length >= 3)
+                {
+                    return $"create_{ToTitlePart(parts[1])}_{parts[2]}.json";
+                }
+            }
+
+            return RecorderConfigMigrator.BuildConfigFileName(normalizedId);
+        }
+
+        private static string ToTitlePart(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : char.ToUpperInvariant(value[0]) + value.Substring(1).ToLowerInvariant();
+        }
+
+        private static string BuildCustomConfigId(string platform, string displayName)
+        {
+            return $"Custom_{NormalizeCustomPlatform(platform)}_{SanitizeCustomName(displayName)}";
+        }
+
+        private static string NormalizeCustomPlatform(string value)
+        {
+            return string.Equals(value, "Linux", StringComparison.OrdinalIgnoreCase) ? "Linux" : "Win";
+        }
+
+        private static string SanitizeCustomName(string value)
+        {
+            string name = string.IsNullOrWhiteSpace(value) ? "RecorderConfig" : value.Trim();
+            if (name.EndsWith(".json", StringComparison.OrdinalIgnoreCase)) name = name.Substring(0, name.Length - ".json".Length);
+            foreach (char c in Path.GetInvalidFileNameChars()) name = name.Replace(c, '_');
+            foreach (char c in new[] { '\\', '/', ':', '*', '?', '"', '<', '>', '|' }) name = name.Replace(c, '_');
+            name = name.Trim();
+            return string.IsNullOrWhiteSpace(name) ? "RecorderConfig" : name;
+        }
+
+        private static string BuildSafeFileName(string fileName)
+        {
+            foreach (char c in Path.GetInvalidFileNameChars()) fileName = fileName.Replace(c, '_');
+            foreach (char c in new[] { '\\', '/', ':', '*', '?', '"', '<', '>', '|' }) fileName = fileName.Replace(c, '_');
+            return fileName;
         }
 
         /// <summary>
@@ -626,7 +692,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         private string GetUseRecordConfigPath()
         {
             string fileName = platform == "Linux" ? "UseLinuxRecordConfig.json" : "UseWinRecordConfig.json";
-            return Path.Combine(configDirectory, fileName);
+            return Path.Combine(GetUseTemplateDirectory(), fileName);
         }
 
         /// <summary>
@@ -634,7 +700,46 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         /// </summary>
         private static string GetDefaultConfigDirectory()
         {
-            return Path.Combine(Application.streamingAssetsPath, "FFmpegTools", "Configs");
+            return Path.Combine(Application.streamingAssetsPath, "RecorderSDK", "Configs");
+        }
+
+        private IEnumerable<string> GetConfigScanDirectories()
+        {
+            yield return GetDefaultTemplateDirectory();
+            yield return GetCustomTemplateDirectory();
+            yield return configDirectory;
+        }
+
+        private string GetWritableConfigDirectory(RecorderParamsConfig config)
+        {
+            return IsTemplateConfig(config) ? GetDefaultTemplateDirectory() : GetCustomTemplateDirectory();
+        }
+
+        private string GetDefaultTemplateDirectory()
+        {
+            return Path.Combine(configDirectory, "DefaultTemplate");
+        }
+
+        private string GetCustomTemplateDirectory()
+        {
+            return Path.Combine(configDirectory, "CustomTemplate");
+        }
+
+        private string GetUseTemplateDirectory()
+        {
+            string directory = Path.Combine(configDirectory, "UseTemplate");
+            Directory.CreateDirectory(directory);
+            return directory;
+        }
+
+        private bool ConfigFileExists(string fileName)
+        {
+            foreach (string directory in GetConfigScanDirectories())
+            {
+                if (File.Exists(Path.Combine(directory, fileName))) return true;
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -143,7 +143,7 @@
 
         [Tooltip("说明框最小尺寸")] public Vector2 descWindowMinSize = new(420f, 150f);
         [Tooltip("说明框最大尺寸")] public Vector2 descWindowMaxSize = new(640f, 360f);
-        [Tooltip("选项说明 JSON 文件名")] public string optionDescriptionJsonName = "OptionDescriptions.json";
+        [Tooltip("选项说明 JSON 文件名")] public string optionDescriptionJsonName = "RecorderOptionDescriptions.json";
         [Tooltip("选项说明窗口根节点")] public GameObject optionDescWindowRoot;
         [Tooltip("选项说明标题文本")] public Text txtOptionDescTitle;
         [Tooltip("选项说明内容文本")] public Text txtOptionDescContent;
@@ -157,7 +157,7 @@
         #region 配置保存与使用
 
         [Header("配置文件目录")] [Tooltip("工具根目录名称")]
-        public string toolsFolderName = "FFmpegTools";
+        public string toolsFolderName = "RecorderSDK";
 
         [Tooltip("配置根目录名称")] public string configFolderName = "Configs";
         [Tooltip("视频输出目录名称")] public string videosFolderName = "Videos";
@@ -572,11 +572,11 @@
         }
 
         /// <summary>
-        /// 兼容场景中旧的序列化目录名，统一到 FFmpegTools 新目录结构。
+        /// 兼容场景中旧的序列化目录名，统一到 RecorderSDK 新目录结构。
         /// </summary>
         private void NormalizeFolderSettings()
         {
-            if (string.IsNullOrWhiteSpace(toolsFolderName)) toolsFolderName                                                                                = "FFmpegTools";
+            if (string.IsNullOrWhiteSpace(toolsFolderName) || toolsFolderName.StartsWith("FFmpeg", StringComparison.OrdinalIgnoreCase)) toolsFolderName        = "RecorderSDK";
             if (string.IsNullOrWhiteSpace(configFolderName) || configFolderName == "RecorderConfigs") configFolderName                                     = "Configs";
             if (string.IsNullOrWhiteSpace(videosFolderName) || videosFolderName == "ReocderVideo" || videosFolderName == "RecorderVideo") videosFolderName = "Videos";
         }
@@ -803,7 +803,7 @@
             }
 
             string configId = _currentConfig.configId;
-            string path     = Path.Combine(GetConfigDirectory(), BuildConfigFileName(configId));
+            string path     = Path.Combine(GetCustomTemplateDirectory(), BuildConfigFileName(configId));
             if (!File.Exists(path))
             {
                 ShowMessageTips("未找到要删除的用户配置文件。");
@@ -941,7 +941,7 @@
                 if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory)) return directory;
             }
 
-            return GetFFmpegAppDirectory();
+            return GetFFmpegDirectory();
         }
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
@@ -1572,7 +1572,7 @@
         }
 
         /// <summary>
-        /// 获取配置中的视频保存目录，未配置时使用 FFmpegTools/Videos。
+        /// 获取配置中的视频保存目录，未配置时使用 RecorderSDK/Videos。
         /// </summary>
         private string GetConfigVideoSaveDirectory(RecorderParamsConfig config)
         {

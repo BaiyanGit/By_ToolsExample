@@ -43,11 +43,15 @@
 
 `Documentation` 保存 README、变更记录、发布说明、验收文档、运行验证文档和项目结构说明。后续功能变更需要同步更新对应文档。
 
-## StreamingAssets/FFmpegTools
+## StreamingAssets/RecorderSDK
 
-`Assets/StreamingAssets/FFmpegTools/` 保存运行时配置、FFmpeg 可执行文件目录和默认视频输出目录：
+`Assets/StreamingAssets/RecorderSDK/` 保存运行时配置、FFmpeg 可执行文件目录、默认视频输出目录和选项说明：
 
-- `Configs`：Recorder 配置 JSON，unitypackage 默认包含。
-- `FFmpegApp`：FFmpeg 可执行文件放置目录，可在打包发布页选择是否包含。
+- `Configs/DefaultTemplate`：SDK 默认模板配置。
+- `Configs/CustomTemplate`：用户克隆或另存配置。
+- `Configs/UseTemplate`：当前使用配置引用。
+- `FFmpeg`：FFmpeg 可执行文件放置目录，可在打包发布页选择是否包含。
 - `Videos`：默认本地录制视频输出目录。正式包不包含实际录制视频，只可选择包含空目录说明文件。
+- `OptionDesc`：Recorder 参数说明 JSON。
+
 

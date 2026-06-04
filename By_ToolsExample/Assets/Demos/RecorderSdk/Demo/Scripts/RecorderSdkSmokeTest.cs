@@ -307,12 +307,18 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             string directory = Path.Combine(Application.temporaryCachePath, "RecorderRegistrySmokeConfigs");
             if (Directory.Exists(directory)) Directory.Delete(directory, true);
             Directory.CreateDirectory(directory);
+            string defaultTemplateDirectory = Path.Combine(directory, "DefaultTemplate");
+            string customTemplateDirectory = Path.Combine(directory, "CustomTemplate");
+            string useTemplateDirectory = Path.Combine(directory, "UseTemplate");
+            Directory.CreateDirectory(defaultTemplateDirectory);
+            Directory.CreateDirectory(customTemplateDirectory);
+            Directory.CreateDirectory(useTemplateDirectory);
 
-            WriteConfig(directory, "template_win_medium.json", CreateRegistryConfig("template_win_medium", "Win 中配置", true));
-            WriteConfig(directory, "template_win_low.json", CreateRegistryConfig("template_win_low", "Win 低配置", true));
-            WriteConfig(directory, "create_win_dup_a.json", CreateRegistryConfig("create_win_dup", "重复A", false));
-            WriteConfig(directory, "create_win_dup_b.json", CreateRegistryConfig("create_win_dup", "重复B", false));
-            File.WriteAllText(Path.Combine(directory, "create_win_legacy.json"),
+            WriteConfig(defaultTemplateDirectory, "Template_Win_Medium.json", CreateRegistryConfig("template_win_medium", "Win 中配置", true));
+            WriteConfig(defaultTemplateDirectory, "Template_Win_Low.json", CreateRegistryConfig("template_win_low", "Win 低配置", true));
+            WriteConfig(customTemplateDirectory, "create_win_dup_a.json", CreateRegistryConfig("create_win_dup", "重复A", false));
+            WriteConfig(customTemplateDirectory, "create_win_dup_b.json", CreateRegistryConfig("create_win_dup", "重复B", false));
+            File.WriteAllText(Path.Combine(customTemplateDirectory, "create_win_legacy.json"),
                 "{\n" +
                 "  \"configName\": \"旧配置显示名\",\n" +
                 "  \"fileName\": \"Create_Win_Legacy.json\",\n" +
@@ -323,7 +329,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                 "  \"streamReconnectCount\": -1,\n" +
                 "  \"streamReconnectIntervalMs\": 0\n" +
                 "}");
-            File.WriteAllText(Path.Combine(directory, "UseWinRecordConfig.json"), "{ \"schemaVersion\": 2, \"platform\": \"Win\", \"currentConfigId\": \"missing_config\" }");
+            File.WriteAllText(Path.Combine(useTemplateDirectory, "UseWinRecordConfig.json"), "{ \"schemaVersion\": 2, \"platform\": \"Win\", \"currentConfigId\": \"missing_config\" }");
 
             var registry = new RecorderConfigRegistry(directory, "Win");
             var scan = registry.Scan();
@@ -347,7 +353,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             AssertCondition(saveNoId.success && !string.IsNullOrWhiteSpace(saveNoId.configId), "空 configId 自动修复");
 
             var clone = registry.CloneConfig("template_win_medium", "克隆模板");
-            AssertCondition(clone.success && clone.configId.StartsWith("create_", StringComparison.OrdinalIgnoreCase), "克隆 template 成 user profile");
+            AssertCondition(clone.success && clone.configId.StartsWith("Custom_", StringComparison.OrdinalIgnoreCase), "克隆 template 成 user profile");
 
             var deleteTemplate = registry.DeleteUserConfig("template_win_medium");
             AssertCondition(!deleteTemplate.success && deleteTemplate.errorCode == RecorderErrorCode.ConfigDeleteFailed, "禁止删除 template 配置");
@@ -355,8 +361,8 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             var deleteUser = registry.DeleteUserConfig(clone.configId);
             AssertCondition(deleteUser.success, "删除用户配置");
 
-            var saved = registry.SaveConfig(CreateRegistryConfig("create_win_clean", "干净保存", false));
-            string savedPath = Path.Combine(directory, saved.configId + ".json");
+            var saved = registry.SaveConfig(CreateRegistryConfig("Custom_Win_干净保存", "干净保存", false));
+            string savedPath = Path.Combine(customTemplateDirectory, "Custom_Win_干净保存.json");
             string savedJson = File.Exists(savedPath) ? File.ReadAllText(savedPath) : string.Empty;
             AssertCondition(!savedJson.Contains("\"configName\"") && !savedJson.Contains("\"fileName\""), "保存后 JSON 不含 configName/fileName");
         }

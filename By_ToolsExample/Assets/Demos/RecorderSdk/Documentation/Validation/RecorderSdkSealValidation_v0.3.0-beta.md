@@ -17,14 +17,14 @@
 - `API 鍙傛暟` 椤靛鐢?FFmpeg 鍙傛暟鍜岃棰戠紪鐮佸弬鏁板叡浜唴瀹广€?- `SDK API` 椤靛凡鏂板锛屽苟鎸夊垎绫昏鏄庢牳蹇冪粍浠躲€佸父鐢ㄥ嚱鏁般€佸睘鎬с€佷簨浠躲€佽繑鍥炵粨鏋溿€侀敊璇爜銆丼essionHistory銆侀厤缃郴缁熷拰鏈€灏忕ず渚嬨€?- API 椤甸潰鍐呭浣跨敤缂撳瓨瀵硅薄锛屾湭鍙戠幇姣忓抚閲嶅缓澶ф鏂囨湰鐨勬柊澧為€昏緫銆?
 ## 4. 鎵撳寘鍙戝竷椤?
 缁撴灉锛氶潤鎬佹鏌ラ€氳繃銆?
-- 瀵煎嚭璺緞鎸夐」鏀堕泦锛屼笉鍐嶅鍑烘暣涓?`Assets/StreamingAssets/FFmpegTools`銆?- 榛樿蹇呴€夛細SDK 鏍圭洰褰曘€丆onfigs銆?- 鍙€夐」锛欶FmpegApp銆乄ASAPI 鍘熺敓 DLL銆丏ocumentation銆丏emo 鍦烘櫙銆乂ideos 绌虹洰褰曡鏄庛€?- `Videos` 鍙鍑?`Videos/README.md`锛屼笉浼氬鍑哄疄闄呭綍鍒舵枃浠躲€?- `WASAPILoopbackRecorder.dll` 浼氬湪鎵撳寘妫€鏌ヤ腑浣滀负姝ｅ紡鍖呭繀瑕侀」妫€鏌ャ€?
+- 瀵煎嚭璺緞鎸夐」鏀堕泦锛屼笉鍐嶅鍑烘暣涓?`Assets/StreamingAssets/RecorderSDK`銆?- 榛樿蹇呴€夛細SDK 鏍圭洰褰曘€丆onfigs銆?- 鍙€夐」锛欶FmpegApp銆乄ASAPI 鍘熺敓 DLL銆丏ocumentation銆丏emo 鍦烘櫙銆乂ideos 绌虹洰褰曡鏄庛€?- `Videos` 鍙鍑?`Videos/README.md`锛屼笉浼氬鍑哄疄闄呭綍鍒舵枃浠躲€?- `WASAPILoopbackRecorder.dll` 浼氬湪鎵撳寘妫€鏌ヤ腑浣滀负姝ｅ紡鍖呭繀瑕侀」妫€鏌ャ€?
 ## 5. unitypackage 瀵煎嚭鍐呭
 
 缁撴灉锛氶潤鎬佹鏌ラ€氳繃锛屾湭鎵ц鐪熷疄瀵煎嚭銆?
 棰勮鍖呭惈锛?
-- Recorder SDK 鏍圭洰褰曚笅鐨?Core / UI / Editor銆?- 鍙€?Documentation銆?- 鍙€?Demo銆?- 鍙€?Plugins/Windows/x86_64銆?- `Assets/StreamingAssets/FFmpegTools/Configs`銆?- 鍙€?`Assets/StreamingAssets/FFmpegTools/FFmpegApp`銆?- 鍙€?`Assets/StreamingAssets/FFmpegTools/Videos/README.md`銆?
+- Recorder SDK 鏍圭洰褰曚笅鐨?Core / UI / Editor銆?- 鍙€?Documentation銆?- 鍙€?Demo銆?- 鍙€?Plugins/Windows/x86_64銆?- `Assets/StreamingAssets/RecorderSDK/Configs`銆?- 鍙€?`Assets/StreamingAssets/RecorderSDK/FFmpeg`銆?- 鍙€?`Assets/StreamingAssets/RecorderSDK/Videos/README.md`銆?
 涓嶄細鍖呭惈锛?
-- `Assets/StreamingAssets/FFmpegTools/Videos` 涓殑瀹為檯褰曞埗瑙嗛鏂囦欢銆?
+- `Assets/StreamingAssets/RecorderSDK/Videos` 涓殑瀹為檯褰曞埗瑙嗛鏂囦欢銆?
 ## 6. 璺緞閲嶅畾浣嶉€昏緫
 
 缁撴灉锛氬熀鏈€氳繃銆?
@@ -56,4 +56,5 @@
 缁撹锛氭殏涓嶅缓璁洿鎺ヤ綔涓烘渶缁堟寮忓寘瀵煎嚭锛涘缓璁厛鍋氫竴娆?Unity Editor 鍐呯偣鍑婚獙璇併€?
 鍘熷洜锛?
 - 闈欐€佸皝鐗堟鏌ユ暣浣撳彲鎺ュ彈銆?- 鎵撳寘璺緞銆佹棫鑿滃崟銆佹枃妗ｆ憳瑕併€丼DK API 椤甸潰鍧囧凡鍏峰鍙戝竷鏉′欢銆?- 浣嗗皻鏈畬鎴?Unity Editor 鍐呯湡瀹炴帶鍒跺彴鐐瑰嚮楠岃瘉鍜?unitypackage 瀵煎嚭楠岃瘉銆?- Runtime 涓粛瀛樺湪榛樿鍏抽棴鐨?Legacy UI 鍒涘缓浠ｇ爜锛岄渶瑕佺‘璁ゆ槸鍚﹀厑璁镐綔涓哄吋瀹归€昏緫淇濈暀銆?
+
 

@@ -175,7 +175,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
                 {
                     var config = _registry.Configs[i];
                     _dropdownConfigs.Add(config);
-                    options.Add(string.IsNullOrWhiteSpace(config.displayName) ? config.configId : $"{config.displayName} ({config.configId})");
+                    options.Add(GetConfigDropdownLabel(config));
                     if (_currentConfig != null && config.configId == _currentConfig.configId) selectedIndex = i;
                 }
 
@@ -194,6 +194,13 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             _lastResult = await recorder.StartRecordingAsync();
             _lastErrorCode = _lastResult.errorCode;
             RefreshStatus(_lastResult.message);
+        }
+
+        private static string GetConfigDropdownLabel(RecorderParamsConfig config)
+        {
+            if (config == null) return "Unnamed Config";
+            if (!string.IsNullOrWhiteSpace(config.displayName)) return config.displayName;
+            return string.IsNullOrWhiteSpace(config.configId) ? "Unnamed Config" : config.configId;
         }
 
         /// <summary>

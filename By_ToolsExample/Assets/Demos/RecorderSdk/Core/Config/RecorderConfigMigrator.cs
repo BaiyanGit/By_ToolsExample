@@ -71,10 +71,22 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         {
             if (string.IsNullOrWhiteSpace(value)) return "recorder_config";
             var chars = new System.Collections.Generic.List<char>();
-            foreach (char c in value.Trim().ToLowerInvariant())
+            bool lastWasUnderscore = false;
+            foreach (char c in value.Trim())
             {
-                if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) chars.Add(c);
-                else if (c == '_' || c == '-' || char.IsWhiteSpace(c)) chars.Add('_');
+                if (char.IsLetterOrDigit(c) || c == '-')
+                {
+                    chars.Add(c);
+                    lastWasUnderscore = false;
+                }
+                else if (c == '_' || char.IsWhiteSpace(c))
+                {
+                    if (!lastWasUnderscore)
+                    {
+                        chars.Add('_');
+                        lastWasUnderscore = true;
+                    }
+                }
             }
 
             string result = new string(chars.ToArray()).Trim('_');

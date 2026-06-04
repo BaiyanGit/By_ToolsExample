@@ -87,9 +87,9 @@
 
 ### 打包发布与 API 分页收口：2026-05-26
 
-- 问题：打包发布页直接导出整个 `Assets/StreamingAssets/FFmpegTools` 时会把 `Videos` 目录中的实际录制文件一起打进 unitypackage；API 参数页在参数较多时仍可能一次性绘制过多卡片。
-- 做了什么：unitypackage 导出路径改为按项收集，只导出 Recorder SDK 必要目录、`Configs`、可选 `FFmpegApp` 和可选 `Videos/README.md`，不再导出 `Videos` 实际录制文件；打包发布页增加 `包含 FFmpegApp`、`包含 WASAPI 原生 DLL`、`包含 Documentation`、`包含 Demo 场景`、`包含 Videos 空目录说明` Toggle；正式包检查始终校验 `WASAPILoopbackRecorder.dll`；补齐实际 SDK 文档目录中的 `ProjectStructure.md`；FFmpeg 参数页和视频编码参数页增加分页，每页最多绘制 20 项。
-- 验证结果：打包路径不再包含 `Assets/StreamingAssets/FFmpegTools/Videos` 整个目录；Runtime 录制逻辑未修改。
+- 问题：打包发布页直接导出整个 `Assets/StreamingAssets/RecorderSDK` 时会把 `Videos` 目录中的实际录制文件一起打进 unitypackage；API 参数页在参数较多时仍可能一次性绘制过多卡片。
+- 做了什么：unitypackage 导出路径改为按项收集，只导出 Recorder SDK 必要目录、`Configs`、可选 `FFmpeg` 和可选 `Videos/README.md`，不再导出 `Videos` 实际录制文件；打包发布页增加 `包含 FFmpeg`、`包含 WASAPI 原生 DLL`、`包含 Documentation`、`包含 Demo 场景`、`包含 Videos 空目录说明` Toggle；正式包检查始终校验 `WASAPILoopbackRecorder.dll`；补齐实际 SDK 文档目录中的 `ProjectStructure.md`；FFmpeg 参数页和视频编码参数页增加分页，每页最多绘制 20 项。
+- 验证结果：打包路径不再包含 `Assets/StreamingAssets/RecorderSDK/Videos` 整个目录；Runtime 录制逻辑未修改。
 
 ### 控制台文档滚动与验证页标题修复：2026-05-26
 
@@ -167,7 +167,7 @@
 ### 任务计划：2026-05-25 13:20
 
 - 问题：Recorder SDK 目录和场景名称已由人工整理为新的结构与中文命名，文档、验证说明和少量脚本中仍残留旧英文场景名、旧路径和旧综合场景引用，后续导出 unitypackage 时容易误导使用者。
-- 计划：不移动目录、不重新生成 `.meta`，只基于当前磁盘结构修正硬编码场景名与 README、UnityPackageValidation、RuntimeValidation、StabilityAcceptance、Changelog 中的旧引用；保留 `Assets/StreamingAssets/FFmpegTools/` 不变；后续新增 Demo 场景统一使用 `录制器_XXX` 命名。
+- 计划：不移动目录、不重新生成 `.meta`，只基于当前磁盘结构修正硬编码场景名与 README、UnityPackageValidation、RuntimeValidation、StabilityAcceptance、Changelog 中的旧引用；保留 `Assets/StreamingAssets/RecorderSDK/` 不变；后续新增 Demo 场景统一使用 `录制器_XXX` 命名。
 - 风险点：SDK 路径如果后续再次移动，需要重新做一轮路径文本收口；本次不主动移动文件以避免破坏 GUID。
 
 ### 修改记录：2026-05-25 13:35
@@ -196,7 +196,7 @@
 ### 修改记录：2026-05-25 11:45
 
 - 做了什么：RecorderParamsConfig 新增 `enableAudioGain`、`audioGainDb`、`audioLimiterEnabled`；FFmpegCommandBuilder 新增统一音频滤镜构建，本地 Linux、Windows 推流、Linux 推流和合并阶段会在有音频时拼接 `-af "volume=XdB"`，开启限幅器时追加 `alimiter=limit=0.95`；RecorderConfigValidator 增加 -20 到 20dB 修正、无音频输入 warning、alimiter 支持检测与降级；新增 `AudioFilterInvalid` warning 错误码；Session/SessionInfo/SessionHistory 记录音量增强状态；UIRecorderParamsSettings 增加可挂载开关、输入框、滑动条和限幅器开关；默认模板 JSON、说明 JSON、README、SmokeTest 同步更新。
-- 影响范围：Core 下的 RecorderConfigValidator、FFmpegCommandBuilder、CrossPlatformScreenRecorder、RecorderSession/Info、RecorderErrorCode、RecorderSdkSmokeTest；UISettings 下的 RecorderParamsConfig、UIRecorderParamsSettings、Descriptions、ConfigFiles；StreamingAssets/FFmpegTools/Configs 下模板和说明 JSON；README。
+- 影响范围：Core 下的 RecorderConfigValidator、FFmpegCommandBuilder、CrossPlatformScreenRecorder、RecorderSession/Info、RecorderErrorCode、RecorderSdkSmokeTest；UISettings 下的 RecorderParamsConfig、UIRecorderParamsSettings、Descriptions、ConfigFiles；StreamingAssets/RecorderSDK/Configs 下模板和说明 JSON；README。
 - 验证结果：Configs 下 JSON 使用 UTF-8 解析通过；rg 检查 `enableAudioGain`、`audioGainDb`、`audioLimiterEnabled`、`AudioFilterInvalid`、`volume=6dB`、`alimiter=limit=0.95` 均已覆盖；SmokeTest 已新增命令构建检查。Unity Editor 编译仍需等许可证环境恢复后实测。
 
 ### 收口检查：2026-05-25 12:05
@@ -207,7 +207,7 @@
 ### 任务计划：2026-05-25 10:30
 
 - 问题：v0.3.0-beta 已封版并完成运行验证文档，但还没有整理成真正 Unity 可导入的 `.unitypackage` 验证包；README/ReleaseNotes 中的旧字段需要明确标记为 Legacy 兼容，RuntimeValidation 中的本机路径需要标注为验证环境记录。
-- 计划：确认 FFmpegApp 是否内置 FFmpeg；新增 RecorderSdkUnityPackageValidation.md；更新 README、ReleaseNotes、RuntimeValidation 说明；使用 UnityPackage 标准结构生成 RecorderSDK_v0.3.0-beta.unitypackage；校验包内 pathname 清单、FFmpeg 是否包含、旧路径说明和空白格式。
+- 计划：确认 FFmpeg 是否内置 FFmpeg；新增 RecorderSdkUnityPackageValidation.md；更新 README、ReleaseNotes、RuntimeValidation 说明；使用 UnityPackage 标准结构生成 RecorderSDK_v0.3.0-beta.unitypackage；校验包内 pathname 清单、FFmpeg 是否包含、旧路径说明和空白格式。
 - 风险点：当前 Unity License 仍阻塞 Editor 导出菜单，因此使用 UnityPackage 的 tar.gz 标准结构在命令行生成包；生成后通过解包检查 pathname/asset/meta 验证可导入结构，不做核心逻辑修改。
 
 ### 修改记录：2026-05-25 10:30
@@ -215,20 +215,20 @@
 - 为什么这么做：交付给新 Unity 项目验证时需要真实 `.unitypackage`，并且必须让导入者明确包内包含哪些资源、是否内置 FFmpeg、如何运行 SmokeTest，以及旧字段只是 Legacy 兼容。
 - 做了什么：新增 RecorderSdkUnityPackageValidation.md；README 增加 UnityPackage 验证文档索引并把 `configName`、`fileName`、`Creat_` 标记为 Legacy 兼容；ReleaseNotes 的旧配置说明改为 Legacy 兼容说明；RuntimeValidation 标注其中本机路径只属于本次验证环境；使用 UnityPackage 标准 `guid/asset + asset.meta + pathname` 结构生成 `RecorderSDK_v0.3.0-beta.unitypackage`；解包检查 pathname 清单。
 - 影响范围：README、ReleaseNotes、RecorderSdkRuntimeValidation、RecorderSdkUnityPackageValidation、RecorderSDK_v0.3.0-beta.unitypackage；没有修改核心逻辑。
-- 验证结果：生成 `RecorderSDK_v0.3.0-beta.unitypackage`，大小 135933679 bytes，包含 80 个 pathname；解包确认包含 RecorderSdk 场景、`RecorderSdkUnityPackageValidation.md`、`Assets/StreamingAssets/FFmpegTools/FFmpegApp/ffmpeg.exe` 和 `Assets/StreamingAssets/FFmpegTools/FFmpegApp/ffmpeg`；rg 检查 README/ReleaseNotes 中旧字段均有 Legacy 说明；git diff --check 通过，仅有 CRLF 提示。
+- 验证结果：生成 `RecorderSDK_v0.3.0-beta.unitypackage`，大小 135933679 bytes，包含 80 个 pathname；解包确认包含 RecorderSdk 场景、`RecorderSdkUnityPackageValidation.md`、`Assets/StreamingAssets/RecorderSDK/FFmpeg/ffmpeg.exe` 和 `Assets/StreamingAssets/RecorderSDK/FFmpeg/ffmpeg`；rg 检查 README/ReleaseNotes 中旧字段均有 Legacy 说明；git diff --check 通过，仅有 CRLF 提示。
 
 ### 任务计划：2026-05-25 09:30
 
-- 问题：上一轮只完成运行验证文档和 FFmpeg 控制组，还没有完成真实 Unity SDK 运行验证；当前阻塞包括 Unity License Client IPC 超时、FFmpegApp 目录缺少 ffmpeg.exe、Windows 推流音频直接假设 wasapi 可用、README 仍有旧配置命名，以及说明 JSON 中可能残留本机路径文本。
-- 计划：复制系统 FFmpeg 到 StreamingAssets/FFmpegTools/FFmpegApp；重试 Unity BatchMode 并记录是否进入脚本编译；为 Windows streamIncludeAudio 增加启动前 wasapi 设备能力检测，缺失时返回明确错误码/Warning，不等命令运行后失败；修正 README 配置命名；检查并清理 OptionDescriptions/RecorderOptionDescriptions 本机路径；更新 RecorderSdkRuntimeValidation.md。
+- 问题：上一轮只完成运行验证文档和 FFmpeg 控制组，还没有完成真实 Unity SDK 运行验证；当前阻塞包括 Unity License Client IPC 超时、FFmpeg 目录缺少 ffmpeg.exe、Windows 推流音频直接假设 wasapi 可用、README 仍有旧配置命名，以及说明 JSON 中可能残留本机路径文本。
+- 计划：复制系统 FFmpeg 到 StreamingAssets/RecorderSDK/FFmpeg；重试 Unity BatchMode 并记录是否进入脚本编译；为 Windows streamIncludeAudio 增加启动前 wasapi 设备能力检测，缺失时返回明确错误码/Warning，不等命令运行后失败；修正 README 配置命名；检查并清理 OptionDescriptions/RecorderOptionDescriptions 本机路径；更新 RecorderSdkRuntimeValidation.md。
 - 风险点：Unity License 修复可能需要 Unity Hub 交互登录，当前命令行环境未必能完成；真实 Editor 场景运行和手动录制如果无法启动 Unity，只能继续标记为环境阻塞。
 
 ### 修改记录：2026-05-25 09:30
 
-- 为什么这么做：真实 SDK 运行验证需要先清掉可控阻塞；FFmpegApp 缺失会导致默认配置必失败，Windows 推流音频如果不提前检测 wasapi，会让错误延迟到 FFmpeg 命令运行后才暴露。
-- 做了什么：复制系统 FFmpeg 到 `Assets/StreamingAssets/FFmpegTools/FFmpegApp/ffmpeg.exe`；重跑 BatchMode 和无代理 BatchMode；检查 Unity Licensing Client 日志；RecorderConfigValidator 增加 `ffmpeg -devices` 的 wasapi 启动前检测，缺失时返回 `AudioStartFailed`；README 模板/用户配置命名改成 `template_*` 和 `create_*`；README 与 OptionDescriptions 补充 Windows 音频依赖 wasapi 及后续 dshow 可配置输入源说明；更新 RecorderSdkRuntimeValidation.md。
-- 影响范围：RecorderConfigValidator、README、OptionDescriptions、RecorderSdkRuntimeValidation、FFmpegApp 目录；没有做 BackendFactory，没有拆架构。
-- 验证结果：`FFmpegApp/ffmpeg.exe -version` 与 `-devices` 可执行；当前 FFmpeg 仍无 wasapi；BatchMode 与无代理 BatchMode 仍停在 License Client IPC 超时，未进入脚本编译；GUI 打开 Unity Editor 的审批请求超时，未能启动交互式 Editor；rg 检查 README/OptionDescriptions/RecorderOptionDescriptions 已无旧 Template_/Creat_ 命名和本机路径残留；git diff --check 通过，仅有 CRLF 提示。
+- 为什么这么做：真实 SDK 运行验证需要先清掉可控阻塞；FFmpeg 缺失会导致默认配置必失败，Windows 推流音频如果不提前检测 wasapi，会让错误延迟到 FFmpeg 命令运行后才暴露。
+- 做了什么：复制系统 FFmpeg 到 `Assets/StreamingAssets/RecorderSDK/FFmpeg/ffmpeg.exe`；重跑 BatchMode 和无代理 BatchMode；检查 Unity Licensing Client 日志；RecorderConfigValidator 增加 `ffmpeg -devices` 的 wasapi 启动前检测，缺失时返回 `AudioStartFailed`；README 模板/用户配置命名改成 `template_*` 和 `create_*`；README 与 OptionDescriptions 补充 Windows 音频依赖 wasapi 及后续 dshow 可配置输入源说明；更新 RecorderSdkRuntimeValidation.md。
+- 影响范围：RecorderConfigValidator、README、OptionDescriptions、RecorderSdkRuntimeValidation、FFmpeg 目录；没有做 BackendFactory，没有拆架构。
+- 验证结果：`FFmpeg/ffmpeg.exe -version` 与 `-devices` 可执行；当前 FFmpeg 仍无 wasapi；BatchMode 与无代理 BatchMode 仍停在 License Client IPC 超时，未进入脚本编译；GUI 打开 Unity Editor 的审批请求超时，未能启动交互式 Editor；rg 检查 README/OptionDescriptions/RecorderOptionDescriptions 已无旧 Template_/Creat_ 命名和本机路径残留；git diff --check 通过，仅有 CRLF 提示。
 
 ### 任务计划：2026-05-25 00:00
 
@@ -241,7 +241,7 @@
 - 为什么这么做：实机验证阶段要先确认当前机器是否具备真实 Unity + FFmpeg 测试条件，避免把环境阻塞误判为 SDK 通过或失败。
 - 做了什么：检查 Unity 版本、BatchMode 日志、FFmpeg 版本、FFmpeg 设备能力、当前 UseWin 指针和模板配置；执行 FFmpeg MP4/WebM 编码落盘控制组、gdigrab 桌面采集尝试、WASAPI 输入尝试、RTMP 无服务端失败路径、FFmpeg 进程生命周期和 10 秒编码性能采样；新增 RecorderSdkRuntimeValidation.md；README 增加运行时验证文档索引。
 - 影响范围：新增运行时验证文档和 README 链接；没有修改核心逻辑。
-- 验证结果：FFmpeg MP4/WebM 编码控制组通过；RTMP 无服务端失败路径可复现；gdigrab 在当前会话失败 error 5；当前 FFmpeg 不支持 wasapi；Unity BatchMode 仍因 License Client IPC 超时未进入脚本编译；FFmpegApp 目录未发现 ffmpeg.exe，默认模板直接运行会缺 FFmpeg。
+- 验证结果：FFmpeg MP4/WebM 编码控制组通过；RTMP 无服务端失败路径可复现；gdigrab 在当前会话失败 error 5；当前 FFmpeg 不支持 wasapi；Unity BatchMode 仍因 License Client IPC 超时未进入脚本编译；FFmpeg 目录未发现 ffmpeg.exe，默认模板直接运行会缺 FFmpeg。
 
 ## 记录规则
 
@@ -456,7 +456,7 @@
 ### 任务计划：2026-05-23 12:11
 
 - 问题：上一版代码已支持新版配置字段，但实际 Configs 目录 JSON 仍是旧结构；RecorderParamsConfig.schemaVersion 默认值为 2 会误判无 schemaVersion 的旧 JSON；displayName/captureDisplayName、configName/fileName/currentConfigId 的职责还没有彻底收干净。
-- 计划：把 RecorderParamsConfig.schemaVersion 和 RecordConfigReference.schemaVersion 默认值改为 0；迁移逻辑按 schemaVersion <= 1 处理旧 displayName/configName/fileName；保存配置和 UseRecordConfig 时只写新版字段；配置下拉、排序、使用状态、最后更新时间改为基于 configId/displayName 和运行时 fileName 缓存；新增 LastSession/CurrentProcessingSession 解决 Merging 阶段 CurrentSession 为空；升级 StreamingAssets/FFmpegTools/Configs 下全部模板、用户配置和 UseWin/UseLinux JSON 为 schemaVersion=2 的实际文件。
+- 计划：把 RecorderParamsConfig.schemaVersion 和 RecordConfigReference.schemaVersion 默认值改为 0；迁移逻辑按 schemaVersion <= 1 处理旧 displayName/configName/fileName；保存配置和 UseRecordConfig 时只写新版字段；配置下拉、排序、使用状态、最后更新时间改为基于 configId/displayName 和运行时 fileName 缓存；新增 LastSession/CurrentProcessingSession 解决 Merging 阶段 CurrentSession 为空；升级 StreamingAssets/RecorderSDK/Configs 下全部模板、用户配置和 UseWin/UseLinux JSON 为 schemaVersion=2 的实际文件。
 - 风险点：真实 JSON 文件名会统一为 configId.json，旧 Template_/Creat_/Create_ 文件可能需要删除或迁移，必须保证旧引用仍可通过 currentConfigId 或旧 fileName 回退到新版文件。
 ### 任务计划：2026-05-23 12:11
 
@@ -467,8 +467,8 @@
 ### 修改记录：2026-05-23 12:11
 
 - 为什么这么做：UseLinuxRecordConfig 已指向 template_linux_medium，缺少 Linux 模板会导致 Linux 平台兜底失败；模板写死本机绝对路径会让其它机器无法直接使用；压缩包缺少核心脚本则无法验证 Recorder 系统逻辑。
-- 做了什么：新增 template_linux_low、template_linux_medium、template_linux_high；将 Win 模板和用户配置中的 videoSaveDirectory/customFFmpegPath 清空，由运行时回退到 StreamingAssets/FFmpegTools/Videos 与 FFmpegApp；重新生成 RecorderSystemPackage_20260523_155638.zip，包内包含 README、Configs、RecorderSdk/Core、RecorderSdk/UI/Settings、CrossPlatformScreenRecorder、RecorderParamsConfig、FFmpegCommandBuilder、RecorderState、RecorderResult、RecorderSessionInfo 等核心脚本。
-- 影响范围：StreamingAssets/FFmpegTools/Configs、RecorderSystemPackage_20260523_155638.zip。
+- 做了什么：新增 template_linux_low、template_linux_medium、template_linux_high；将 Win 模板和用户配置中的 videoSaveDirectory/customFFmpegPath 清空，由运行时回退到 StreamingAssets/RecorderSDK/Videos 与 FFmpeg；重新生成 RecorderSystemPackage_20260523_155638.zip，包内包含 README、Configs、RecorderSdk/Core、RecorderSdk/UI/Settings、CrossPlatformScreenRecorder、RecorderParamsConfig、FFmpegCommandBuilder、RecorderState、RecorderResult、RecorderSessionInfo 等核心脚本。
+- 影响范围：StreamingAssets/RecorderSDK/Configs、RecorderSystemPackage_20260523_155638.zip。
 - 验证结果：Configs 下已存在 win/linux 高中低模板和 UseWin/UseLinux 指针；rg 检查 Configs 中无 fileName、configName、本机 E:/UnityProjectsE 路径残留；压缩包清单确认包含 Core/UISettings 和关键核心脚本；git diff --check 通过，仅有 CRLF 提示；dotnet build Assembly-CSharp.csproj --no-restore 仍为当前工程环境的“生成失败，0 个警告，0 个错误”。
 ### 任务计划：2026-05-23 16:15
 
@@ -543,6 +543,7 @@
 - 做了什么：新增 RecorderSdkStabilityAcceptance.md；新增 RecorderSdkUsageExample.cs；README 增加总体验收文档和最小使用示例索引；RecorderConfigRegistry 增加 DeleteConfig 包装方法，保持 DeleteUserConfig 原逻辑不变；示例脚本未填写 configId 时自动选择当前平台 Medium 模板。
 - 影响范围：RecorderSdkStabilityAcceptance、RecorderSdkUsageExample、RecorderConfigRegistry、README。
 - 验证结果：rg 检查 RecorderSdkStabilityAcceptance、RecorderSdkUsageExample、DeleteConfig、StartRecordingAsync、StopRecordingAsync、SessionHistory 和统一事件均已存在；rg 检查 Configs 下无 configName/fileName/本机绝对路径残留；git diff --check 通过，仅有 CRLF 提示；dotnet build Assembly-CSharp.csproj --no-restore 仍为 Unity 设计期工程环境问题，失败但无 C# 错误明细。
+
 
 
 

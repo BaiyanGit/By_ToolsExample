@@ -9,7 +9,7 @@
 - 当前阶段：Beta 封版前验证与收口
 - 当前日期：2026-05-27
 - 当前正式 SDK 根目录：`Assets/Demos/RecorderSdk`
-- StreamingAssets 固定路径：`Assets/StreamingAssets/FFmpegTools`
+- StreamingAssets 固定路径：`Assets/StreamingAssets/RecorderSDK`
 - 控制台入口：`ByTools/Recorder SDK控制台`
 
 ## 当前目录规则
@@ -22,9 +22,9 @@
 
 StreamingAssets 路径保持固定：
 
-- `Assets/StreamingAssets/FFmpegTools/Configs`
-- `Assets/StreamingAssets/FFmpegTools/FFmpegApp`
-- `Assets/StreamingAssets/FFmpegTools/Videos`
+- `Assets/StreamingAssets/RecorderSDK/Configs`
+- `Assets/StreamingAssets/RecorderSDK/FFmpeg`
+- `Assets/StreamingAssets/RecorderSDK/Videos`
 
 正式 unitypackage 检查清单应包含：
 
@@ -34,13 +34,13 @@ StreamingAssets 路径保持固定：
 - `Assets/Demos/RecorderSdk/Demo`
 - `Assets/Demos/RecorderSdk/Documentation`
 - `Assets/Demos/RecorderSdk/Plugins`
-- `Assets/StreamingAssets/FFmpegTools/Configs`
-- `Assets/StreamingAssets/FFmpegTools/FFmpegApp`
-- `Assets/StreamingAssets/FFmpegTools/Videos/README.md`
+- `Assets/StreamingAssets/RecorderSDK/Configs`
+- `Assets/StreamingAssets/RecorderSDK/FFmpeg`
+- `Assets/StreamingAssets/RecorderSDK/Videos/README.md`
 
 正式 unitypackage 不应包含：
 
-- `Assets/StreamingAssets/FFmpegTools/Videos` 下的实际 mp4、webm 或临时录制文件
+- `Assets/StreamingAssets/RecorderSDK/Videos` 下的实际 mp4、webm 或临时录制文件
 - `Assets/示例-录制视频Recorder/RecorderSdk`
 - `Library`
 - `Temp`
@@ -280,7 +280,7 @@ Legacy 兼容仍需保留：
 1. UnityPackage 手动导出前检查
    - 检查 `WASAPILoopbackRecorder.dll`
    - 检查 `Configs`
-   - 检查 `FFmpegApp`
+   - 检查 `FFmpeg`
    - 检查 `Videos` 是否只包含 README
    - 检查导出清单不含旧路径
 
@@ -338,4 +338,5 @@ Legacy 兼容仍需保留：
 - 不要恢复旧带图标菜单。
 - 不要自动导出 unitypackage。
 - 不要自动启动 Unity Editor，除非用户明确允许。
+
 

@@ -5,6 +5,7 @@ namespace Demos.示例_快捷键切换应用.Scripts.KeyPadAPI
     using System.Diagnostics;
     using UnityEngine;
     using UnityEngine.UI;
+    using WinAPI;
     using Debug = UnityEngine.Debug;
 
     /// <summary>

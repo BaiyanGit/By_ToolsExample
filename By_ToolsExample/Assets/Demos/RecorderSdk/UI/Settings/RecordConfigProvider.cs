@@ -53,7 +53,7 @@ namespace Demos.示例_录制视频Recorder.Scripts
         }
 
         /// <summary>
-        /// 获取当前配置中的 FFmpeg 路径，未配置时回退到 StreamingAssets/FFmpegTools/FFmpegApp。
+        /// 获取当前配置中的 FFmpeg 路径，未配置时回退到 StreamingAssets/RecorderSDK/FFmpeg。
         /// </summary>
         public string FFmpegPath
         {
@@ -103,7 +103,7 @@ namespace Demos.示例_录制视频Recorder.Scripts
         /// </summary>
         private static string GetConfigDirectory()
         {
-            return Path.Combine(Application.streamingAssetsPath, "FFmpegTools", "Configs");
+            return Path.Combine(Application.streamingAssetsPath, "RecorderSDK", "Configs");
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Demos.示例_录制视频Recorder.Scripts
         /// </summary>
         private static string GetDefaultVideoSaveDirectory()
         {
-            return Path.Combine(Application.streamingAssetsPath, "FFmpegTools", "Videos");
+            return Path.Combine(Application.streamingAssetsPath, "RecorderSDK", "Videos");
         }
 
 
@@ -122,8 +122,8 @@ namespace Demos.示例_录制视频Recorder.Scripts
         {
             return Application.platform switch
             {
-                RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsEditor => Path.Combine(Application.streamingAssetsPath, "FFmpegTools", "FFmpegApp", "ffmpeg.exe"),
-                RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxEditor     => Path.Combine(Application.streamingAssetsPath, "FFmpegTools", "FFmpegApp", "ffmpeg"),
+                RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsEditor => Path.Combine(Application.streamingAssetsPath, "RecorderSDK", "FFmpeg", "ffmpeg.exe"),
+                RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxEditor     => Path.Combine(Application.streamingAssetsPath, "RecorderSDK", "FFmpeg", "ffmpeg"),
                 _                                                              => string.Empty
             };
         }

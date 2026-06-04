@@ -28,7 +28,7 @@
 - 项目路径：`E:\UnityProjectsE\Example\By_ToolsExample\By_ToolsExample`
 - 示例场景：`Assets/Demos/RecorderSdk/Demo/Scenes/录制器_屏幕录制.unity`
 - FFmpeg 路径：`C:\Program Files\ffmpeg\bin\ffmpeg.exe`
-- SDK 内置 FFmpeg 路径：`Assets/StreamingAssets/FFmpegTools/FFmpegApp/ffmpeg.exe`
+- SDK 内置 FFmpeg 路径：`Assets/StreamingAssets/RecorderSDK/FFmpeg/ffmpeg.exe`
 - FFmpeg 版本：`N-121090-g9e4ff4732c-20250916`
 - FFmpeg 重要编译能力：
   - `gdigrab`：存在
@@ -40,19 +40,19 @@
 
 ## 当前配置状态
 
-- 配置目录：`Assets/StreamingAssets/FFmpegTools/Configs`
+- 配置目录：`Assets/StreamingAssets/RecorderSDK/Configs`
 - 当前 Windows Use 指针：`UseWinRecordConfig.json`
 - 当前 Windows `currentConfigId`：`template_win_medium`
-- 当前模板：`template_win_medium.json`
+- 当前模板：`Template_Win_Medium.json`
 - 模板 `customFFmpegPath`：空
 - 模板 `videoSaveDirectory`：空
-- SDK 默认 FFmpeg 目录：`Assets/StreamingAssets/FFmpegTools/FFmpegApp`
-- 当前 `FFmpegApp` 目录状态：已复制 `ffmpeg.exe`
+- SDK 默认 FFmpeg 目录：`Assets/StreamingAssets/RecorderSDK/FFmpeg`
+- 当前 `FFmpeg` 目录状态：已复制 `ffmpeg.exe`
 
 结论：
 
 - 配置体系符合 v0.3.0-beta 规范。
-- 当前 SDK 如果直接使用默认模板，会回退到 `StreamingAssets/FFmpegTools/FFmpegApp/ffmpeg.exe`。
+- 当前 SDK 如果直接使用默认模板，会回退到 `StreamingAssets/RecorderSDK/FFmpeg/ffmpeg.exe`。
 - 当前该路径已存在可执行文件，`FFmpegPathMissing` 阻塞已处理。
 
 ## 已执行验证
@@ -117,7 +117,7 @@ Application will terminate with return code 199
 
 - Windows 屏幕采集理论上可走 `gdigrab`。
 - 当前 FFmpeg 构建不支持 SDK 中 Windows 系统音频推流/录制可能使用的 `wasapi`。
-- 已复制系统 FFmpeg 到 `Assets/StreamingAssets/FFmpegTools/FFmpegApp/ffmpeg.exe`，并通过 `-version` 与 `-devices` 验证可执行。
+- 已复制系统 FFmpeg 到 `Assets/StreamingAssets/RecorderSDK/FFmpeg/ffmpeg.exe`，并通过 `-version` 与 `-devices` 验证可执行。
 
 ### 3. DirectShow 音频设备枚举
 
@@ -167,7 +167,7 @@ Unknown input format: 'wasapi'
 命令：
 
 ```powershell
-& "C:\Program Files\ffmpeg\bin\ffmpeg.exe" -y -hide_banner -f lavfi -t 3 -i testsrc=size=1280x720:rate=10 -c:v libx264 -preset ultrafast -crf 30 -pix_fmt yuv420p "Assets/StreamingAssets/FFmpegTools/Videos/RuntimeValidation/runtime_lavfi_mp4_control.mp4"
+& "C:\Program Files\ffmpeg\bin\ffmpeg.exe" -y -hide_banner -f lavfi -t 3 -i testsrc=size=1280x720:rate=10 -c:v libx264 -preset ultrafast -crf 30 -pix_fmt yuv420p "Assets/StreamingAssets/RecorderSDK/Videos/RuntimeValidation/runtime_lavfi_mp4_control.mp4"
 ```
 
 结果：
@@ -192,7 +192,7 @@ Unknown input format: 'wasapi'
 命令：
 
 ```powershell
-& "C:\Program Files\ffmpeg\bin\ffmpeg.exe" -y -hide_banner -f lavfi -t 3 -i testsrc=size=1280x720:rate=10 -c:v libvpx -b:v 2M -deadline realtime -cpu-used 8 "Assets/StreamingAssets/FFmpegTools/Videos/RuntimeValidation/runtime_lavfi_webm_control.webm"
+& "C:\Program Files\ffmpeg\bin\ffmpeg.exe" -y -hide_banner -f lavfi -t 3 -i testsrc=size=1280x720:rate=10 -c:v libvpx -b:v 2M -deadline realtime -cpu-used 8 "Assets/StreamingAssets/RecorderSDK/Videos/RuntimeValidation/runtime_lavfi_webm_control.webm"
 ```
 
 结果：
@@ -216,7 +216,7 @@ Unknown input format: 'wasapi'
 命令：
 
 ```powershell
-& "C:\Program Files\ffmpeg\bin\ffmpeg.exe" -y -hide_banner -f gdigrab -framerate 10 -t 5 -i desktop -vf scale=1280:-2 -c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p "Assets/StreamingAssets/FFmpegTools/Videos/RuntimeValidation/runtime_mp4_smoke.mp4"
+& "C:\Program Files\ffmpeg\bin\ffmpeg.exe" -y -hide_banner -f gdigrab -framerate 10 -t 5 -i desktop -vf scale=1280:-2 -c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p "Assets/StreamingAssets/RecorderSDK/Videos/RuntimeValidation/runtime_mp4_smoke.mp4"
 ```
 
 结果：
@@ -230,7 +230,7 @@ Output file does not contain any stream
 固定区域重试：
 
 ```powershell
-& "C:\Program Files\ffmpeg\bin\ffmpeg.exe" -y -hide_banner -f gdigrab -framerate 5 -offset_x 0 -offset_y 0 -video_size 1280x720 -t 3 -i desktop -c:v libx264 -preset ultrafast -crf 30 -pix_fmt yuv420p "Assets/StreamingAssets/FFmpegTools/Videos/RuntimeValidation/runtime_mp4_region_smoke.mp4"
+& "C:\Program Files\ffmpeg\bin\ffmpeg.exe" -y -hide_banner -f gdigrab -framerate 5 -offset_x 0 -offset_y 0 -video_size 1280x720 -t 3 -i desktop -c:v libx264 -preset ultrafast -crf 30 -pix_fmt yuv420p "Assets/StreamingAssets/RecorderSDK/Videos/RuntimeValidation/runtime_mp4_region_smoke.mp4"
 ```
 
 结果：
@@ -314,8 +314,8 @@ ffmpeg lavfi testsrc 1280x720 25fps -> libx264 ultrafast 10 秒输出
 
 | 项目 | 状态 | 说明 |
 | --- | --- | --- |
-| 本地 MP4 录制 | 未通过 | Unity 未启动，gdigrab 在当前会话 error 5；FFmpegApp 缺失已修复。 |
-| WebM 录制 | 未通过 | Unity 未启动，gdigrab 在当前会话 error 5；FFmpegApp 缺失已修复。 |
+| 本地 MP4 录制 | 未通过 | Unity 未启动，gdigrab 在当前会话 error 5；FFmpeg 缺失已修复。 |
+| WebM 录制 | 未通过 | Unity 未启动，gdigrab 在当前会话 error 5；FFmpeg 缺失已修复。 |
 | 连续 Start / Stop | 未执行 | 需要 Unity Editor 运行 SDK。 |
 | 长时间录制 30 分钟 | 未执行 | 需要 Unity Editor 和可抓屏环境。 |
 | SessionHistory 是否正常 | 未执行 | 需要 Unity Editor 运行 SDK。 |
@@ -379,14 +379,14 @@ ffmpeg lavfi testsrc 1280x720 25fps -> libx264 ultrafast 10 秒输出
 ## 失败项
 
 - Unity BatchMode 未能进入脚本编译阶段，License Client IPC 超时。
-- FFmpegApp 目录已补入 `ffmpeg.exe`。
+- FFmpeg 目录已补入 `ffmpeg.exe`。
 - 当前会话 `gdigrab` 桌面抓帧失败，错误码 error 5。
 - 当前 FFmpeg 不支持 `wasapi`。
 
 ## 已知问题
 
 1. 当前 SDK 默认 FFmpeg 路径已补齐。
-   - 结果：`Assets/StreamingAssets/FFmpegTools/FFmpegApp/ffmpeg.exe` 已存在并能执行。
+   - 结果：`Assets/StreamingAssets/RecorderSDK/FFmpeg/ffmpeg.exe` 已存在并能执行。
    - 仍需：Unity Editor 内确认 `RecorderPathService.GetPlatformDefaultFFmpegPath()` 能正确命中该路径。
 
 2. 当前 FFmpeg 不支持 WASAPI。
@@ -451,6 +451,7 @@ ffmpeg lavfi testsrc 1280x720 25fps -> libx264 ultrafast 10 秒输出
 7. 准备 RTMP 服务端，验证推流成功、Stop、失败、重连、事件。
 8. 更换支持 WASAPI 的 FFmpeg，验证 Windows 系统音频。
 9. 在 Linux/X11 环境验证 x11grab、pulse、配置加载和 Merge。
+
 
 
 

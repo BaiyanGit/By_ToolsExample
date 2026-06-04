@@ -713,11 +713,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
             File.Move(session.videoTempPath, session.outputPath);
 #endif
 
-                var config = GetCurrentConfig();
-                if (config == null || config.deleteTempFilesAfterMerge)
-                {
-                    CleanupSessionFiles(session);
-                }
+                CleanupSessionFiles(session);
 
                 EnqueueMainThread(() =>
                 {
@@ -1135,8 +1131,14 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
         {
             string  extension          = Path.GetExtension(outputPath);
             string  fileNameWithoutExt = Path.GetFileNameWithoutExtension(outputPath);
-            string? dir                = Path.GetDirectoryName(outputPath);
-            string  tempOutput         = Path.Combine(dir ?? string.Empty, $"{fileNameWithoutExt}.merging{extension}");
+            string tempDir = Path.GetDirectoryName(videoPath);
+            if (string.IsNullOrWhiteSpace(tempDir))
+            {
+                tempDir = RecorderPathService.GetDefaultTempDirectory();
+            }
+
+            Directory.CreateDirectory(tempDir);
+            string tempOutput = Path.Combine(tempDir, $"{fileNameWithoutExt}.merging{extension}");
 
             if (File.Exists(tempOutput))
             {
@@ -1295,11 +1297,16 @@ namespace Demos.示例_录制视频Recorder.Scripts.Core
 
                 string  extension          = Path.GetExtension(session.outputPath);
                 string  fileNameWithoutExt = Path.GetFileNameWithoutExtension(session.outputPath);
-                string? dir                = Path.GetDirectoryName(session.outputPath);
+                string dir = Path.GetDirectoryName(session.videoTempPath);
                 string  tempOutput         = Path.Combine(dir ?? string.Empty, $"{fileNameWithoutExt}.merging{extension}");
                 if (File.Exists(tempOutput))
                 {
                     File.Delete(tempOutput);
+                }
+
+                if (!string.IsNullOrWhiteSpace(dir) && Directory.Exists(dir) && Directory.GetFileSystemEntries(dir).Length == 0)
+                {
+                    Directory.Delete(dir);
                 }
             }
             catch (Exception e)

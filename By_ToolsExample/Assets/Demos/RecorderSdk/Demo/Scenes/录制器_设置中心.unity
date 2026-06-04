@@ -11732,7 +11732,7 @@ MonoBehaviour:
   txtOptionDescTitle: {fileID: 1429168970}
   txtOptionDescContent: {fileID: 767462617}
   createLegacyRuntimeUI: 0
-  toolsFolderName: FFmpegTools
+  toolsFolderName: RecorderSDK
   configFolderName: Configs
   videosFolderName: Videos
 --- !u!4 &408511457
@@ -25232,7 +25232,7 @@ GameObject:
   - component: {fileID: 892473832}
   - component: {fileID: 892473831}
   m_Layer: 5
-  m_Name: DrVebmVideoBitrate
+  m_Name: DrWebmVideoBitrate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

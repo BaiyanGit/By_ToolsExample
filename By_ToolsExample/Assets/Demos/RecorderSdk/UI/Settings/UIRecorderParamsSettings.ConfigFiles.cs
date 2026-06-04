@@ -1,4 +1,4 @@
-namespace Demos.示例_录制视频Recorder.Scripts.UISettings
+﻿namespace Demos.示例_录制视频Recorder.Scripts.UISettings
 {
     using System;
     using System.Collections.Generic;
@@ -9,18 +9,20 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
     public partial class UIRecorderParamsSettings
     {
         /// <summary>
-        /// 创建录制工具需要的配置、FFmpeg 与视频输出目录。
-        /// </summary>
+        /// 鍒涘缓褰曞埗宸ュ叿闇€瑕佺殑閰嶇疆銆丗Fmpeg 涓庤棰戣緭鍑虹洰褰曘€?        /// </summary>
         private void EnsureConfigDirectories()
         {
             Directory.CreateDirectory(GetConfigDirectory());
-            Directory.CreateDirectory(GetFFmpegAppDirectory());
+            Directory.CreateDirectory(GetDefaultTemplateDirectory());
+            Directory.CreateDirectory(GetCustomTemplateDirectory());
+            Directory.CreateDirectory(GetUseTemplateDirectory());
+            Directory.CreateDirectory(GetOptionDescDirectory());
+            Directory.CreateDirectory(GetFFmpegDirectory());
             Directory.CreateDirectory(GetDefaultVideoSaveDirectory());
         }
 
         /// <summary>
-        /// 创建当前版本内置的六个模板配置文件。
-        /// </summary>
+        /// 鍒涘缓褰撳墠鐗堟湰鍐呯疆鐨勫叚涓ā鏉块厤缃枃浠躲€?        /// </summary>
         private void EnsureDefaultConfigs()
         {
             var defaults = new List<RecorderParamsConfig>
@@ -35,14 +37,13 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
 
             foreach (var config in defaults)
             {
-                string path = Path.Combine(GetConfigDirectory(), config.fileName);
+                string path = Path.Combine(GetDefaultTemplateDirectory(), config.fileName);
                 if (!File.Exists(path)) File.WriteAllText(path, JsonUtility.ToJson(config, true));
             }
         }
 
         /// <summary>
-        /// 根据平台与质量档位生成模板配置。
-        /// </summary>
+        /// 鏍规嵁骞冲彴涓庤川閲忔。浣嶇敓鎴愭ā鏉块厤缃€?        /// </summary>
         private RecorderParamsConfig CreateDefaultConfig(string platform, string presetName, int qualityIndex, bool isDefault)
         {
             int fps = qualityIndex switch
@@ -122,8 +123,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 刷新当前平台可用配置，并优先选中正在使用的配置。
-        /// </summary>
+        /// 鍒锋柊褰撳墠骞冲彴鍙敤閰嶇疆锛屽苟浼樺厛閫変腑姝ｅ湪浣跨敤鐨勯厤缃€?        /// </summary>
         private void RefreshConfigDropdown()
         {
             _currentPlatformConfigs.Clear();
@@ -147,22 +147,20 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 获取配置文件下拉框显示名称。
-        /// </summary>
+        /// 鑾峰彇閰嶇疆鏂囦欢涓嬫媺妗嗘樉绀哄悕绉般€?        /// </summary>
         private static string GetConfigDropdownLabel(RecorderParamsConfig config)
         {
-            string label = !string.IsNullOrWhiteSpace(config.displayName) ? config.displayName : string.IsNullOrWhiteSpace(config.configId) ? "未命名配置" : config.configId;
-            return IsTemplateFileName(config.fileName) ? $"{label}(默认)" : label;
+            return !string.IsNullOrWhiteSpace(config.displayName) ? config.displayName : GetDisplayNameFromConfigId(config.configId);
         }
 
         /// <summary>
-        /// 读取当前平台的模板与用户配置。
-        /// </summary>
+        /// 璇诲彇褰撳墠骞冲彴鐨勬ā鏉夸笌鐢ㄦ埛閰嶇疆銆?        /// </summary>
         private List<RecorderParamsConfig> LoadConfigsForCurrentPlatform()
         {
             string platform = GetCurrentPlatformName();
             var    configs  = new List<RecorderParamsConfig>();
-            LoadConfigsFromDirectory(GetConfigDirectory(), platform, configs);
+            LoadConfigsFromDirectory(GetDefaultTemplateDirectory(), platform, configs);
+            LoadConfigsFromDirectory(GetCustomTemplateDirectory(), platform, configs);
             configs.Sort((a, b) =>
             {
                 if (a.isDefault != b.isDefault) return a.isDefault ? -1 : 1;
@@ -173,8 +171,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 从指定目录读取符合当前平台命名规则的配置文件。
-        /// </summary>
+        /// 浠庢寚瀹氱洰褰曡鍙栫鍚堝綋鍓嶅钩鍙板懡鍚嶈鍒欑殑閰嶇疆鏂囦欢銆?        /// </summary>
         private void LoadConfigsFromDirectory(string directory, string platform, List<RecorderParamsConfig> configs)
         {
             if (!Directory.Exists(directory)) return;
@@ -202,14 +199,13 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning($"读取录制配置失败: {file}\n{e.Message}");
+                    Debug.LogWarning($"璇诲彇褰曞埗閰嶇疆澶辫触: {file}\n{e.Message}");
                 }
             }
         }
 
         /// <summary>
-        /// 保存配置文件到 Configs 根目录。
-        /// </summary>
+            /// 淇濆瓨閰嶇疆鏂囦欢鍒板綋鍓嶉厤缃被鍨嬪搴旂洰褰曘€?        /// </summary>
         private void SaveConfig(RecorderParamsConfig config)
         {
             if (config == null) return;
@@ -230,13 +226,12 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
             if (config.streamUrl == null) config.streamUrl = string.Empty;
             NormalizeStreamConfig(config);
             config.fileName = BuildConfigFileName(config.configId);
-            string path = Path.Combine(GetConfigDirectory(), config.fileName);
+            string path = Path.Combine(GetConfigSaveDirectory(config), config.fileName);
             File.WriteAllText(path, JsonUtility.ToJson(config, true));
         }
 
         /// <summary>
-        /// 保存当前平台的使用指针，指向某一个真实配置文件。
-        /// </summary>
+        /// 淇濆瓨褰撳墠骞冲彴鐨勪娇鐢ㄦ寚閽堬紝鎸囧悜鏌愪竴涓湡瀹為厤缃枃浠躲€?        /// </summary>
         private void SaveCurrentRecordConfig(RecorderParamsConfig config)
         {
             if (config == null) return;
@@ -250,8 +245,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 读取当前平台正在使用的配置文件引用，源文件缺失时回退到当前平台 Medium 模板。
-        /// </summary>
+        /// 璇诲彇褰撳墠骞冲彴姝ｅ湪浣跨敤鐨勯厤缃枃浠跺紩鐢紝婧愭枃浠剁己澶辨椂鍥為€€鍒板綋鍓嶅钩鍙?Medium 妯℃澘銆?        /// </summary>
         private RecordConfigReference LoadCurrentRecordReference()
         {
             string                path      = GetUseRecordConfigPath();
@@ -266,7 +260,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
                 }
                 catch (Exception exception)
                 {
-                    Debug.LogWarning("读取当前录制配置引用失败: " + exception.Message);
+                    Debug.LogWarning("璇诲彇褰撳墠褰曞埗閰嶇疆寮曠敤澶辫触: " + exception.Message);
                 }
             }
 
@@ -282,8 +276,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 补全旧配置缺失的新目录字段，并兼容 Windows 平台旧命名。
-        /// </summary>
+        /// 琛ュ叏鏃ч厤缃己澶辩殑鏂扮洰褰曞瓧娈碉紝骞跺吋瀹?Windows 骞冲彴鏃у懡鍚嶃€?        /// </summary>
         private void NormalizeLoadedConfig(RecorderParamsConfig config)
         {
             if (config == null) return;
@@ -296,12 +289,13 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
             if (config.streamUrl == null) config.streamUrl = string.Empty;
             NormalizeStreamConfig(config);
             if (!string.IsNullOrWhiteSpace(config.customFFmpegPath))
-                config.customFFmpegPath = config.customFFmpegPath.Replace("/StreamingAssets/FFmpegApp/", "/StreamingAssets/FFmpegTools/FFmpegApp/");
+            {
+                config.customFFmpegPath = config.customFFmpegPath.Replace("\\", "/");
+            }
         }
 
         /// <summary>
-        /// 补全推流配置默认值，兼容旧 JSON。
-        /// </summary>
+        /// 琛ュ叏鎺ㄦ祦閰嶇疆榛樿鍊硷紝鍏煎鏃?JSON銆?        /// </summary>
         private static void NormalizeStreamConfig(RecorderParamsConfig config)
         {
             if (config == null) return;
@@ -313,8 +307,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 根据配置 ID 选中配置。
-        /// </summary>
+        /// 鏍规嵁閰嶇疆 ID 閫変腑閰嶇疆銆?        /// </summary>
         private void SelectConfigByConfigId(string configId)
         {
             if (drConfig == null) return;
@@ -326,8 +319,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 获取配置 ID 在当前平台列表中的索引。
-        /// </summary>
+        /// 鑾峰彇閰嶇疆 ID 鍦ㄥ綋鍓嶅钩鍙板垪琛ㄤ腑鐨勭储寮曘€?        /// </summary>
         private int GetConfigIndexByConfigId(string configId)
         {
             string normalizedId = RecorderConfigMigrator.NormalizeConfigId(configId);
@@ -340,8 +332,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 根据当前配置生成另存为窗口中的默认名称。
-        /// </summary>
+        /// 鏍规嵁褰撳墠閰嶇疆鐢熸垚鍙﹀瓨涓虹獥鍙ｄ腑鐨勯粯璁ゅ悕绉般€?        /// </summary>
         private string BuildUserConfigName(RecorderParamsConfig config)
         {
             if (config == null) return "RecorderConfig";
@@ -351,8 +342,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 生成唯一的用户配置 ID。
-        /// </summary>
+        /// 鐢熸垚鍞竴鐨勭敤鎴烽厤缃?ID銆?        /// </summary>
         private string BuildUniqueUserConfigId(string platform, string configName)
         {
             string baseId = BuildUserConfigId(platform, configName);
@@ -364,43 +354,45 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 获取 FFmpegTools 工具根目录。
-        /// </summary>
+        /// 鑾峰彇 RecorderSDK 宸ュ叿鏍圭洰褰曘€?        /// </summary>
         private string GetToolsDirectory() => Path.Combine(Application.streamingAssetsPath, toolsFolderName);
 
         /// <summary>
-        /// 获取 FFmpeg 可执行文件目录。
-        /// </summary>
-        private string GetFFmpegAppDirectory() => Path.Combine(GetToolsDirectory(), "FFmpegApp");
+        /// 鑾峰彇 FFmpeg 鍙墽琛屾枃浠剁洰褰曘€?        /// </summary>
+        private string GetFFmpegDirectory() => Path.Combine(GetToolsDirectory(), "FFmpeg");
 
         /// <summary>
-        /// 获取默认视频保存目录。
-        /// </summary>
+        /// 鑾峰彇榛樿瑙嗛淇濆瓨鐩綍銆?        /// </summary>
         private string GetDefaultVideoSaveDirectory() => Path.Combine(GetToolsDirectory(), videosFolderName);
 
         /// <summary>
-        /// 获取配置根目录。
-        /// </summary>
+        /// 鑾峰彇閰嶇疆鏍圭洰褰曘€?        /// </summary>
         private string GetConfigDirectory() => Path.Combine(GetToolsDirectory(), configFolderName);
 
-        /// <summary>
-        /// 获取选项说明 JSON 路径。
-        /// </summary>
-        private string GetOptionDescriptionPath() => Path.Combine(GetConfigDirectory(), optionDescriptionJsonName);
+        private string GetDefaultTemplateDirectory() => Path.Combine(GetConfigDirectory(), "DefaultTemplate");
+
+        private string GetCustomTemplateDirectory() => Path.Combine(GetConfigDirectory(), "CustomTemplate");
+
+        private string GetUseTemplateDirectory() => Path.Combine(GetConfigDirectory(), "UseTemplate");
+
+        private string GetOptionDescDirectory() => Path.Combine(GetToolsDirectory(), "OptionDesc");
+
+        private string GetConfigSaveDirectory(RecorderParamsConfig config) => config != null && (config.isDefault || IsTemplateConfigId(config.configId)) ? GetDefaultTemplateDirectory() : GetCustomTemplateDirectory();
 
         /// <summary>
-        /// 获取当前平台使用指针文件路径。
-        /// </summary>
-        private string GetUseRecordConfigPath() => Path.Combine(GetConfigDirectory(), GetUseRecordConfigFileName());
+        /// 鑾峰彇閫夐」璇存槑 JSON 璺緞銆?        /// </summary>
+        private string GetOptionDescriptionPath() => Path.Combine(GetOptionDescDirectory(), optionDescriptionJsonName);
 
         /// <summary>
-        /// 获取当前平台使用指针文件名。
-        /// </summary>
+        /// 鑾峰彇褰撳墠骞冲彴浣跨敤鎸囬拡鏂囦欢璺緞銆?        /// </summary>
+        private string GetUseRecordConfigPath() => Path.Combine(GetUseTemplateDirectory(), GetUseRecordConfigFileName());
+
+        /// <summary>
+        /// 鑾峰彇褰撳墠骞冲彴浣跨敤鎸囬拡鏂囦欢鍚嶃€?        /// </summary>
         private string GetUseRecordConfigFileName() => GetCurrentPlatformName() == "Linux" ? "UseLinuxRecordConfig.json" : "UseWinRecordConfig.json";
 
         /// <summary>
-        /// 生成当前平台回退到 Medium 模板的引用。
-        /// </summary>
+        /// 鐢熸垚褰撳墠骞冲彴鍥為€€鍒?Medium 妯℃澘鐨勫紩鐢ㄣ€?        /// </summary>
         private RecordConfigReference CreateFallbackRecordReference()
         {
             string platform = GetCurrentPlatformName();
@@ -413,56 +405,109 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 生成模板配置文件名。
-        /// </summary>
+        /// 鐢熸垚妯℃澘閰嶇疆鏂囦欢鍚嶃€?        /// </summary>
         private static string BuildTemplateConfigFileName(string platform, string presetName)
         {
             return BuildConfigFileName(BuildTemplateConfigId(platform, presetName));
         }
 
         /// <summary>
-        /// 生成模板配置 ID。
-        /// </summary>
+        /// 鐢熸垚妯℃澘閰嶇疆 ID銆?        /// </summary>
         private static string BuildTemplateConfigId(string platform, string presetName)
         {
             return NormalizeConfigId($"template_{platform}_{presetName}");
         }
 
         /// <summary>
-        /// 根据配置 ID 生成配置文件名。
-        /// </summary>
+        /// 鏍规嵁閰嶇疆 ID 鐢熸垚閰嶇疆鏂囦欢鍚嶃€?        /// </summary>
         private static string BuildConfigFileName(string configId)
         {
-            return BuildSafeFileName(RecorderConfigMigrator.BuildConfigFileName(configId));
+            string normalizedId = RecorderConfigMigrator.NormalizeConfigId(configId);
+            if (normalizedId.StartsWith("template_", StringComparison.OrdinalIgnoreCase))
+            {
+                string[] parts = normalizedId.Split('_');
+                if (parts.Length >= 3) return BuildSafeFileName($"Template_{ToTitlePart(parts[1])}_{ToTitlePart(parts[2])}.json");
+            }
+
+            if (normalizedId.StartsWith("Custom_", StringComparison.OrdinalIgnoreCase))
+            {
+                string[] parts = normalizedId.Split(new[] { '_' }, 3);
+                if (parts.Length >= 3) return BuildSafeFileName($"Custom_{NormalizeCustomPlatform(parts[1])}_{parts[2]}.json");
+            }
+
+            if (normalizedId.StartsWith("create_", StringComparison.OrdinalIgnoreCase))
+            {
+                string[] parts = normalizedId.Split(new[] { '_' }, 3);
+                if (parts.Length >= 3) return BuildSafeFileName($"create_{ToTitlePart(parts[1])}_{parts[2]}.json");
+            }
+
+            return BuildSafeFileName(RecorderConfigMigrator.BuildConfigFileName(normalizedId));
+        }
+
+        private static string ToTitlePart(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : char.ToUpperInvariant(value[0]) + value.Substring(1).ToLowerInvariant();
         }
 
         /// <summary>
-        /// 生成用户配置 ID。
-        /// </summary>
+        /// 鐢熸垚鐢ㄦ埛閰嶇疆 ID銆?        /// </summary>
         private static string BuildUserConfigId(string platform, string configName)
         {
             string rawName = string.IsNullOrWhiteSpace(configName) ? "RecorderConfig" : configName.Trim();
-            rawName = Path.GetFileNameWithoutExtension(rawName);
+            rawName = StripJsonExtension(rawName);
+            if (rawName.StartsWith($"Custom_{platform}_", StringComparison.OrdinalIgnoreCase)) rawName = rawName.Substring($"Custom_{platform}_".Length);
             if (rawName.StartsWith($"Creat_{platform}_", StringComparison.OrdinalIgnoreCase)) rawName = rawName.Substring($"Creat_{platform}_".Length);
             if (rawName.StartsWith($"Create_{platform}_", StringComparison.OrdinalIgnoreCase)) rawName = rawName.Substring($"Create_{platform}_".Length);
             if (rawName.StartsWith($"create_{platform}_", StringComparison.OrdinalIgnoreCase)) rawName = rawName.Substring($"create_{platform}_".Length);
             if (rawName.StartsWith($"User_{platform}_", StringComparison.OrdinalIgnoreCase)) rawName = rawName.Substring($"User_{platform}_".Length);
-            return NormalizeConfigId($"create_{platform}_{rawName}");
+            return NormalizeConfigId($"Custom_{NormalizeCustomPlatform(platform)}_{SanitizeCustomName(rawName)}");
         }
 
         /// <summary>
-        /// 清理非法文件名字符。
-        /// </summary>
+        /// 娓呯悊闈炴硶鏂囦欢鍚嶅瓧绗︺€?        /// </summary>
         private static string BuildSafeFileName(string fileName)
         {
             foreach (char c in Path.GetInvalidFileNameChars()) fileName = fileName.Replace(c, '_');
+            foreach (char c in new[] { '\\', '/', ':', '*', '?', '"', '<', '>', '|' }) fileName = fileName.Replace(c, '_');
             return fileName;
+        }
+
+        private static string SanitizeCustomName(string value)
+        {
+            string name = string.IsNullOrWhiteSpace(value) ? "RecorderConfig" : value.Trim();
+            name = StripJsonExtension(name);
+            foreach (char c in Path.GetInvalidFileNameChars()) name = name.Replace(c, '_');
+            foreach (char c in new[] { '\\', '/', ':', '*', '?', '"', '<', '>', '|' }) name = name.Replace(c, '_');
+            name = name.Trim();
+            return string.IsNullOrWhiteSpace(name) ? "RecorderConfig" : name;
+        }
+
+        private static string StripJsonExtension(string value)
+        {
+            return !string.IsNullOrWhiteSpace(value) && value.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? value.Substring(0, value.Length - ".json".Length) : value;
+        }
+
+        private static string NormalizeCustomPlatform(string value)
+        {
+            return string.Equals(value, "Linux", StringComparison.OrdinalIgnoreCase) ? "Linux" : "Win";
+        }
+
+        private static string GetDisplayNameFromConfigId(string configId)
+        {
+            if (string.IsNullOrWhiteSpace(configId)) return "未命名配置";
+            string id = configId.Trim();
+            if (id.StartsWith("Custom_", StringComparison.OrdinalIgnoreCase))
+            {
+                string[] parts = id.Split(new[] { '_' }, 3);
+                if (parts.Length >= 3) return parts[2];
+            }
+
+            return id;
         }
 
         /// <summary>
         /// <summary>
-        /// 确保配置拥有稳定 ID。
-        /// </summary>
+        /// 纭繚閰嶇疆鎷ユ湁绋冲畾 ID銆?        /// </summary>
         private string EnsureConfigId(RecorderParamsConfig config, bool keepExistingFileName)
         {
             if (config == null) return "recorder_config";
@@ -473,16 +518,14 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 从配置文件名推导配置 ID。
-        /// </summary>
+        /// 浠庨厤缃枃浠跺悕鎺ㄥ閰嶇疆 ID銆?        /// </summary>
         private static string GetConfigIdFromFileName(string fileName)
         {
             return RecorderConfigMigrator.GetConfigIdFromFileName(fileName);
         }
 
         /// <summary>
-        /// 将字符串规整成 configId 允许的格式。
-        /// </summary>
+        /// 灏嗗瓧绗︿覆瑙勬暣鎴?configId 鍏佽鐨勬牸寮忋€?        /// </summary>
         private static string NormalizeConfigId(string value)
         {
             return RecorderConfigMigrator.NormalizeConfigId(value);
@@ -491,47 +534,42 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         private static int GetQualityOrder(RecorderParamsConfig config)
         {
             string name = $"{config?.configId} {config?.displayName}";
-            if (name.IndexOf("high", StringComparison.OrdinalIgnoreCase) >= 0 || name.Contains("高")) return 0;
-            if (name.IndexOf("medium", StringComparison.OrdinalIgnoreCase) >= 0 || name.Contains("中")) return 1;
-            if (name.IndexOf("low", StringComparison.OrdinalIgnoreCase) >= 0 || name.Contains("低")) return 2;
+            if (name.IndexOf("high", StringComparison.OrdinalIgnoreCase) >= 0) return 0;
+            if (name.IndexOf("medium", StringComparison.OrdinalIgnoreCase) >= 0) return 1;
+            if (name.IndexOf("low", StringComparison.OrdinalIgnoreCase) >= 0) return 2;
             return 3;
         }
 
         /// <summary>
-        /// 获取当前运行平台名称。
-        /// </summary>
+        /// 鑾峰彇褰撳墠杩愯骞冲彴鍚嶇О銆?        /// </summary>
         private string GetCurrentPlatformName()
         {
             return Application.platform == RuntimePlatform.LinuxEditor || Application.platform == RuntimePlatform.LinuxPlayer ? "Linux" : "Win";
         }
 
         /// <summary>
-        /// 判断平台字段是否匹配当前平台。
-        /// </summary>
+        /// 鍒ゆ柇骞冲彴瀛楁鏄惁鍖归厤褰撳墠骞冲彴銆?        /// </summary>
         private bool IsCurrentPlatform(string platform)
         {
             return string.IsNullOrWhiteSpace(platform) || string.Equals(NormalizePlatform(platform), GetCurrentPlatformName(), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// 兼容旧配置中的 Windows 平台名。
-        /// </summary>
+        /// 鍏煎鏃ч厤缃腑鐨?Windows 骞冲彴鍚嶃€?        /// </summary>
         private static string NormalizePlatform(string platform)
         {
             return string.Equals(platform, "Windows", StringComparison.OrdinalIgnoreCase) ? "Win" : platform;
         }
 
         /// <summary>
-        /// 判断文件是否为当前平台录制配置。
-        /// </summary>
+        /// 鍒ゆ柇鏂囦欢鏄惁涓哄綋鍓嶅钩鍙板綍鍒堕厤缃€?        /// </summary>
         private static bool IsRecordConfigFile(string fileName, string platform)
         {
             return IsTemplateConfigFile(fileName, platform) || IsUserConfigFile(fileName, platform);
         }
 
         /// <summary>
-        /// 判断文件是否为当前平台模板配置。
-        /// </summary>
+        /// 鍒ゆ柇鏂囦欢鏄惁涓哄綋鍓嶅钩鍙版ā鏉块厤缃€?        /// </summary>
         private static bool IsTemplateConfigFile(string fileName, string platform)
         {
             return fileName.StartsWith($"Template_{platform}_", StringComparison.OrdinalIgnoreCase) ||
@@ -539,34 +577,31 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 判断文件是否为当前平台用户配置。
-        /// </summary>
+        /// 鍒ゆ柇鏂囦欢鏄惁涓哄綋鍓嶅钩鍙扮敤鎴烽厤缃€?        /// </summary>
         private static bool IsUserConfigFile(string fileName, string platform)
         {
             return fileName.StartsWith($"Creat_{platform}_", StringComparison.OrdinalIgnoreCase) ||
                    fileName.StartsWith($"Create_{platform}_", StringComparison.OrdinalIgnoreCase) ||
+                   fileName.StartsWith($"Custom_{platform}_", StringComparison.OrdinalIgnoreCase) ||
                    fileName.StartsWith($"create_{platform}_", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// 判断文件是否为模板配置。
-        /// </summary>
+        /// 鍒ゆ柇鏂囦欢鏄惁涓烘ā鏉块厤缃€?        /// </summary>
         private static bool IsTemplateFileName(string fileName)
         {
             return !string.IsNullOrWhiteSpace(fileName) && (fileName.StartsWith("Template_", StringComparison.OrdinalIgnoreCase) || fileName.StartsWith("template_", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
-        /// 判断配置 ID 是否为模板。
-        /// </summary>
+        /// 鍒ゆ柇閰嶇疆 ID 鏄惁涓烘ā鏉裤€?        /// </summary>
         private static bool IsTemplateConfigId(string configId)
         {
             return !string.IsNullOrWhiteSpace(configId) && configId.StartsWith("template_", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// 从文件名解析配置名称。
-        /// </summary>
+        /// 浠庢枃浠跺悕瑙ｆ瀽閰嶇疆鍚嶇О銆?        /// </summary>
         private static string GetConfigNameFromFileName(string fileName)
         {
             string name  = Path.GetFileNameWithoutExtension(fileName);
@@ -575,8 +610,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 根据码率计算默认缓冲区大小。
-        /// </summary>
+        /// 鏍规嵁鐮佺巼璁＄畻榛樿缂撳啿鍖哄ぇ灏忋€?        /// </summary>
         private static string GetDoubleBitrate(string bitrate)
         {
             if (string.IsNullOrWhiteSpace(bitrate)) return "6M";
@@ -588,16 +622,18 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 判断配置文件名是否存在于配置根目录。
-        /// </summary>
+        /// 鍒ゆ柇閰嶇疆鏂囦欢鍚嶆槸鍚﹀瓨鍦ㄤ簬閰嶇疆鏍圭洰褰曘€?        /// </summary>
         private bool HasConfigFileName(string fileName)
         {
-            return !string.IsNullOrWhiteSpace(fileName) && File.Exists(Path.Combine(GetConfigDirectory(), Path.GetFileName(fileName)));
+            if (string.IsNullOrWhiteSpace(fileName)) return false;
+            string safeName = Path.GetFileName(fileName);
+            return File.Exists(Path.Combine(GetDefaultTemplateDirectory(), safeName)) ||
+                   File.Exists(Path.Combine(GetCustomTemplateDirectory(), safeName)) ||
+                   File.Exists(Path.Combine(GetConfigDirectory(), safeName));
         }
 
         /// <summary>
-        /// 判断配置 ID 对应文件是否存在。
-        /// </summary>
+        /// 鍒ゆ柇閰嶇疆 ID 瀵瑰簲鏂囦欢鏄惁瀛樺湪銆?        /// </summary>
         private bool HasConfigId(string configId)
         {
             if (string.IsNullOrWhiteSpace(configId)) return false;
@@ -607,8 +643,7 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 根据 currentConfigId 或旧 fileName 解析当前使用配置 ID。
-        /// </summary>
+        /// 鏍规嵁 currentConfigId 鎴栨棫 fileName 瑙ｆ瀽褰撳墠浣跨敤閰嶇疆 ID銆?        /// </summary>
         private void ResolveReferenceConfigId(RecordConfigReference reference)
         {
             if (reference == null) return;
@@ -622,26 +657,29 @@ namespace Demos.示例_录制视频Recorder.Scripts.UISettings
         }
 
         /// <summary>
-        /// 在配置目录中按 configId 查找配置文件，兼容旧文件名。
-        /// </summary>
+        /// 鍦ㄩ厤缃洰褰曚腑鎸?configId 鏌ユ壘閰嶇疆鏂囦欢锛屽吋瀹规棫鏂囦欢鍚嶃€?        /// </summary>
         private string FindConfigFileNameByConfigId(string configId)
         {
-            if (string.IsNullOrWhiteSpace(configId) || !Directory.Exists(GetConfigDirectory())) return string.Empty;
-            foreach (string file in Directory.GetFiles(GetConfigDirectory(), "*.json", SearchOption.TopDirectoryOnly))
+            if (string.IsNullOrWhiteSpace(configId)) return string.Empty;
+            foreach (string directory in new[] { GetDefaultTemplateDirectory(), GetCustomTemplateDirectory(), GetConfigDirectory() })
             {
-                string fileName = Path.GetFileName(file);
-                if (!IsRecordConfigFile(fileName, GetCurrentPlatformName())) continue;
-                try
+                if (!Directory.Exists(directory)) continue;
+                foreach (string file in Directory.GetFiles(directory, "*.json", SearchOption.TopDirectoryOnly))
                 {
-                    string json = File.ReadAllText(file);
-                    var config = JsonUtility.FromJson<RecorderParamsConfig>(json);
-                    if (config == null) continue;
-                    RecorderConfigMigrator.MigrateIdentity(config, json, fileName);
-                    if (string.Equals(config.configId, RecorderConfigMigrator.NormalizeConfigId(configId), StringComparison.OrdinalIgnoreCase)) return fileName;
-                }
-                catch
-                {
-                    // 忽略损坏配置，继续查找其它文件。
+                    string fileName = Path.GetFileName(file);
+                    if (!IsRecordConfigFile(fileName, GetCurrentPlatformName())) continue;
+                    try
+                    {
+                        string json = File.ReadAllText(file);
+                        var config = JsonUtility.FromJson<RecorderParamsConfig>(json);
+                        if (config == null) continue;
+                        RecorderConfigMigrator.MigrateIdentity(config, json, fileName);
+                        if (string.Equals(config.configId, RecorderConfigMigrator.NormalizeConfigId(configId), StringComparison.OrdinalIgnoreCase)) return fileName;
+                    }
+                    catch
+                    {
+                        // Ignore broken config files and keep searching.
+                    }
                 }
             }
 

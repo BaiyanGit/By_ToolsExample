@@ -34,10 +34,10 @@
 
 ## unitypackage 验证
 
-- 打包工具默认包含 SDK 根目录、Configs，并可选包含 FFmpegApp、WASAPI DLL、Documentation、Demo 场景、Videos 空目录说明。
+- 打包工具默认包含 SDK 根目录、Configs，并可选包含 FFmpeg、WASAPI DLL、Documentation、Demo 场景、Videos 空目录说明。
 - 不再导出 `Videos` 目录中的实际录制文件。
 - 正式包需要检查 `WASAPILoopbackRecorder.dll`、Documentation、Demo 场景、Configs 等必要项。
-- `ffmpeg.exe` 可选择内置到 `Assets/StreamingAssets/FFmpegTools/FFmpegApp/`，也可由用户在 Settings UI 中指定。
+- `ffmpeg.exe` 可选择内置到 `Assets/StreamingAssets/RecorderSDK/FFmpeg/`，也可由用户在 Settings UI 中指定。
 
 ## 已知限制
 
@@ -45,3 +45,4 @@
 - 仍需在真实 Unity Editor 中完成更多 Windows / Linux 实机验证。
 - 仍需补充长时间录制、多次 Start/Stop、推流重连、音频设备异常等压力验证。
 - BackendFactory、Profile 导入导出、云同步能力暂未进入本阶段。
+

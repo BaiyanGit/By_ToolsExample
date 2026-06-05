@@ -165,7 +165,7 @@ namespace _3rdBy.ByFramework.Extension
         /// </summary>
         public static void WriteJsonFileAsyncThread(string folder, string fileName, string jsonData)
         {
-            ThreadDispatcher.RunAsync(() => { _ = WriteJsonFileAsync(folder, fileName, jsonData); });
+            DispatcherThread.RunAsync(() => { _ = WriteJsonFileAsync(folder, fileName, jsonData); });
         }
     }
 }

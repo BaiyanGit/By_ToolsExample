@@ -15,10 +15,10 @@ namespace _3rdBy.ByFramework.Extension
     /// <summary>
     /// 线程调度器
     /// </summary>
-    public class ThreadDispatcher : MonoBehaviour
+    public class DispatcherThread : MonoBehaviour
     {
         public static int maxThreads = 6;                            // 最大允许的并发线程数
-        public static ThreadDispatcher Current { get; private set; } // 当前的ThreadDispatcher实例（单例模式）
+        public static DispatcherThread Current { get; private set; } // 当前的ThreadDispatcher实例（单例模式）
 
         // 在场景加载前初始化ThreadDispatcher
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -32,20 +32,20 @@ namespace _3rdBy.ByFramework.Extension
             maxThreads = Environment.ProcessorCount; // 设置最大线程数为处理器核心数
             Debug.Log($"ThreadDispatcher 线程数量, {maxThreads}");
 
-            ThreadDispatcher existingDispatcher = FindFirstObjectByType<ThreadDispatcher>();
-            if (existingDispatcher != null)
+            DispatcherThread existing = FindFirstObjectByType<DispatcherThread>();
+            if (existing != null)
             {
-                Current = existingDispatcher;
-                DontDestroyOnLoad(existingDispatcher.gameObject);
+                Current = existing;
+                DontDestroyOnLoad(existing.gameObject);
                 return;
             }
 
             // 创建一个新的GameObject来承载ThreadDispatcher脚本
             var container = new GameObject
             {
-                name = "ThreadDispatcher"
+                name = "DispatcherThread"
             };
-            Current = container.AddComponent<ThreadDispatcher>();
+            Current = container.AddComponent<DispatcherThread>();
 
             var parentGo = GameObject.Find("[ByFramework]");
             if (parentGo != null)

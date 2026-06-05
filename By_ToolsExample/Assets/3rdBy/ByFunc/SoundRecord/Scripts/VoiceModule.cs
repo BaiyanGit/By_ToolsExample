@@ -1,6 +1,6 @@
 namespace _3rdBy.ByFunc.SoundRecord.Scripts
 {
-    using _3rdBy.MetaFramework.Singleton;
+    using ByFramework.Singleton;
     using UnityEngine;
     using UnityEngine.Events;
 

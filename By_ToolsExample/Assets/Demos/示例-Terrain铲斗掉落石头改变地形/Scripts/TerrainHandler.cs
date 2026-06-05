@@ -1,4 +1,4 @@
-namespace Demos.示例_Terrain铲斗掉落石头改变地形
+namespace Demos.示例_Terrain铲斗掉落石头改变地形.Scripts
 {
     using System.Collections;
     using System.Collections.Generic;

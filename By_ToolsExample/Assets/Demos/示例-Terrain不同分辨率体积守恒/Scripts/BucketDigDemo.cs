@@ -1,4 +1,4 @@
-namespace Demos.示例_Terrain不同分辨率体积守恒
+namespace Demos.示例_Terrain不同分辨率体积守恒.Scripts
 {
     using UnityEngine;
 

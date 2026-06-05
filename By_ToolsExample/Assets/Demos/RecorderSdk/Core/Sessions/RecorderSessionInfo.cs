@@ -5,10 +5,12 @@
 // 描    述: 对外公开当前录制会话的只读摘要，便于 UI、日志、上传和任务追踪。
 //=====================================================
 
-using System;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Sessions
 {
+    using System;
+    using Events;
+    using Runtime;
+
     /// <summary>
     /// 录制会话只读摘要。
     /// </summary>

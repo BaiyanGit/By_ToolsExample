@@ -5,7 +5,7 @@
 // 描    述: 定义 RecorderState 合法流转表，集中约束录制生命周期。
 //=====================================================
 
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Runtime
 {
     /// <summary>
     /// 录制状态流转表。

@@ -1,7 +1,6 @@
-using UnityEngine;
-
-namespace Demos.示例_油门进度条
+namespace Demos.示例_油门进度条.Scripts
 {
+    using UnityEngine;
     using UnityEngine.UI;
 
     public class ProgressBar : MonoBehaviour

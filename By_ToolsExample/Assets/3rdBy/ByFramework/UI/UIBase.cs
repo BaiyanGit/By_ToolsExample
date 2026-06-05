@@ -1,5 +1,6 @@
-namespace _3rdBy.MetaFramework.UI
+namespace _3rdBy.ByFramework.UI
 {
+    using Interface;
     using UnityEngine;
     using UnityEngine.UI;
 
@@ -15,37 +16,37 @@ namespace _3rdBy.MetaFramework.UI
         /// <summary>
         /// UI名称
         /// </summary>
-        public string uiName { get; set; }
+        public string UIName { get; set; }
 
         /// <summary>
         /// UI实体
         /// </summary>
-        public GameObject uiGo { get; set; }
+        public GameObject UIGo { get; set; }
 
         /// <summary>
         /// UI视觉效果属性
         /// </summary>
-        public UIHierarchy uiHierarchy { get; set; }
+        public UIHierarchy UIHierarchy { get; set; }
 
         /// <summary>
         /// UI类型
         /// </summary>
-        public UIType uiType { get; set; }
+        public UIType UIType { get; set; }
 
         /// <summary>
         /// 是否正在显示
         /// </summary>
-        public bool isShowing { get; set; }
+        public bool IsShowing { get; set; }
 
         /// <summary>
         /// 获取Model
         /// </summary>
-        public IUIModel uiModel { get; set; }
+        public IUIModel UIModel { get; set; }
 
         /// <summary>
         /// 获取View
         /// </summary>
-        public IUIView uiView { get; set; }
+        public IUIView UIView { get; set; }
 
         /// <summary>
         /// 获取Model
@@ -53,7 +54,7 @@ namespace _3rdBy.MetaFramework.UI
         /// <returns></returns>
         public TM GetModel()
         {
-            return uiModel as TM;
+            return UIModel as TM;
         }
 
         /// <summary>
@@ -62,7 +63,7 @@ namespace _3rdBy.MetaFramework.UI
         /// <returns></returns>
         public TV GetView()
         {
-            return uiView as TV;
+            return UIView as TV;
         }
 
         /// <summary>
@@ -86,9 +87,9 @@ namespace _3rdBy.MetaFramework.UI
         /// </summary>
         protected void CloseSelf()
         {
-            if (uiType == UIType.List)
+            if (UIType == UIType.List)
             {
-                UIManager.Instance.CloseNormal(uiName);
+                UIManager.Instance.CloseNormal(UIName);
             }
             else
             {

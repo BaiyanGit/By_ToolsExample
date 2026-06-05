@@ -1,4 +1,4 @@
-﻿namespace Demos.示例_录制视频Recorder.Scripts.UISettings
+﻿namespace Demos.RecorderSdk.UI.Settings
 {
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
     using System.Runtime.InteropServices;
@@ -7,13 +7,13 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.IO;
-    using Core;
-#if UNITY_EDITOR
+    using Core.Runtime;
     using UnityEditor;
-#endif
     using UnityEngine;
     using UnityEngine.SceneManagement;
     using UnityEngine.UI;
+#if UNITY_EDITOR
+#endif
 
     //=====================================================
     // 文件名称: RecorderParamsSettings

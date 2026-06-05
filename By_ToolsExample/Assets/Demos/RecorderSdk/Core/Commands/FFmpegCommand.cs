@@ -5,10 +5,10 @@
 // 描    述: 保存一次 FFmpeg 调用的可执行文件、参数列表和完整命令行文本。
 //=====================================================
 
-using System.Collections.Generic;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Commands
 {
+    using System.Collections.Generic;
+
     /// <summary>
     /// FFmpeg 命令数据。
     /// </summary>

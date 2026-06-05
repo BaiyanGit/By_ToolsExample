@@ -5,12 +5,16 @@
 // 描    述: 演示 Recorder SDK 的最小调用方式，包括事件订阅、配置切换、开始停止录制和读取历史。
 //=====================================================
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using UnityEngine;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Demo.Scripts
 {
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using Core.Config;
+    using Core.Events;
+    using Core.Runtime;
+    using Core.Sessions;
+    using UnityEngine;
+
     /// <summary>
     /// Recorder SDK 最小使用示例。
     /// </summary>

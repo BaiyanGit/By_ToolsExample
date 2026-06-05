@@ -41,7 +41,7 @@
         [Header("启用TextMeshPro内容中文检测")] private bool _enableChineseCheck;
         [Header("TextMeshPro的文本内容包装模式")] private WrappingModes _wrappingModes;
 
-        private const string TmpDescStr = "<color=yellow><size=12><b>使用说明：</b></size></color>\n" +
+        private const string TMP_DESC_STR = "<color=yellow><size=12><b>使用说明：</b></size></color>\n" +
                                           "<color=green>1. 批量修改Project中所有UI预制件（prefabs）中的 TextMeshPro 和 TextMeshProUGUI 组件的参数；</color>\n" +
                                           "<color=green>2. TextMeshPro 和 TextMeshProUGUI 组件的文本内容包含中文时(英文字符不受影响)，添加指定的Mono脚本。</color>\n" +
                                           "<color=green>3. 修改TextMeshPro的字体大小范围、字体自动缩放、文字自动换行。</color>\n" +
@@ -71,7 +71,7 @@
             {
                 richText = true
             };
-            EditorGUILayout.LabelField($"{TmpDescStr}", helpBoxStyle);
+            EditorGUILayout.LabelField($"{TMP_DESC_STR}", helpBoxStyle);
         }
 
         private void DrawTextMeshProSetting()

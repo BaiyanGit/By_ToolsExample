@@ -1,4 +1,4 @@
-namespace _3rdBy.MetaFramework.Singleton
+namespace _3rdBy.ByFramework.Singleton
 {
     using UnityEngine;
 

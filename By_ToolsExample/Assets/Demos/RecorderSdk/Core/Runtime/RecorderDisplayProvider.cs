@@ -5,7 +5,7 @@
 // 描    述: 录屏显示器信息提供器，根据不同平台获取当前系统中的显示器列表。
 //=====================================================
 
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Runtime
 {
     using System;
     using System.Collections.Generic;

@@ -1,4 +1,4 @@
-namespace WinAPI
+namespace Demos.示例_进程任务管理器.Scripts
 {
     using System;
     using System.ComponentModel;

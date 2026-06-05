@@ -3,18 +3,20 @@
 // Description: Recorder SDK streaming demo controller.
 //=====================================================
 
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Demo.Scripts
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
-    using Demos.示例_录制视频Recorder.Scripts.UISettings;
+    using Core.Config;
+    using Core.Events;
+    using Core.Runtime;
+    using UI.Settings;
     using UnityEngine;
     using UnityEngine.EventSystems;
-#if ENABLE_INPUT_SYSTEM
     using UnityEngine.InputSystem.UI;
-#endif
     using UnityEngine.UI;
+#if ENABLE_INPUT_SYSTEM
+#endif
 
     /// <summary>
     /// Demo-only controller for RTMP/RTMPS streaming.

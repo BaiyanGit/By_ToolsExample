@@ -1,10 +1,11 @@
-namespace _3rdBy.MetaFramework.UI
+namespace _3rdBy.ByFramework.UI
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Singleton;
     using Cysharp.Threading.Tasks;
+    using Interface;
+    using Singleton;
     using UnityEngine;
     using Object = UnityEngine.Object;
 
@@ -18,7 +19,7 @@ namespace _3rdBy.MetaFramework.UI
     /// </summary>
     public class UIManager : SingletonTemplate<UIManager>
     {
-        private const string UIResPath = "Prefab/UI/{0}";
+        private const string UI_RES_PATH = "Prefab/UI/{0}";
 
         /// <summary>
         /// UIRoot
@@ -47,17 +48,17 @@ namespace _3rdBy.MetaFramework.UI
             _uiList     = new List<IUIBase>();
 
             _uiRootGo              = UIRoot.Instance; //CreateUIRoot();
-            _uiRootGo.updateAction = Update;
+            _uiRootGo.UpdateAction = Update;
         }
 
         private void Update()
         {
-            foreach (var uiBase in _uiStack.Where(uiBase => uiBase.isShowing))
+            foreach (var uiBase in _uiStack.Where(uiBase => uiBase.IsShowing))
             {
                 uiBase.OnUpdate();
             }
 
-            foreach (var uiBase in _uiList.Where(uiBase => uiBase.isShowing))
+            foreach (var uiBase in _uiList.Where(uiBase => uiBase.IsShowing))
             {
                 uiBase.OnUpdate();
             }
@@ -87,7 +88,7 @@ namespace _3rdBy.MetaFramework.UI
                 _uiList.Add(ui);
             }
 
-            ui.uiType = UIType.List;
+            ui.UIType = UIType.List;
 
             return ShowUI(ui, args);
         }
@@ -110,7 +111,7 @@ namespace _3rdBy.MetaFramework.UI
                 _uiList.Add(ui);
             }
 
-            ui.uiType = UIType.List;
+            ui.UIType = UIType.List;
 
             return ShowUI(ui, args);
         }
@@ -123,7 +124,7 @@ namespace _3rdBy.MetaFramework.UI
         {
             if (_uiList.Count <= 0) return;
 
-            var ui = _uiList.Find(ui => ui.uiName.Equals(uiName));
+            var ui = _uiList.Find(ui => ui.UIName.Equals(uiName));
 
             if (ui == null)
             {
@@ -156,7 +157,7 @@ namespace _3rdBy.MetaFramework.UI
 
             _uiStack.Push(ui);
 
-            ui.uiType = UIType.Stack;
+            ui.UIType = UIType.Stack;
 
             return ShowUI(ui, args);
         }
@@ -182,7 +183,7 @@ namespace _3rdBy.MetaFramework.UI
 
             _uiStack.Push(ui);
 
-            ui.uiType = UIType.Stack;
+            ui.UIType = UIType.Stack;
 
             return ShowUI(ui, args);
         }
@@ -207,14 +208,14 @@ namespace _3rdBy.MetaFramework.UI
 
         private IUIBase ShowUI(IUIBase ui, params object[] args)
         {
-            if (ui.isShowing)
+            if (ui.IsShowing)
             {
-                ui.uiHierarchy.PlayRefresh();
+                ui.UIHierarchy.PlayRefresh();
             }
             else
             {
-                ui.isShowing = true;
-                ui.uiHierarchy.PlayIn();
+                ui.IsShowing = true;
+                ui.UIHierarchy.PlayIn();
             }
             
             //ui.uiGo.SetActive(true);
@@ -226,16 +227,16 @@ namespace _3rdBy.MetaFramework.UI
 
         private void HideUI(IUIBase ui, bool isDestroy = false)
         {
-            ui.isShowing = false;
+            ui.IsShowing = false;
             ui.OnExit();
             if (isDestroy)
             {
-                _uiCacheDic.Remove(ui.uiName);
-                Object.Destroy(ui.uiGo);
+                _uiCacheDic.Remove(ui.UIName);
+                Object.Destroy(ui.UIGo);
             }
             else
             {
-                ui.uiHierarchy.PlayOut();
+                ui.UIHierarchy.PlayOut();
                 //ui.uiGo.SetActive(false);
             }
         }
@@ -252,7 +253,7 @@ namespace _3rdBy.MetaFramework.UI
 
             for (int i = _uiList.Count - 1; i >= 0; i--)
             {
-                CloseNormal(_uiList[i].uiName, isDestroy);
+                CloseNormal(_uiList[i].UIName, isDestroy);
             }
         }
 
@@ -268,19 +269,19 @@ namespace _3rdBy.MetaFramework.UI
 
             for (int i = _uiList.Count - 1; i >= 0; i--)
             {
-                if (names.Contains(_uiList[i].uiName))
+                if (names.Contains(_uiList[i].UIName))
                 {
                     continue;
                 }
 
-                CloseNormal(_uiList[i].uiName, isDestroy);
+                CloseNormal(_uiList[i].UIName, isDestroy);
             }
         }
 
         private async UniTask<IUIBase> LoadUIAsync(string uiName)
         {
             // 创建ui游戏对象
-            string uiPath = string.Format(UIResPath, uiName);
+            string uiPath = string.Format(UI_RES_PATH, uiName);
 
             var resLoader = Resources.LoadAsync<GameObject>(uiPath);
             await resLoader;
@@ -297,7 +298,7 @@ namespace _3rdBy.MetaFramework.UI
         private IUIBase LoadUI(string uiName)
         {
             // 创建ui游戏对象
-            string uiPath = string.Format(UIResPath, uiName);
+            string uiPath = string.Format(UI_RES_PATH, uiName);
 
             var prefab = Resources.Load<GameObject>(uiPath);
             if (!prefab)
@@ -338,13 +339,13 @@ namespace _3rdBy.MetaFramework.UI
 
             // 初始化UI类
             uiView?.Init(uiGo);
-            ui.uiName  = uiName;
-            ui.uiGo    = uiGo;
-            ui.uiModel = uiModel;
-            ui.uiView  = uiView;
+            ui.UIName  = uiName;
+            ui.UIGo    = uiGo;
+            ui.UIModel = uiModel;
+            ui.UIView  = uiView;
 
             // 添加UI效果
-            ui.uiHierarchy = ui.uiGo.AddComponent<UIHierarchy>();
+            ui.UIHierarchy = ui.UIGo.AddComponent<UIHierarchy>();
 
             // 初始化UI
             ui.OnInit();

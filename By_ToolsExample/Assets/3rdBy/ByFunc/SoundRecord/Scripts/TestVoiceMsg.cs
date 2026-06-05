@@ -1,9 +1,9 @@
 ﻿namespace _3rdBy.ByFunc.SoundRecord.Scripts
 {
     using System;
+    using ByFramework.Extension.ExtendComponent;
+    using ByFramework.Http;
     using Cysharp.Threading.Tasks;
-    using Extension.ExtendComponent;
-    using MetaFramework.HttpNetwork;
     using UnityEngine;
 
     public enum ChatType

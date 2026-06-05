@@ -1,9 +1,9 @@
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.EventSystems;
-
-namespace Demos.RecorderSdk.Demo
+namespace Demos.RecorderSdk.Demo.Scripts
 {
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.EventSystems;
+
     /// <summary>
     /// Resizes a UI panel from a drag handle and optionally scales its content as a single window.
     /// Intended for the stream demo panel: the outer panel changes size, while its inner controls scale together.

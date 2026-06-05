@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.ByTools.TableConvertJson.ConvertHelper
+﻿namespace _3rdBy.ByTools.JsonConvertTool.Editor.ConvertHelper
 {
     using System;
     using System.Collections.Generic;

@@ -1,7 +1,6 @@
-﻿using UnityEngine;
-
-namespace AdvancedUINavigation
+﻿namespace Demos.示例_UI键盘选择.AdvancedUINavigation
 {
+    using UnityEngine;
     using UnityEngine.InputSystem;
 
     public class UINavigationInput : MonoBehaviour

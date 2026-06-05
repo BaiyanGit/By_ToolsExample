@@ -1,7 +1,7 @@
-using UnityEngine;
-
-namespace Demos.示例_Toggle测试
+namespace Demos.示例_UIToggle测试
 {
+    using UnityEngine;
+
     public class ToggleControllerExample : MonoBehaviour
     {
     }

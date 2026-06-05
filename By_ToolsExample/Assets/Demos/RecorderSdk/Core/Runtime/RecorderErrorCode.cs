@@ -5,7 +5,7 @@
 // 描    述: 定义 Recorder SDK 对外稳定错误码，方便调用方判断失败原因。
 //=====================================================
 
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Runtime
 {
     /// <summary>
     /// 录制器错误码。

@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.MetaFramework.Guide
+﻿namespace _3rdBy.ByFramework.Guide
 {
     using UnityEngine;
     using UnityEngine.UI;

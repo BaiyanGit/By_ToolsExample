@@ -5,10 +5,11 @@
 // 描    述: 统一录制器事件参数，承载会话、状态、输出路径、消息和异常信息。
 //=====================================================
 
-using System;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Events
 {
+    using System;
+    using Runtime;
+
     /// <summary>
     /// 录制器统一事件参数。
     /// </summary>

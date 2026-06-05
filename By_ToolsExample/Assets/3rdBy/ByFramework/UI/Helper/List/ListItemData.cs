@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.MetaFramework.UI.Helper.List
+﻿namespace _3rdBy.ByFramework.UI.Helper.List
 {
     [System.Serializable]
     public class ListItemData

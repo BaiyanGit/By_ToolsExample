@@ -1,8 +1,8 @@
-using UnityEngine;
-using UnityEngine.EventSystems;
-
-namespace Demos.RecorderSdk.Demo
+namespace Demos.RecorderSdk.Demo.Scripts
 {
+    using UnityEngine;
+    using UnityEngine.EventSystems;
+
     public sealed class DraggableRectTransform : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         public RectTransform target;

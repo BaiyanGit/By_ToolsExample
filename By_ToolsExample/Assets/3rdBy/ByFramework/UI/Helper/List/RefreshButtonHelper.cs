@@ -1,8 +1,8 @@
 ﻿
-namespace _3rdBy.MetaFramework.UI.Helper.List
+namespace _3rdBy.ByFramework.UI.Helper.List
 {
-    using ByFunc.Extension.ExtendComponent;
     using Cysharp.Threading.Tasks;
+    using Extension.ExtendComponent;
     using TMPro;
     using UnityEngine;
     using UnityEngine.Events;

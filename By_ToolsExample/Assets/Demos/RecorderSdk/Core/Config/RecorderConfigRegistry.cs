@@ -5,14 +5,15 @@
 // 描    述: 统一管理录制配置扫描、索引、迁移、自动修复、当前配置指针和用户配置操作。
 //=====================================================
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using Demos.示例_录制视频Recorder.Scripts.UISettings;
-using UnityEngine;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Config
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using Runtime;
+    using UI.Settings;
+    using UnityEngine;
+
     /// <summary>
     /// 录制配置注册表，只管理配置文件，不启动录制、不拼接 FFmpeg、不修改录制状态。
     /// </summary>

@@ -1,82 +1,86 @@
 using System.Collections.Generic;
-using _3rdBy.ByTools.TableConvertJson.ExcelDataTool.ExcelData;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-/// <summary>
-/// Excel数据列表项实例化，用于显示Excel数据列表
-/// </summary>
-public class ExcelUIView : MonoBehaviour
+namespace _3rdBy.ByFramework.UI.UIExtend.ExcelItem
 {
-    [Header("实例容器"), SerializeField] private Transform content;
-    [Header("实例对象"), SerializeField] private ExcelItemBase _item;
-
-    public List<ExcelItemBase> excelItemsList { get; } = new();
+    using ByTools.JsonConvertTool.ExcelDataTool.ExcelData;
 
     /// <summary>
-    /// 初始化数据
+    /// Excel数据列表项实例化，用于显示Excel数据列表
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="dataList">数据</param>
-    /// <param name="onClickAction">回调</param>
-    /// <param name="cont">实例化对象的服父物体</param>
-    /// <param name="isJoin">是否使用已经生成的</param>
-    public void InitContent<T>(List<T> dataList, UnityAction<T> onClickAction = null) where T : ExcelObject
+    public class ExcelUIView : MonoBehaviour
     {
-        _item.gameObject.SetActive(false);
+        [Header("实例容器"), SerializeField] private Transform content;
+        [Header("实例对象"), SerializeField] private ExcelItemBase _item;
 
-        if (dataList == null || dataList.Count == 0)
-        {
-            Debug.LogError("实例化的数据列表为空");
-            return;
-        }
+        public List<ExcelItemBase> excelItemsList { get; } = new();
 
-        for (var i = 0; i < dataList.Count; i++)
+        /// <summary>
+        /// 初始化数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dataList">数据</param>
+        /// <param name="onClickAction">回调</param>
+        /// <param name="cont">实例化对象的服父物体</param>
+        /// <param name="isJoin">是否使用已经生成的</param>
+        public void InitContent<T>(List<T> dataList, UnityAction<T> onClickAction = null) where T : ExcelObject
         {
-            ExcelItemBase item;
-            if (i < excelItemsList.Count)
+            _item.gameObject.SetActive(false);
+
+            if (dataList == null || dataList.Count == 0)
             {
-                item = excelItemsList[i];
-            }
-            else
-            {
-                item = Instantiate(_item, content);
-                excelItemsList.Add(item);
+                Debug.LogError("实例化的数据列表为空");
+                return;
             }
 
-            item.name = $"ExcelItem_{i}";
-            item.gameObject.SetActive(true);
+            for (var i = 0; i < dataList.Count; i++)
+            {
+                ExcelItemBase item;
+                if (i < excelItemsList.Count)
+                {
+                    item = excelItemsList[i];
+                }
+                else
+                {
+                    item = Instantiate(_item, content);
+                    excelItemsList.Add(item);
+                }
 
-            item.InitData(dataList[i], onClickAction);
+                item.name = $"ExcelItem_{i}";
+                item.gameObject.SetActive(true);
+
+                item.InitData(dataList[i], onClickAction);
+            }
+
+            _ = RefreshLayout();
         }
 
-        _ = RefreshLayout();
-    }
-
-    public void ClearContent()
-    {
-        foreach (var item in excelItemsList)
+        public void ClearContent()
         {
-            item.gameObject.SetActive(false);
+            foreach (var item in excelItemsList)
+            {
+                item.gameObject.SetActive(false);
+            }
         }
-    }
 
-    /// <summary>
-    /// 刷新布局，包含ContentSizeFitter
-    /// </summary>
-    private async UniTaskVoid RefreshLayout()
-    {
-        var sizeFitter = content.GetComponent<ContentSizeFitter>();
-        if (sizeFitter)
+        /// <summary>
+        /// 刷新布局，包含ContentSizeFitter
+        /// </summary>
+        private async UniTaskVoid RefreshLayout()
         {
-            sizeFitter.enabled = false;
+            var sizeFitter = content.GetComponent<ContentSizeFitter>();
+            if (sizeFitter)
+            {
+                sizeFitter.enabled = false;
+                await UniTask.Delay(1);
+                sizeFitter.enabled = true;
+            }
+
             await UniTask.Delay(1);
-            sizeFitter.enabled = true;
+            LayoutRebuilder.MarkLayoutForRebuild(content as RectTransform);
         }
-
-        await UniTask.Delay(1);
-        LayoutRebuilder.MarkLayoutForRebuild(content as RectTransform);
     }
 }

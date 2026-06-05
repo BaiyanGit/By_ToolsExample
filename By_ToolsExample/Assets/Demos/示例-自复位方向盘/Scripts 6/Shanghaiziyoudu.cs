@@ -9,7 +9,7 @@
  *
  */
 
-namespace Demos.示例_自复位方向盘
+namespace Demos.示例_自复位方向盘.Scripts_6
 {
     using System;
     using System.Collections.Generic;

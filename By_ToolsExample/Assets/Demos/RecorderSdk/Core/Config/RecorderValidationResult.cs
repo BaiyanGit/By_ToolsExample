@@ -5,10 +5,11 @@
 // 描    述: 保存录制配置校验结果，区分错误和警告。
 //=====================================================
 
-using System.Collections.Generic;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Config
 {
+    using System.Collections.Generic;
+    using Runtime;
+
     /// <summary>
     /// 录制配置校验结果。
     /// </summary>

@@ -5,7 +5,7 @@
 // 描    述: 定义系统音频采集插件接口，供 Windows WASAPI、Linux PulseAudio 等实现扩展。
 //=====================================================
 
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Interfaces
 {
     /// <summary>
     /// 系统音频采集后端接口。

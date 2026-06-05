@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.MetaFramework.UI
+﻿namespace _3rdBy.ByFramework.UI.Interface
 {
     using UnityEngine;
 

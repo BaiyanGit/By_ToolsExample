@@ -1,5 +1,6 @@
 namespace Demos.示例_记录编辑场景对象.Editor
 {
+    using Scripts;
     using UnityEditor;
     using UnityEngine;
 

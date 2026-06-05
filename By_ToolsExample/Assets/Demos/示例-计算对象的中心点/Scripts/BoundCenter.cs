@@ -1,9 +1,9 @@
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
-
-namespace Demos.示例_计算对象的中心点
+namespace Demos.示例_计算对象的中心点.Scripts
 {
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.Events;
+
     /// <summary>
     /// 计算一个游戏对象及其所有子对象的边界中心，并创建或更新一个名为“BoundsCenter_游戏对象名称”的子对象来表示这个边界中心。
     /// </summary>

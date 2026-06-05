@@ -1,7 +1,6 @@
-namespace Demos.示例_快捷键切换应用.Scripts.KeyPad
+namespace Demos.示例_进程任务管理器.Scripts
 {
     using System.Collections.Generic;
-    using KeyPadAPI;
     using TMPro;
     using UnityEngine;
 

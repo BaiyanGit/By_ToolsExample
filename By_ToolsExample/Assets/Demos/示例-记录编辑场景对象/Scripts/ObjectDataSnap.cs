@@ -1,4 +1,4 @@
-﻿namespace Demos.示例_记录编辑场景对象
+﻿namespace Demos.示例_记录编辑场景对象.Scripts
 {
     using UnityEngine;
 

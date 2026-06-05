@@ -5,8 +5,10 @@
 // 描    述: 定义音视频合并服务接口，便于后续替换合并策略或接入插件。
 //=====================================================
 
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Interfaces
 {
+    using Runtime;
+
     /// <summary>
     /// 音视频合并服务接口。
     /// </summary>

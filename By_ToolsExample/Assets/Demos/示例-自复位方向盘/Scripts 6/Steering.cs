@@ -1,8 +1,8 @@
-﻿using System.Collections;
-using UnityEngine;
-
-namespace Demos.示例_自复位方向盘
+﻿namespace Demos.示例_自复位方向盘.Scripts_6
 {
+    using System.Collections;
+    using UnityEngine;
+
     public class Steering : MonoBehaviour
     {
         public Transform carCurrentTarget;

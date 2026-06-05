@@ -5,7 +5,7 @@
 // 描    述: 脚本宏定义扫描窗口
 //=====================================================
 
-namespace MacroDefineBuildToolEditor
+namespace _3rdBy.ByTools.MacroDefinitionSwitcher.Editor
 {
     using System;
     using System.Collections.Generic;

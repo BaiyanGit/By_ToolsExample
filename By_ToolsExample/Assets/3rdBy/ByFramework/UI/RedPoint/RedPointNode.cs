@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.MetaFramework.UI.RedPoint
+﻿namespace _3rdBy.ByFramework.UI.RedPoint
 {
     using System;
     using System.Collections.Generic;
@@ -14,12 +14,12 @@
         /// <summary>
         /// 总的红点数量
         /// </summary>        
-        public int pointCount = 0;
+        public int pointCount;
 
         /// <summary>
         /// 父节点
         /// </summary>
-        public RedPointNode parent = null;
+        public RedPointNode parent;
 
         /// <summary>
         /// 数量变化回调

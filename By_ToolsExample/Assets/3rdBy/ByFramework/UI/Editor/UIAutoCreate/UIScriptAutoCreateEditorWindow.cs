@@ -1,7 +1,7 @@
-namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
+namespace _3rdBy.ByFramework.UI.Editor.UIAutoCreate
 {
     using System.IO;
-    using System.Linq;
+    using _3rdBy.ByFramework.Editor;
     using UnityEditor;
     using UnityEngine;
 
@@ -328,16 +328,14 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
             const string strMeta   = ".meta";
 
             var newPrefabEditorPath    = UIAutoCreatePathSetting.PrefabCreatePath + _newUIName + strPrefab;
-            var newPrefabResourcesPath = Application.dataPath + UIAutoCreatePathSetting.PrefabCreatePath;
-            newPrefabResourcesPath = newPrefabResourcesPath.Replace("/AssetsAssets", "/Assets");
+            var newPrefabResourcesPath = ByFrameworkPathUtility.ToFullPath(UIAutoCreatePathSetting.PrefabCreatePath);
             Debug.Log(newPrefabResourcesPath);
             //copy prefab
             //origin
-            var originPrefabFullPath = Application.dataPath + UIAutoCreatePathSetting.PrefabTemplatePath + strPrefab;
-            originPrefabFullPath = originPrefabFullPath.Replace("/AssetsAssets", "/Assets");
+            var originPrefabFullPath = ByFrameworkPathUtility.ToFullPath(UIAutoCreatePathSetting.PrefabTemplatePath + strPrefab);
             Debug.Log(originPrefabFullPath);
             //target
-            var newPrefabFullPath = newPrefabResourcesPath + _newUIName + strPrefab;
+            var newPrefabFullPath = Path.Combine(newPrefabResourcesPath, _newUIName + strPrefab);
 
             //copy meta
             var originMetaFullPath = originPrefabFullPath + strMeta;
@@ -382,7 +380,7 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
             if (_uiRootGo == null) throw new System.Exception("请拖入需要生成的UI预制体");
 
             string       uiName     = GetUIName();
-            const string tempPath   = UIAutoCreatePathSetting.TemplateFilePath + UIAutoCreatePathSetting.ViewTemplateName;
+            var          tempPath   = UIAutoCreatePathSetting.TemplateFilePath + UIAutoCreatePathSetting.ViewTemplateName;
             string       targetPath = GetTargetGeneratePath(uiName);
             CheckTargetPath(targetPath);
             new UIViewAutoCreate().Create(uiName, _uiRootGo, tempPath, targetPath);
@@ -393,7 +391,7 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
             if (_uiRootGo == null) throw new System.Exception("请拖入需要生成的UI预制体");
 
             var          uiName     = GetUIName();
-            const string tempPath   = UIAutoCreatePathSetting.TemplateFilePath + UIAutoCreatePathSetting.ControlTemplateName;
+            var          tempPath   = UIAutoCreatePathSetting.TemplateFilePath + UIAutoCreatePathSetting.ControlTemplateName;
             var          targetPath = GetTargetGeneratePath(uiName);
             CheckTargetPath(targetPath);
             new UIControlAutoCreate().Create(uiName, tempPath, targetPath);
@@ -412,7 +410,7 @@ namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
 
         private static string GetTargetGeneratePath(string uiName)
         {
-            return $"{UIAutoCreatePathSetting.GetUIGenerateCsFilePath()}UI{uiName}/";
+            return Path.Combine(UIAutoCreatePathSetting.GetUIGenerateCsFilePath(), $"UI{uiName}");
         }
 
         private static void CheckTargetPath(string targetPath)

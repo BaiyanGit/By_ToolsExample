@@ -1,7 +1,7 @@
 ﻿namespace _3rdBy.ByFunc.SoundRecord.Scripts
 {
     using System;
-    using MetaFramework.HttpNetwork;
+    using ByFramework.Http;
 
     /// <summary>
     /// 语音 请求数据（加入房间、获取聊天消息）

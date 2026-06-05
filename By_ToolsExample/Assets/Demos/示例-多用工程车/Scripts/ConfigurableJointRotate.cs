@@ -1,4 +1,4 @@
-namespace Demos.示例_多用工程车
+namespace Demos.示例_多用工程车.Scripts
 {
     using System;
     using UnityEngine;

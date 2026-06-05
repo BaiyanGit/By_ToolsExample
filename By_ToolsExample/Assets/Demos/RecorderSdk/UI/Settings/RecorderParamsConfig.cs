@@ -1,4 +1,4 @@
-﻿namespace Demos.示例_录制视频Recorder.Scripts.UISettings
+﻿namespace Demos.RecorderSdk.UI.Settings
 {
     using System;
     using System.Collections.Generic;

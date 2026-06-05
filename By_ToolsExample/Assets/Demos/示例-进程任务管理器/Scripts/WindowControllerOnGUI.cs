@@ -1,10 +1,9 @@
-namespace Demos.示例_快捷键切换应用.Scripts.KeyPadAPI
+namespace Demos.示例_进程任务管理器.Scripts
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using UnityEngine;
-    using WinAPI;
     using Debug = UnityEngine.Debug;
 
     /// <summary>

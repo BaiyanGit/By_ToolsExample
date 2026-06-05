@@ -5,13 +5,14 @@
 // 描    述: 统一生成录制输出路径、临时路径和默认 StreamingAssets 工具目录。
 //=====================================================
 
-using System;
-using System.IO;
-using Demos.示例_录制视频Recorder.Scripts.UISettings;
-using UnityEngine;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Config
 {
+    using System;
+    using System.IO;
+    using Runtime;
+    using UI.Settings;
+    using UnityEngine;
+
     /// <summary>
     /// 录制路径服务。
     /// </summary>

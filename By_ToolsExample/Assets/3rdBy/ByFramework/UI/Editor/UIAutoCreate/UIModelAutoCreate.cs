@@ -1,4 +1,4 @@
-namespace _3rdBy.MetaFramework.UI.Editor.UIAutoCreate
+namespace _3rdBy.ByFramework.UI.Editor.UIAutoCreate
 {
     using System.IO;
     using System.Text;

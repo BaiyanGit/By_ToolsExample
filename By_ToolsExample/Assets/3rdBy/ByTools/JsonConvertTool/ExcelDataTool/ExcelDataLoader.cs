@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.ByTools.TableConvertJson.ExcelDataTool
+﻿namespace _3rdBy.ByTools.JsonConvertTool.ExcelDataTool
 {
     using System;
     using System.Collections.Generic;
@@ -6,7 +6,7 @@
     using System.Reflection;
     using Cysharp.Threading.Tasks;
     using ExcelData;
-    using LitJson;
+    using Plugins.LitJson;
     using UnityEngine;
     using UnityEngine.Networking;
 

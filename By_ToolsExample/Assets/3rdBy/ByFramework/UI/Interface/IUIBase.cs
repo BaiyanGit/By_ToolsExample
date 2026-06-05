@@ -1,20 +1,20 @@
-namespace _3rdBy.MetaFramework.UI
+namespace _3rdBy.ByFramework.UI.Interface
 {
     using UnityEngine;
 
     public interface IUIBase
     {
-        string uiName { get; set; }
-        GameObject uiGo { get; set; }
+        string UIName { get; set; }
+        GameObject UIGo { get; set; }
 
-        UIHierarchy uiHierarchy { get; set; }
+        UIHierarchy UIHierarchy { get; set; }
 
-        UIType uiType { get; set; }
+        UIType UIType { get; set; }
         
-        bool isShowing { get; set; }
+        bool IsShowing { get; set; }
 
-        IUIModel uiModel { get; set; }
-        IUIView uiView { get; set; }
+        IUIModel UIModel { get; set; }
+        IUIView UIView { get; set; }
 
         UILayer GetLayer();
 

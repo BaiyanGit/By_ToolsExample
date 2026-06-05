@@ -1,8 +1,8 @@
-using System;
-using UnityEngine;
-
-namespace Demos.示例_多用工程车
+namespace Demos.示例_多用工程车.Scripts
 {
+    using System;
+    using UnityEngine;
+
     public class ConfigurableJointRotate1 : MonoBehaviour
     {
         private ConfigurableJoint _joint;

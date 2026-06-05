@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.MetaFramework.UI.RedPoint
+﻿namespace _3rdBy.ByFramework.UI.RedPoint
 {
     using System;
     using UnityEngine;

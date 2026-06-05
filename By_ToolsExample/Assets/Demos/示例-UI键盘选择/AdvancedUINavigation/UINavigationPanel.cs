@@ -1,7 +1,7 @@
-﻿namespace AdvancedUINavigation
+﻿namespace Demos.示例_UI键盘选择.AdvancedUINavigation
 {
-    using UnityEngine;
     using System.Collections.Generic;
+    using UnityEngine;
 
     public enum NavType
     {

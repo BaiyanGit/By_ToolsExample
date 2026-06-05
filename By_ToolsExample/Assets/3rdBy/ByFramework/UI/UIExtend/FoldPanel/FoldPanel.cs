@@ -1,4 +1,4 @@
-namespace _3rdBy.MetaFramework.UI.FoldPanel
+namespace _3rdBy.ByFramework.UI.UIExtend.FoldPanel
 {
     using System.Collections.Generic;
     using UnityEngine;

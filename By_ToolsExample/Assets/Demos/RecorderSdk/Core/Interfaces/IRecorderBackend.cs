@@ -5,10 +5,11 @@
 // 描    述: 定义录制后端插件接口，供后续替换 FFmpeg 或接入其它录制实现。
 //=====================================================
 
-using System.Threading.Tasks;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Interfaces
 {
+    using System.Threading.Tasks;
+    using Runtime;
+
     /// <summary>
     /// 录制后端插件接口。
     /// </summary>

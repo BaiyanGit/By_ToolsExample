@@ -3,12 +3,12 @@
 // 描    述: FFmpeg 进程运行器，用于启动、停止并管理 ffmpeg 录屏进程。
 //=====================================================
 
-using System;
-using System.Diagnostics;
-using UnityEngine;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Commands
 {
+    using System;
+    using System.Diagnostics;
+    using UnityEngine;
+
     public class FFmpegProcessRunner : IDisposable
     {
         [Header("ffmpeg进程实例")] private Process _ffmpegProcess;

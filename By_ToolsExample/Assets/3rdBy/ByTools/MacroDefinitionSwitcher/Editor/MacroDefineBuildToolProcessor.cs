@@ -5,7 +5,7 @@
 // 描    述: 处理跨编译域的挂起动作。
 //=====================================================
 
-namespace MacroDefineBuildToolEditor
+namespace _3rdBy.ByTools.MacroDefinitionSwitcher.Editor
 {
     using UnityEditor;
     using UnityEngine;

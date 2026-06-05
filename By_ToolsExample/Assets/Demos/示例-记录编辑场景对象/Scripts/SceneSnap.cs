@@ -1,8 +1,8 @@
-﻿namespace Demos.示例_记录编辑场景对象
+﻿namespace Demos.示例_记录编辑场景对象.Scripts
 {
     using System.Collections.Generic;
     using System.Linq;
-    using LitJson;
+    using _3rdBy.Plugins.LitJson;
     using UnityEngine;
 
     public class SceneSnap : MonoBehaviour

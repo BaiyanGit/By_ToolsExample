@@ -4,14 +4,14 @@
  * 作用：Json文件导出数据类文件并保存至StreamingAssets、Resources文件夹内。
  */
 
-namespace _3rdBy.ByTools.TableConvertJson.Editor.Xml.Generator
+namespace _3rdBy.ByTools.JsonConvertTool.Editor.Xml.Generator
 {
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Text;
+    using _3rdBy.Plugins.LitJson;
     using ConvertHelper;
-    using LitJson;
     using UnityEditor;
     using UnityEngine;
 

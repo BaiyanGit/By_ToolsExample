@@ -1,4 +1,4 @@
-namespace Demos.示例_Terrain改变贴图
+namespace Demos.示例_Terrain改变贴图.Scripts
 {
     using System.Collections.Generic;
     using System.Linq;

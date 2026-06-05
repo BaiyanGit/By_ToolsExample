@@ -5,11 +5,11 @@
 // 描    述: 提供录制配置旧 JSON 字段读取、configId 规整和字段迁移辅助。
 //=====================================================
 
-using System;
-using Demos.示例_录制视频Recorder.Scripts.UISettings;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Config
 {
+    using System;
+    using UI.Settings;
+
     /// <summary>
     /// 录制配置迁移辅助。
     /// </summary>

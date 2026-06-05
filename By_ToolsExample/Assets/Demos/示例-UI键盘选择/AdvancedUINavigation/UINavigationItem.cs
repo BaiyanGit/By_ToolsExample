@@ -1,8 +1,8 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-
-namespace AdvancedUINavigation
+﻿namespace Demos.示例_UI键盘选择.AdvancedUINavigation
 {
+    using UnityEngine;
+    using UnityEngine.UI;
+
     /// <summary>
     /// 此类用于控制UI元素的导航。
     /// 挂载此脚本的UI元素会自动成为导航目标。

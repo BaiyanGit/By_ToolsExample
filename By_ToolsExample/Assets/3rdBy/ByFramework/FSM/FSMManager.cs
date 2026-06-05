@@ -1,4 +1,4 @@
-namespace _3rdBy.MetaFramework.FSM
+namespace _3rdBy.ByFramework.FSM
 {
     using System;
     using System.Collections.Generic;

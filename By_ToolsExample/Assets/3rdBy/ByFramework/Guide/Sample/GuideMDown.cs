@@ -1,4 +1,4 @@
-namespace _3rdBy.MetaFramework.Guide.Sample
+namespace _3rdBy.ByFramework.Guide.Sample
 {
     using UnityEngine;
 

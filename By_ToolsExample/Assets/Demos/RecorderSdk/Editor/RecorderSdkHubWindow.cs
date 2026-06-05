@@ -6,7 +6,7 @@
 //=====================================================
 
 #if UNITY_EDITOR
-namespace Demos.示例_录制视频Recorder.Editor
+namespace Demos.RecorderSdk.Editor
 {
     using System;
     using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.MetaFramework.UI.Helper.Tab
+﻿namespace _3rdBy.ByFramework.UI.Helper.Tab
 {
     using System.Collections.Generic;
     using UnityEngine;

@@ -5,7 +5,7 @@
 // 描    述: 宏定义打包工具的模型类。
 //=====================================================
 
-namespace MacroDefineBuildToolEditor
+namespace _3rdBy.ByTools.MacroDefinitionSwitcher.Editor
 {
     using System;
     using System.Collections.Generic;

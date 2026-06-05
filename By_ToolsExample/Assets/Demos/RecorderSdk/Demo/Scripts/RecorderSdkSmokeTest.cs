@@ -5,17 +5,21 @@
 // 描    述: 提供 Recorder SDK 第 1 阶段最小冒烟测试，便于在 Unity 场景中手动验收状态、错误码、事件顺序和 SessionHistory。
 //=====================================================
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using System.Threading.Tasks;
-using Demos.示例_录制视频Recorder.Scripts.UISettings;
-using UnityEngine;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Demo.Scripts
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Reflection;
+    using System.Threading.Tasks;
+    using Core.Commands;
+    using Core.Config;
+    using Core.Events;
+    using Core.Runtime;
+    using UI.Settings;
+    using UnityEngine;
+
     /// <summary>
     /// Recorder SDK 冒烟测试脚本。
     /// </summary>

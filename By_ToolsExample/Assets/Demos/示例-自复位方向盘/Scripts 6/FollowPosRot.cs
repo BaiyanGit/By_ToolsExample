@@ -1,7 +1,7 @@
-using UnityEngine;
-
-namespace Demos.示例_自复位方向盘
+namespace Demos.示例_自复位方向盘.Scripts_6
 {
+    using UnityEngine;
+
     public class FollowPosRot : MonoBehaviour
     {
         public static FollowPosRot Instance;

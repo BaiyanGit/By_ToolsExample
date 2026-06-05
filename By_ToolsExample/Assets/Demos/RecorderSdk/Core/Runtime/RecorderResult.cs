@@ -5,10 +5,10 @@
 // 描    述: 封装开始录制和停止录制的执行结果，方便外部代码 await 后判断成功、错误和输出路径。
 //=====================================================
 
-using System;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Runtime
 {
+    using System;
+
     /// <summary>
     /// 录制操作结果。
     /// </summary>

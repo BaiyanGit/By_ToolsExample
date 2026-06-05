@@ -5,7 +5,7 @@
 // 描    述: 定义录制器主流程状态，用于统一约束开始、停止、合并和异常流转。
 //=====================================================
 
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Runtime
 {
     /// <summary>
     /// 录制器主流程状态。

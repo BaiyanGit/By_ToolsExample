@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.ByTools.TableConvertJson.ExcelDataTool.ExcelData
+﻿namespace _3rdBy.ByTools.JsonConvertTool.ExcelDataTool.ExcelData
 {
     using System;
 

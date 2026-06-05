@@ -7,22 +7,24 @@
 //  4) 停止采集后立即允许下一次开始，音视频合并在后台继续进行
 //=====================================================
 
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Runtime
 {
-    using Demos.示例_录制视频Recorder.Scripts;
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using UISettings;
+    using Audio;
+    using Commands;
+    using Config;
+    using Events;
+    using Sessions;
+    using UI.Settings;
     using UnityEngine;
     using Debug = UnityEngine.Debug;
-    using System.Diagnostics;
 
     /// <summary>
     /// 跨平台桌面录屏核心控制器。

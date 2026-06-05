@@ -5,14 +5,14 @@
 // 描    述: 统一校验录制配置中的 FFmpeg、输出目录、推流地址、显示器和关键编码参数。
 //=====================================================
 
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using Demos.示例_录制视频Recorder.Scripts.UISettings;
-using UnityEngine;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Config
 {
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using Runtime;
+    using UI.Settings;
+
     /// <summary>
     /// 录制配置校验器。
     /// </summary>

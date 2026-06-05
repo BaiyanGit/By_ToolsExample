@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.MetaFramework.UI
+﻿namespace _3rdBy.ByFramework.UI
 {
     using System;
     using System.Collections.Generic;
@@ -28,7 +28,7 @@
         public Camera uiCamera;
         public Canvas canvas;
 
-        public Action updateAction { get; set; }
+        public Action UpdateAction { get; set; }
 
         protected override void Awake()
         {
@@ -40,7 +40,7 @@
 
         private void Update()
         {
-            updateAction?.Invoke();
+            UpdateAction?.Invoke();
         }
 
         private void FindUILayer()

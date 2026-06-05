@@ -1,7 +1,7 @@
 // 脚本名称：TerrainDeformation.cs
 // 脚本功能：实现地形挖土效果
 
-namespace Demos.示例_Terrain挖土效果
+namespace Demos.示例_Terrain挖土效果.Scripts
 {
     using UnityEngine;
 

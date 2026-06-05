@@ -4,12 +4,12 @@
 //           将 DLL 放到 Assets/Plugins/x86_64/WASAPILoopbackRecorder.dll
 //=====================================================
 
-using System;
-using System.Runtime.InteropServices;
-using UnityEngine;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Audio
 {
+    using System;
+    using System.Runtime.InteropServices;
+    using UnityEngine;
+
     public static class WindowsLoopbackAudioRecorder
     {
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN

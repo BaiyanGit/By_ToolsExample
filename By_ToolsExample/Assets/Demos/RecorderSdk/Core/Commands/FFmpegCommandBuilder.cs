@@ -5,12 +5,13 @@
 // 描    述: 负责按平台、输出方式和配置参数构建 FFmpeg 命令，不负责启动进程和修改录制状态。
 //=====================================================
 
-using System.Collections.Generic;
-using Demos.示例_录制视频Recorder.Scripts.UISettings;
-using UnityEngine;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Commands
 {
+    using System.Collections.Generic;
+    using Runtime;
+    using UI.Settings;
+    using UnityEngine;
+
     /// <summary>
     /// FFmpeg 命令构建器。
     /// </summary>

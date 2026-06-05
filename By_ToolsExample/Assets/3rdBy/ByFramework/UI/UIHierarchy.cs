@@ -1,6 +1,6 @@
 ﻿// using Unity.VisualScripting;
 
-namespace _3rdBy.MetaFramework.UI
+namespace _3rdBy.ByFramework.UI
 {
     using System;
     using System.Threading;

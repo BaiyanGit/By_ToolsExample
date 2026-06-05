@@ -5,7 +5,7 @@
 // 描    述: 宏定义切换与打包主窗口。
 //=====================================================
 
-namespace MacroDefineBuildToolEditor
+namespace _3rdBy.ByTools.MacroDefinitionSwitcher.Editor
 {
     using System;
     using System.Linq;

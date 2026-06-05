@@ -5,12 +5,11 @@
 // 描    述: 读取当前平台正在使用的录制配置引用，并加载对应配置文件。
 //=====================================================
 
-namespace Demos.示例_录制视频Recorder.Scripts
+namespace Demos.RecorderSdk.UI.Settings
 {
     using System;
     using System.IO;
-    using Core;
-    using UISettings;
+    using Core.Config;
     using UnityEngine;
 
     [Serializable]

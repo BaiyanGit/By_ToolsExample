@@ -5,12 +5,13 @@
 // 描    述: 封装录制配置管理操作结果，包含错误码、警告、配置和说明。
 //=====================================================
 
-using System;
-using System.Collections.Generic;
-using Demos.示例_录制视频Recorder.Scripts.UISettings;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Config
 {
+    using System;
+    using System.Collections.Generic;
+    using Runtime;
+    using UI.Settings;
+
     /// <summary>
     /// 录制配置操作结果。
     /// </summary>

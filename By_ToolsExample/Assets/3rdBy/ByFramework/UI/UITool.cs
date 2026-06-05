@@ -1,6 +1,7 @@
-namespace _3rdBy.MetaFramework.UI
+namespace _3rdBy.ByFramework.UI
 {
-    using Cysharp.Threading.Tasks; 
+    using Cysharp.Threading.Tasks;
+    using Interface;
     using UnityEngine;
 
     /// <summary>

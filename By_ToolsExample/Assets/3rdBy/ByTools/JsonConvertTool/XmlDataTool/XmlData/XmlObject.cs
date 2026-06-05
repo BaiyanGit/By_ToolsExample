@@ -1,4 +1,4 @@
-﻿namespace _3rdBy.ByTools.TableConvertJson.XmlDataTool.XmlData
+﻿namespace _3rdBy.ByTools.JsonConvertTool.XmlDataTool.XmlData
 {
     /// <summary>
     /// Xml对象

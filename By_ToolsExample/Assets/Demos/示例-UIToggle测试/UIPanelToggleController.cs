@@ -1,4 +1,4 @@
-namespace Demos.示例_Toggle测试
+namespace Demos.示例_UIToggle测试
 {
     using System;
     using System.Collections.Generic;

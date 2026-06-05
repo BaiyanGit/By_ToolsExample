@@ -1,4 +1,4 @@
-namespace Demos.示例_Terrain挖土效果
+namespace Demos.示例_Terrain挖土效果.Scripts
 {
     using UnityEngine;
 

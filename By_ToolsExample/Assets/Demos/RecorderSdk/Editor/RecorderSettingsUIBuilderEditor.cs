@@ -6,11 +6,11 @@
 //=====================================================
 
 #if UNITY_EDITOR
-namespace Demos.示例_录制视频Recorder.Editor
+namespace Demos.RecorderSdk.Editor
 {
     using System.IO;
-    using Scripts.Core;
-    using Scripts.UISettings;
+    using Demos.RecorderSdk.Core.Runtime;
+    using Demos.RecorderSdk.UI.Settings;
     using UnityEditor;
     using UnityEditor.Events;
     using UnityEditor.SceneManagement;

@@ -1,4 +1,4 @@
-﻿namespace MacroDefineBuildToolEditor
+﻿namespace _3rdBy.ByTools.MacroDefinitionSwitcher.Editor
 {
     using UnityEditor;
     using UnityEngine;

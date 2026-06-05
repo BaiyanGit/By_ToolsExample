@@ -1,4 +1,4 @@
-namespace _3rdBy.MetaFramework.UI
+namespace _3rdBy.ByFramework.UI
 {
     public class BindingData<T>
     {
@@ -8,10 +8,7 @@ namespace _3rdBy.MetaFramework.UI
         private T _value = default;
         public T Value
         {
-            get
-            {
-                return _value;
-            }
+            get => _value;
             set
             {
                 if (!Equals(_value, value))

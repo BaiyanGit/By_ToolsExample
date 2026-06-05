@@ -5,10 +5,12 @@
 // 描    述: 保存一次录制或推流会话的路径、音频状态和配置摘要。
 //=====================================================
 
-using System;
-
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Runtime
 {
+    using System;
+    using Events;
+    using Sessions;
+
     /// <summary>
     /// 一次录制会话的运行时数据。
     /// </summary>

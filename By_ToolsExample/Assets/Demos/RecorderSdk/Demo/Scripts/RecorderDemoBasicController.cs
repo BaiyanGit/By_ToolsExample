@@ -5,12 +5,15 @@
 // 描    述: Recorder SDK 屏幕录制 Demo 控制器，只负责绑定场景 UI、调用 SDK 和刷新状态。
 //=====================================================
 
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Demo.Scripts
 {
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-    using Demos.示例_录制视频Recorder.Scripts.UISettings;
+    using Core.Config;
+    using Core.Events;
+    using Core.Runtime;
+    using UI.Settings;
     using UnityEngine;
     using UnityEngine.UI;
     using Debug = UnityEngine.Debug;

@@ -5,7 +5,7 @@
  * 注意：使用时不能在Awake中调用
  */
 
-namespace _3rdBy.ByTools.TableConvertJson.XmlDataTool
+namespace _3rdBy.ByTools.JsonConvertTool.XmlDataTool
 {
     using System;
     using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace _3rdBy.ByTools.TableConvertJson.XmlDataTool
     using System.Linq;
     using System.Reflection;
     using Cysharp.Threading.Tasks;
-    using LitJson;
+    using Plugins.LitJson;
     using UnityEngine;
     using UnityEngine.Networking;
     using XmlData;

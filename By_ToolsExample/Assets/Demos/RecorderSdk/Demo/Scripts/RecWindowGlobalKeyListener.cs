@@ -1,6 +1,6 @@
-﻿namespace Demos.示例_录制视频Recorder
+﻿namespace Demos.RecorderSdk.Demo.Scripts
 {
-    using Scripts.UISettings;
+    using UI.Settings;
     using UnityEngine;
     using UnityEngine.SceneManagement;
 

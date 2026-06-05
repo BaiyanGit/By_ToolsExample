@@ -5,7 +5,7 @@
 // 描    述: 保存模板命名窗口。
 //=====================================================
 
-namespace MacroDefineBuildToolEditor
+namespace _3rdBy.ByTools.MacroDefinitionSwitcher.Editor
 {
     using System;
     using System.Linq;

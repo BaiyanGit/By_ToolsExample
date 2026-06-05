@@ -5,7 +5,7 @@
 // 描    述: 定义录制会话历史中的事件类型，便于 SDK 调用方追踪完整生命周期。
 //=====================================================
 
-namespace Demos.示例_录制视频Recorder.Scripts.Core
+namespace Demos.RecorderSdk.Core.Events
 {
     /// <summary>
     /// 录制会话历史事件类型。

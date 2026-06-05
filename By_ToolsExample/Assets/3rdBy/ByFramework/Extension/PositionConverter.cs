@@ -24,8 +24,8 @@
         public static Vector3 ScreenPointToWorldPoint(Camera camera, Vector2 screenPoint, float planeZ)
         {
             // Camera.main 世界摄像机
-            Vector3 position   = new Vector3(screenPoint.x, screenPoint.y, planeZ);
-            Vector3 worldPoint = camera.ScreenToWorldPoint(position);
+            var position   = new Vector3(screenPoint.x, screenPoint.y, planeZ);
+            var worldPoint = camera.ScreenToWorldPoint(position);
             return worldPoint;
         }
     
@@ -42,7 +42,7 @@
             // RectTransform：target
             // worldPoint = target.position;
 
-            Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(camera, worldPoint);
+            var screenPoint = RectTransformUtility.WorldToScreenPoint(camera, worldPoint);
             return screenPoint;
         }
 

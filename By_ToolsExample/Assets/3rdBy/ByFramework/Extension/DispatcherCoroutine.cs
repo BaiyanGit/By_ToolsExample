@@ -21,14 +21,14 @@ namespace _3rdBy.ByFramework.Guide
         /// <summary>
         /// 场景加载前自动初始化协程调度器
         /// </summary>
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Init()
         {
             if (Current != null)
                 return;
 
             // 查找场景中已存在的调度器
-            DispatcherCoroutine existing = FindFirstObjectByType<DispatcherCoroutine>();
+            var existing = FindFirstObjectByType<DispatcherCoroutine>();
             if (existing != null)
             {
                 Current = existing;
@@ -37,7 +37,7 @@ namespace _3rdBy.ByFramework.Guide
             }
 
             // 创建新 GameObject
-            var container = new GameObject("DispatcherCoroutine");
+            var container = new GameObject("[DspCoroutine]");
             Current = container.AddComponent<DispatcherCoroutine>();
 
             // 自动挂到 [ByFramework] 节点下（和 ThreadDispatcher 一致）

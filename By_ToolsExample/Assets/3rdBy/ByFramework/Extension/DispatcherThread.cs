@@ -21,7 +21,7 @@ namespace _3rdBy.ByFramework.Extension
         public static DispatcherThread Current { get; private set; } // 当前的ThreadDispatcher实例（单例模式）
 
         // 在场景加载前初始化ThreadDispatcher
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Init()
         {
             if (Current != null)
@@ -32,7 +32,7 @@ namespace _3rdBy.ByFramework.Extension
             maxThreads = Environment.ProcessorCount; // 设置最大线程数为处理器核心数
             Debug.Log($"ThreadDispatcher 线程数量, {maxThreads}");
 
-            DispatcherThread existing = FindFirstObjectByType<DispatcherThread>();
+            var existing = FindFirstObjectByType<DispatcherThread>();
             if (existing != null)
             {
                 Current = existing;
@@ -41,10 +41,7 @@ namespace _3rdBy.ByFramework.Extension
             }
 
             // 创建一个新的GameObject来承载ThreadDispatcher脚本
-            var container = new GameObject
-            {
-                name = "DispatcherThread"
-            };
+            var container = new GameObject("[DspThread]");
             Current = container.AddComponent<DispatcherThread>();
 
             var parentGo = GameObject.Find("[ByFramework]");

@@ -6,8 +6,8 @@
     {
         public static bool IsInCollider(MeshCollider other, Vector3 point)
         {
-            Vector3 from = (Vector3.up * 5000f);
-            Vector3 dir  = (point - from).normalized;
+            var from = (Vector3.up * 5000f);
+            var dir  = (point - from).normalized;
             float   dist = Vector3.Distance(from, point);
 //fwd 
             int hit_count = Cast_Till(from, point, other);
@@ -26,7 +26,7 @@
         private static int Cast_Till(Vector3 from, Vector3 to, MeshCollider other)
         {
             int     counter = 0;
-            Vector3 dir     = (to - from).normalized;
+            var dir     = (to - from).normalized;
             float   dist    = Vector3.Distance(from, to);
             bool    isBreak = false;
             while (!isBreak)

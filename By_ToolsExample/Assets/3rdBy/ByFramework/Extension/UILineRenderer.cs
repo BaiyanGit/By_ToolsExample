@@ -112,7 +112,7 @@
         //---------------------------------------------------------------------------
         public void AddVector2Point(Vector2 pos)
         {
-            Point point = new Point();
+            var point = new Point();
             point.Position = pos;
             point.IsTarget = false;
  
@@ -122,7 +122,7 @@
         //---------------------------------------------------------------------------
         public void AddTransformPoint(Transform trans)
         {
-            Point point = new Point();
+            var point = new Point();
             point.Target = trans;
             point.IsTarget = true;
  
@@ -131,7 +131,7 @@
  
         public void InsertVector2PointAt(int index, Vector2 pos)
         {
-            Point point = new Point();
+            var point = new Point();
             point.Position = pos;
             point.IsTarget = false;
  
@@ -177,14 +177,14 @@
         //---------------------------------------------------------------------------
         private List<Vector2> GetTruePoins()
         {
-            List<Vector2> truePoins = new List<Vector2>();
+            var truePoins = new List<Vector2>();
  
             if (posType == PositionType.Absolute)
             {
                 Vector2 pOffset = transform.position;
                 for (int i = 0, count = points.Count; i < count; i++)
                 {
-                    Point point = points[i];
+                    var point = points[i];
  
                     if (point.IsTarget)
                     {
@@ -204,7 +204,7 @@
             {
                 for (int i = 0, count = points.Count; i < count; i++)
                 {
-                    Point point = points[i];
+                    var point = points[i];
  
                     if (point.IsTarget)
                     {
@@ -284,7 +284,7 @@
  
             vh.Clear();
  
-            List<Vector2> truePoins = GetTruePoins();
+            var truePoins = GetTruePoins();
             List<UIVertex[]> segments = null;
  
             if (lineList)
@@ -300,22 +300,22 @@
             {
                 if (!lineList && i < segments.Count - 1)
                 {
-                    Vector3 vec1 = segments[i][1].position - segments[i][2].position;
-                    Vector3 vec2 = segments[i + 1][2].position
-                        - segments[i + 1][1].position;
+                    var vec1 = segments[i][1].position - segments[i][2].position;
+                    var vec2 = segments[i + 1][2].position
+                               - segments[i + 1][1].position;
  
                     float angle = Vector2.Angle(vec1, vec2) * Mathf.Deg2Rad;
  
                     // 转动方向
-                    Vector3 cross = Vector3.Cross(vec1.normalized, vec2.normalized);
+                    var cross = Vector3.Cross(vec1.normalized, vec2.normalized);
                     float sign = Mathf.Sign(cross.z);
  
                     // 计算斜点
                     float miterDistance = lineWidth * 0.5f / Mathf.Tan(angle * 0.5f);
  
-                    Vector3 offset = vec1.normalized * miterDistance * sign;
-                    Vector3 miterPointA = segments[i][2].position - offset;
-                    Vector3 miterPointB = segments[i][3].position + offset;
+                    var offset = vec1.normalized * miterDistance * sign;
+                    var miterPointA = segments[i][2].position - offset;
+                    var miterPointB = segments[i][3].position + offset;
  
                     var joinType = lineJoin;
                     if (joinType == JoinType.Miter)
@@ -419,8 +419,8 @@
                 uvs = EndUvs;
             }
  
-            Vector2 nDir = new Vector2(start.y - end.y, end.x - start.x).normalized;
-            Vector2 offset = nDir * lineWidth * 0.5f;
+            var nDir = new Vector2(start.y - end.y, end.x - start.x).normalized;
+            var offset = nDir * lineWidth * 0.5f;
  
  
             var v1 = start - offset;
@@ -440,7 +440,7 @@
         /// <returns>矩形UI顶点数据</returns>
         protected UIVertex[] SetVbo(Vector2[] vertices, Vector2[] uvs)
         {
-            UIVertex[] vbo = new UIVertex[4];
+            var vbo = new UIVertex[4];
             for (int i = 0; i < vertices.Length; i++)
             {
                 var vert = UIVertex.simpleVert;

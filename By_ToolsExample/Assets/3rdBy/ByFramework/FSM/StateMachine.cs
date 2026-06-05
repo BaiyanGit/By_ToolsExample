@@ -60,8 +60,8 @@
         /// <returns>0：添加成功； -1：状态已存在,无需重复添加； -2：存在同名状态，添加失败</returns>
         public int Add<T>(string stateName = null) where T : State, new()
         {
-            Type type = typeof(T);
-            T t = (T)Activator.CreateInstance(type);
+            var type = typeof(T);
+            var t = (T)Activator.CreateInstance(type);
             t.name = string.IsNullOrEmpty(stateName) ? type.Name : stateName;
             return Add(t);
         }
@@ -73,10 +73,10 @@
         /// <returns>0：添加成功； -1：状态已存在,无需重复添加； -2：存在同名状态，添加失败； -3：状态类名未找到，添加失败</returns>
         public int Add(string className, string stateName = null)
         {
-            Type tType = Type.GetType(className);
+            var tType = Type.GetType(className);
             if (tType != null)
             {
-                State t = (State)Activator.CreateInstance(tType);
+                var t = (State)Activator.CreateInstance(tType);
                 t.name = string.IsNullOrEmpty(stateName) ? tType.Name : stateName;
                 return Add(t);
             }
@@ -188,7 +188,7 @@
                     //当前状态的索引值+1后若小于列表中的数量 则下一状态的索引为index+1
                     //否则表示当前状态已经是列表中的最后一个 下一状态则回到列表中的第一个状态 索引为0
                     index = index + 1 < states.Count ? index + 1 : 0;
-                    State targetState = states[index];
+                    var targetState = states[index];
                     //首先执行当前状态的退出事件 再更新到目标状态
                     CurrentState.OnExit();
                     CurrentState = targetState;
@@ -222,7 +222,7 @@
                     //当前状态的索引值-1后若大等于0 则下一状态的索引为index-1
                     //否则表示当前状态是列表中的第一个 上一状态则回到列表中的最后一个状态
                     index = index - 1 >= 0 ? index - 1 : states.Count - 1;
-                    State targetState = states[index];
+                    var targetState = states[index];
                     //首先执行当前状态的退出事件 再更新到目标状态
                     CurrentState.OnExit();
                     CurrentState = targetState;
@@ -327,11 +327,11 @@
         /// <returns>状态构建器</returns>
         public StateBuilder<T> Build<T>(string stateName = null) where T : State, new()
         {
-            Type type = typeof(T);
+            var type = typeof(T);
             string name = string.IsNullOrEmpty(stateName) ? type.Name : stateName;
             if (states.Find(m => m.name == name) == null)
             {
-                T state = Activator.CreateInstance(type) as T;
+                var state = Activator.CreateInstance(type) as T;
                 state.name = name;
                 state.machine = this;
                 states.Add(state);

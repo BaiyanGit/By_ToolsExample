@@ -16,7 +16,7 @@ namespace _3rdBy.ByFramework.FSM
                 return;
             }
 
-            FSMManager existingManager = FindFirstObjectByType<FSMManager>();
+            var existingManager = FindFirstObjectByType<FSMManager>();
             if (existingManager != null)
             {
                 Instance = existingManager;
@@ -71,9 +71,9 @@ namespace _3rdBy.ByFramework.FSM
         /// <returns>状态机</returns>
         public T Create<T>(string stateMachineName) where T : StateMachine, new()
         {
-            Type type = typeof(T);
+            var type = typeof(T);
             stateMachineName = string.IsNullOrEmpty(stateMachineName) ? type.Name : stateMachineName;
-            T machine = (T)_machines.Find(m => m.Name == stateMachineName);
+            var machine = (T)_machines.Find(m => m.Name == stateMachineName);
             if (machine == null)
             {
                 machine      = (T)Activator.CreateInstance(type);

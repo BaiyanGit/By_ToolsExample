@@ -31,6 +31,10 @@
 * UIAutoCreatePathSetting 改为通过 ByFrameworkPathUtility 获取框架内部路径
 * UI 自动生成工具移除对固定 ByFramework 安装目录的依赖
 * 全项目确认无 Assets/3rdBy/ByFramework、Assets/3rdBy/MetaFramework、3rdBy/ByFramework、3rdBy/MetaFramework 固定路径残留
+* P0-0.1A：为 UIAutoCreate 配置与代码模板加载补充空引用保护和清晰错误信息
+* P0-0.1B：GetRuntimePath 与 GetSamplesPath 在目标目录不存在时改为明确抛出异常
+* P0-0.1C：ByFrameworkPathUtility 缓存根目录失效时自动重新扫描
+* 关闭 P0-0.1 移除框架硬编码路径整改
 
 ### MetaFramework -> ByFramework
 

@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using _3rdBy.MetaFramework.UI;
+using _3rdBy.ByFramework.UI;
+using _3rdBy.ByFramework.UI.Interface;
 
 /// <summary>
 /// 负责接收用户界面UI元素的操作逻辑

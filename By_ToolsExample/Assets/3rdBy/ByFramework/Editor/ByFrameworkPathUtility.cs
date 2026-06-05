@@ -29,11 +29,14 @@ namespace _3rdBy.ByFramework.Editor
         /// <exception cref="DirectoryNotFoundException">无法通过标记文件定位框架根目录时抛出。</exception>
         public static string GetFrameworkRootPath()
         {
-            if (string.IsNullOrEmpty(_cachedFrameworkRootPath) == false)
+            if (string.IsNullOrEmpty(_cachedFrameworkRootPath) == false
+                && IsFrameworkRoot(_cachedFrameworkRootPath))
             {
                 return _cachedFrameworkRootPath;
             }
 
+            // 框架目录可能在同一次 Editor 会话中被移动，缓存失效后必须重新扫描。
+            _cachedFrameworkRootPath = string.Empty;
             _cachedFrameworkRootPath = FindFrameworkRootPath();
             return _cachedFrameworkRootPath;
         }
@@ -59,20 +62,35 @@ namespace _3rdBy.ByFramework.Editor
         /// <summary>
         /// 获取 Runtime 目录路径。
         /// </summary>
-        /// <returns>Runtime 目录的 AssetDatabase 路径；当前布局没有 Runtime 目录时返回框架根目录。</returns>
+        /// <returns>Runtime 目录的 AssetDatabase 路径。</returns>
+        /// <exception cref="DirectoryNotFoundException">顶层 Runtime 目录不存在时抛出。</exception>
         public static string GetRuntimePath()
         {
             var runtimePath = CombineAssetPath(GetFrameworkRootPath(), "Runtime");
-            return AssetDatabase.IsValidFolder(runtimePath) ? runtimePath : GetFrameworkRootPath();
+            if (AssetDatabase.IsValidFolder(runtimePath))
+            {
+                return runtimePath;
+            }
+
+            throw new DirectoryNotFoundException(
+                $"ByFramework Runtime 目录不存在：{runtimePath}。请确认当前框架目录结构，或避免调用 GetRuntimePath()。");
         }
 
         /// <summary>
         /// 获取 Samples 目录路径。
         /// </summary>
         /// <returns>Samples 目录的 AssetDatabase 路径。</returns>
+        /// <exception cref="DirectoryNotFoundException">顶层 Samples 目录不存在时抛出。</exception>
         public static string GetSamplesPath()
         {
-            return CombineAssetPath(GetFrameworkRootPath(), "Samples");
+            var samplesPath = CombineAssetPath(GetFrameworkRootPath(), "Samples");
+            if (AssetDatabase.IsValidFolder(samplesPath))
+            {
+                return samplesPath;
+            }
+
+            throw new DirectoryNotFoundException(
+                $"ByFramework 顶层 Samples 目录不存在：{samplesPath}。当前示例可能位于具体模块的 Samples 目录中。");
         }
 
         /// <summary>

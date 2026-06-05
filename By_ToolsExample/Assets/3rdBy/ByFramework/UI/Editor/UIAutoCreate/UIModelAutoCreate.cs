@@ -10,6 +10,13 @@ namespace _3rdBy.ByFramework.UI.Editor.UIAutoCreate
         public static void Create(string uiName, string templatePath, string targetPath)
         {
             var tempTxt = AssetDatabase.LoadAssetAtPath<TextAsset>(templatePath);
+            if (tempTxt == null)
+            {
+                Debug.LogError(
+                    $"[ByFramework][UIAutoCreate] Model 代码生成失败：无法加载 Model 模板。\n实际路径：{templatePath}\n修复建议：确认 UIModelTemplate.txt 存在，并检查 UIAutoCreatePathSetting.TemplateFilePath。");
+                return;
+            }
+
             var tempStr = tempTxt.text;
 
             // Tips：暂时不支持使用命名空间

@@ -38,7 +38,7 @@ namespace _3rdBy.ByFramework.UI.Editor.UIAutoCreate
         /// <summary>
         /// UI 预制体生成路径。该路径是业务项目输出位置，不属于框架安装目录。
         /// </summary>
-        public const string PrefabCreatePath = "Assets/Resources/Prefab/UI/";
+        public const string PREFAB_CREATE_PATH = "Assets/Resources/Prefab/UI/";
 
         /// <summary>
         /// 获取 View 代码生成配置文件路径。
@@ -53,22 +53,22 @@ namespace _3rdBy.ByFramework.UI.Editor.UIAutoCreate
         /// <summary>
         /// Model 代码模板文件名。
         /// </summary>
-        public const string ModelTemplateName = "UIModelTemplate.txt";
+        public const string MODEL_TEMPLATE_NAME = "UIModelTemplate.txt";
 
         /// <summary>
         /// View 代码模板文件名。
         /// </summary>
-        public const string ViewTemplateName = "UIViewTemplate.txt";
+        public const string VIEW_TEMPLATE_NAME = "UIViewTemplate.txt";
 
         /// <summary>
         /// Control 代码模板文件名。
         /// </summary>
-        public const string ControlTemplateName = "UIControlTemplate.txt";
+        public const string CONTROL_TEMPLATE_NAME = "UIControlTemplate.txt";
 
         /// <summary>
         /// UI 代码生成路径。该路径是业务项目输出位置，不属于框架安装目录。
         /// </summary>
-        public const string GenerateCsFilePath = "Assets/Scripts/UI/";
+        public const string GENERATE_CS_FILE_PATH = "Assets/Scripts/UI/";
 
         /// <summary>
         /// 获取 UI 代码完整生成路径。
@@ -76,7 +76,7 @@ namespace _3rdBy.ByFramework.UI.Editor.UIAutoCreate
         /// <returns>UI 代码生成目录的本机完整文件系统路径。</returns>
         public static string GetUIGenerateCsFilePath()
         {
-            return ByFrameworkPathUtility.ToFullPath(GenerateCsFilePath);
+            return ByFrameworkPathUtility.ToFullPath(GENERATE_CS_FILE_PATH);
         }
 
         private static string CombineFromFrameworkRoot(string relativePath)

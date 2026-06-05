@@ -26,10 +26,24 @@ namespace _3rdBy.ByFramework.UI.Editor.UIAutoCreate
             _uiRootGo = uiRootGo;
             _allPropsDic.Clear();
 
-            _config = AssetDatabase.LoadAssetAtPath<UIViewAutoCreateConfig>(UIAutoCreatePathSetting
-                .UIViewAutoCreateConfigPath);
+            var configPath = UIAutoCreatePathSetting.UIViewAutoCreateConfigPath;
+            _config = AssetDatabase.LoadAssetAtPath<UIViewAutoCreateConfig>(configPath);
+            if (_config == null)
+            {
+                Debug.LogError(
+                    $"[ByFramework][UIAutoCreate] View 代码生成失败：无法加载组件配置。\n实际路径：{configPath}\n修复建议：确认 UIViewAutoCreateConfig.asset 存在，并检查 ByFramework 根目录定位是否正确。");
+                return;
+            }
 
-            var tempStrFile = AssetDatabase.LoadAssetAtPath<TextAsset>(templatePath).text;
+            var templateAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(templatePath);
+            if (templateAsset == null)
+            {
+                Debug.LogError(
+                    $"[ByFramework][UIAutoCreate] View 代码生成失败：无法加载 View 模板。\n实际路径：{templatePath}\n修复建议：确认 UIViewTemplate.txt 存在，并检查 UIAutoCreatePathSetting.TemplateFilePath。");
+                return;
+            }
+
+            var tempStrFile = templateAsset.text;
 
             FindGoChild(uiRootGo.transform, true);
             if (_allPropsDic.Count <= 0)

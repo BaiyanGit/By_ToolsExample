@@ -2,7 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using _3rdBy.MetaFramework.UI;
+using _3rdBy.ByFramework.UI;
+
+using _3rdBy.ByFramework.UI.Interface;
 using TMPro;
 
 /// <summary>

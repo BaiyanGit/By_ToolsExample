@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using _3rdBy.MetaFramework.UI;
+using _3rdBy.ByFramework.UI;
+using _3rdBy.ByFramework.UI.Interface;
 
 /// <summary>
 /// 处理数据和业务逻辑（通常与游戏对象或其他数据存储机制）

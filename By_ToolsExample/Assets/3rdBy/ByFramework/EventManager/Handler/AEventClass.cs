@@ -8,7 +8,7 @@
 namespace _3rdBy.ByFramework.EventManager.Handler
 {
     using System;
-    using Core;
+    using _3rdBy.ByFramework.EventManager.Core;
     using UnityEngine;
 
     /// <summary>

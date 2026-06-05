@@ -20,7 +20,7 @@ namespace _3rdBy.ByFramework.UI.Editor.UIAutoCreate
             var tempStr = tempTxt.text;
 
             // Tips：暂时不支持使用命名空间
-            // var modelSpaceName = "UIMetaFramework" + uiName;
+            // var modelSpaceName = "ByFramework" + uiName;
             // tempStr = tempStr.Replace("{0}", modelSpaceName);
             var modelClassName = "UIModel" + uiName;
             tempStr = tempStr.Replace("{0}", modelClassName);

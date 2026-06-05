@@ -9,8 +9,14 @@ namespace _3rdBy.ByFramework.Singleton
 
         protected virtual void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
             Instance = this as T;
-            DontDestroyOnLoad(this);
+            DontDestroyOnLoad(gameObject);
         }
         
         protected virtual void Start()
@@ -20,7 +26,10 @@ namespace _3rdBy.ByFramework.Singleton
 
         protected virtual void OnDestroy()
         {
-            Instance = null;
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
     }
 }

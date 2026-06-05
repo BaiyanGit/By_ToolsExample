@@ -7,7 +7,7 @@
 
 namespace _3rdBy.ByFramework.EventManager.Samples
 {
-    using Core;
+    using _3rdBy.ByFramework.EventManager.Core;
     using UnityEngine;
 
     /// <summary>

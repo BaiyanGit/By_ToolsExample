@@ -9,7 +9,7 @@ namespace _3rdBy.ByFramework.EventManager.Utility
 {
     using System;
     using System.Collections.Generic;
-    using Core;
+    using _3rdBy.ByFramework.EventManager.Core;
 
     /// <summary>
     /// 可回收的 List 组件。

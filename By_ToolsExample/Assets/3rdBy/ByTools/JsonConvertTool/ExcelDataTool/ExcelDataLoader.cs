@@ -22,14 +22,20 @@
         {
             var container = new GameObject("[Excel]");
             Instance = container.AddComponent<ExcelDataLoader>();
+            var parentGo = GameObject.Find("[ByFramework]");
+            if (parentGo != null)
+            {
+                container.transform.SetParent(parentGo.transform);
+            }
+            
             DontDestroyOnLoad(container);
         }
 
         private List<Type> _allConfigTypes;
         private Dictionary<Type, object> _allConfigDict;
-        private const string FileSeparator = "Table";
-        private const string FileFolder = "TableJson/ExcelData";
-        private const string FileSuffix = ".json";
+        private const string FILE_SEPARATOR = "Table";
+        private const string FILE_FOLDER = "TableJson/ExcelData";
+        private const string FILE_SUFFIX = ".json";
 
         private void Awake()
         {
@@ -43,27 +49,27 @@
             var assembly = Assembly.GetAssembly(typeof(ExcelConfigAttribute));
             var types    = assembly.GetExportedTypes();
 
-            bool IsMyAttribute(IEnumerable<Attribute> o)
+            bool isMyAttribute(IEnumerable<Attribute> o)
             {
                 return o.OfType<ExcelConfigAttribute>().Any();
             }
 
-            var typeIes = types.Where(o => IsMyAttribute(Attribute.GetCustomAttributes(o, true)));
+            var typeIes = types.Where(o => isMyAttribute(Attribute.GetCustomAttributes(o, true)));
             //去除abstract父类
             return typeIes.Where(o => o.IsAbstract == false).ToList();
         }
 
         private static string ResourcesPath(Type type)
         {
-            var jsonName = type.Name.Replace(FileSeparator, "");
-            var jsonPath = $"{FileFolder}/{jsonName}";
+            var jsonName = type.Name.Replace(FILE_SEPARATOR, "");
+            var jsonPath = $"{FILE_FOLDER}/{jsonName}";
             return jsonPath;
         }
 
         private static string StreamingPath(Type type)
         {
-            var jsonName = type.Name.Replace(FileSeparator, "");
-            var jsonPath = $"{Application.streamingAssetsPath}/{FileFolder}/{jsonName}{FileSuffix}";
+            var jsonName = type.Name.Replace(FILE_SEPARATOR, "");
+            var jsonPath = $"{Application.streamingAssetsPath}/{FILE_FOLDER}/{jsonName}{FILE_SUFFIX}";
             Debug.LogWarning($"StreamingPath: {jsonPath}");
             return jsonPath;
         }

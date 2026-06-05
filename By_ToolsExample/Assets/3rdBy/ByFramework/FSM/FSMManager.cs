@@ -11,9 +11,44 @@ namespace _3rdBy.ByFramework.FSM
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Init()
         {
+            if (Instance != null)
+            {
+                return;
+            }
+
+            FSMManager existingManager = FindObjectOfType<FSMManager>();
+            if (existingManager != null)
+            {
+                Instance = existingManager;
+                DontDestroyOnLoad(existingManager.gameObject);
+                return;
+            }
+
             var container = new GameObject("[FSM]");
             Instance = container.AddComponent<FSMManager>();
+
+            var parentGo = GameObject.Find("[ByFramework]");
+            if (parentGo != null)
+            {
+                container.transform.SetParent(parentGo.transform);
+            }
+
+
             DontDestroyOnLoad(container);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticState()
+        {
+            Instance = null;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
 
         //状态机列表
@@ -41,7 +76,7 @@ namespace _3rdBy.ByFramework.FSM
             T machine = (T)_machines.Find(m => m.Name == stateMachineName);
             if (machine == null)
             {
-                machine = (T)Activator.CreateInstance(type);
+                machine      = (T)Activator.CreateInstance(type);
                 machine.Name = stateMachineName;
                 _machines.Add(machine);
                 return machine;

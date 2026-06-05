@@ -30,14 +30,21 @@ namespace _3rdBy.ByTools.JsonConvertTool.XmlDataTool
         {
             var container = new GameObject("[Xml]");
             Instance = container.AddComponent<XmlDataLoader>();
+
+            var parentGo = GameObject.Find("[ByFramework]");
+            if (parentGo != null)
+            {
+                container.transform.SetParent(parentGo.transform);
+            }
+
             DontDestroyOnLoad(container);
         }
 
         private List<Type> _allConfigTypes;
         private Dictionary<Type, object> _allConfigDict;
-        private const string FileSeparator = "Table"; // 文件分隔符
-        private const string FileFolder = "XmlData";  // 文件夹
-        private const string FileSuffix = ".json";    // 文件格式
+        private const string FILE_SEPARATOR = "Table"; // 文件分隔符
+        private const string FILE_FOLDER = "XmlData";  // 文件夹
+        private const string FILE_SUFFIX = ".json";    // 文件格式
 
         private void Awake()
         {
@@ -63,15 +70,15 @@ namespace _3rdBy.ByTools.JsonConvertTool.XmlDataTool
         private static string ResourcesPath(Type type)
         {
             Debug.LogError(type.Name);
-            var jsonName = type.Name.Replace(FileSeparator, "");
-            var jsonPath = $"{FileFolder}/{jsonName}";
+            var jsonName = type.Name.Replace(FILE_SEPARATOR, "");
+            var jsonPath = $"{FILE_FOLDER}/{jsonName}";
             return jsonPath;
         }
 
         private static string StreamingPath(Type type)
         {
-            var jsonName = type.Name.Replace(FileSeparator, "");
-            var jsonPath = $"{Application.streamingAssetsPath}/{FileFolder}/{jsonName}{FileSuffix}";
+            var jsonName = type.Name.Replace(FILE_SEPARATOR, "");
+            var jsonPath = $"{Application.streamingAssetsPath}/{FILE_FOLDER}/{jsonName}{FILE_SUFFIX}";
             return jsonPath;
         }
 

@@ -12,9 +12,9 @@ namespace _3rdBy.ByFramework.EventManager.Core
     using System.Linq;
     using System.Reflection;
     using Cysharp.Threading.Tasks;
-    using Handler;
+    using _3rdBy.ByFramework.EventManager.Handler;
     using UnityEngine;
-    using Utility;
+    using _3rdBy.ByFramework.EventManager.Utility;
 
     /// <summary>
     /// ByFramework 统一事件管理器。
@@ -37,6 +37,20 @@ namespace _3rdBy.ByFramework.EventManager.Core
         private static void Init()
         {
             EnsureInstance();
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticState()
+        {
+            Instance = null;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
 
         private List<Type> GetAllAttributeTypes()

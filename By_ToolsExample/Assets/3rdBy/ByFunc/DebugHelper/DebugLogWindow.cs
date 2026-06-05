@@ -53,8 +53,15 @@ namespace _3rdBy.ByFunc.DebugHelper
                 return;
             }
 
-            var go = new GameObject("DebugLogWindow");
-            _instance = go.AddComponent<DebugLogWindow>();
+            var container = new GameObject("DebugLogWindow");
+            _instance = container.AddComponent<DebugLogWindow>();
+
+
+            var parentGo = GameObject.Find("[ByFramework]");
+            if (parentGo != null)
+            {
+                container.transform.SetParent(parentGo.transform);
+            }
         }
 
         #endregion
@@ -170,13 +177,16 @@ namespace _3rdBy.ByFunc.DebugHelper
         [Header("是否正在拖动日志列表")] private bool _isDraggingLogList;
         [Header("是否正在准备拖动日志列表")] private bool _isPreparingLogListDrag;
         [Header("日志列表拖动是否已经超过点击容错距离")] private bool _hasLogListDragMoved;
-        [Header("是否需要忽略一次日志点击，避免拖拽结束时误触发复制或展开")] private bool _suppressNextLogEntryClick;
+
+        [Header("是否需要忽略一次日志点击，避免拖拽结束时误触发复制或展开")]
+        private bool _suppressNextLogEntryClick;
+
         [Header("拖动日志列表开始时鼠标在屏幕上的位置")] private Vector2 _logListDragStartMouseScreenPosition;
         [Header("拖动日志列表开始时的滚动位置")] private Vector2 _logListDragStartScrollPosition;
 
-        private const float LogListDragThreshold = 4f;
-        private const float EntryDoubleClickInterval = 0.35f;
-        private const float AutoScrollBottomTolerance = 8f;
+        private const float LOG_LIST_DRAG_THRESHOLD = 4f;
+        private const float ENTRY_DOUBLE_CLICK_INTERVAL = 0.35f;
+        private const float AUTO_SCROLL_BOTTOM_TOLERANCE = 8f;
         private string _lastClickedEntryKey = string.Empty;
         private float _lastEntryClickTime;
 
@@ -228,15 +238,15 @@ namespace _3rdBy.ByFunc.DebugHelper
             _instance = this;
             DontDestroyOnLoad(gameObject);
 
-            isShowWindow     = _startVisible;
-            _showLog         = _defaultShowLog;
-            _showWarning     = _defaultShowWarning;
-            _showError       = _defaultShowError;
-            _showAssert      = _defaultShowAssert;
-            _showException   = _defaultShowException;
-            _showStackTrace  = _defaultShowStackTrace;
-            _collapse        = _defaultCollapse;
-            _autoScroll      = _defaultAutoScroll;
+            isShowWindow    = _startVisible;
+            _showLog        = _defaultShowLog;
+            _showWarning    = _defaultShowWarning;
+            _showError      = _defaultShowError;
+            _showAssert     = _defaultShowAssert;
+            _showException  = _defaultShowException;
+            _showStackTrace = _defaultShowStackTrace;
+            _collapse       = _defaultCollapse;
+            _autoScroll     = _defaultAutoScroll;
 
             _maxLogCount     = Mathf.Max(100, _maxLogCount);
             _minWindowSize.x = Mathf.Max(420f, _minWindowSize.x);
@@ -589,7 +599,7 @@ namespace _3rdBy.ByFunc.DebugHelper
 
             Vector2 scrollPositionBeforeView = _scrollPosition;
             _lastLogListContentHeight = 0f;
-            _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, GUILayout.ExpandHeight(true));
+            _scrollPosition           = GUILayout.BeginScrollView(_scrollPosition, GUILayout.ExpandHeight(true));
 
             if (_collapse)
             {
@@ -613,7 +623,7 @@ namespace _3rdBy.ByFunc.DebugHelper
             if (Event.current != null && Event.current.type == EventType.Repaint)
             {
                 Rect scrollViewRect = GUILayoutUtility.GetLastRect();
-                _lastLogListViewRect = scrollViewRect;
+                _lastLogListViewRect       = scrollViewRect;
                 _lastLogListViewportHeight = Mathf.Max(0f, scrollViewRect.height);
                 RestoreAutoScrollIfScrolledToBottom();
             }
@@ -942,8 +952,8 @@ namespace _3rdBy.ByFunc.DebugHelper
                 return;
             }
 
-            float now = Time.unscaledTime;
-            bool isDoubleClick = string.Equals(_lastClickedEntryKey, entryKey, StringComparison.Ordinal) && now - _lastEntryClickTime <= EntryDoubleClickInterval;
+            float now           = Time.unscaledTime;
+            bool  isDoubleClick = string.Equals(_lastClickedEntryKey, entryKey, StringComparison.Ordinal) && now - _lastEntryClickTime <= ENTRY_DOUBLE_CLICK_INTERVAL;
             _lastClickedEntryKey = entryKey;
             _lastEntryClickTime  = now;
 
@@ -1318,7 +1328,7 @@ namespace _3rdBy.ByFunc.DebugHelper
             {
                 var delta = currentMouseScreenPosition - _logListDragStartMouseScreenPosition;
 
-                if (!_isDraggingLogList && delta.sqrMagnitude >= LogListDragThreshold * LogListDragThreshold)
+                if (!_isDraggingLogList && delta.sqrMagnitude >= LOG_LIST_DRAG_THRESHOLD * LOG_LIST_DRAG_THRESHOLD)
                 {
                     _isPreparingLogListDrag = false;
                     _isDraggingLogList      = true;
@@ -1348,13 +1358,13 @@ namespace _3rdBy.ByFunc.DebugHelper
                 _suppressNextLogEntryClick = true;
             }
 
-            _isDraggingWindow       = false;
-            _isResizing             = false;
-            _isDraggingLogList                    = false;
-            _isPreparingLogListDrag               = false;
-            _hasLogListDragMoved                  = false;
-            _isInteractingLogListScrollBar        = false;
-            _scrollBarInteractionStartedAtBottom  = false;
+            _isDraggingWindow                    = false;
+            _isResizing                          = false;
+            _isDraggingLogList                   = false;
+            _isPreparingLogListDrag              = false;
+            _hasLogListDragMoved                 = false;
+            _isInteractingLogListScrollBar       = false;
+            _scrollBarInteractionStartedAtBottom = false;
         }
 
         /// <summary>
@@ -1415,7 +1425,7 @@ namespace _3rdBy.ByFunc.DebugHelper
                 return false;
             }
 
-            if (_lastLogListContentHeight <= _lastLogListViewportHeight + AutoScrollBottomTolerance)
+            if (_lastLogListContentHeight <= _lastLogListViewportHeight + AUTO_SCROLL_BOTTOM_TOLERANCE)
             {
                 return false;
             }
@@ -1454,9 +1464,9 @@ namespace _3rdBy.ByFunc.DebugHelper
 
             // DrawLogList 在 DisplayBar 之后调用，此时 LastRect 是上一条布局控件。
             // 通过它的底部估算日志列表开始区域，避免滚动工具栏、搜索框或字号滑条时误关自动滚动。
-            Rect previousRect = GUILayoutUtility.GetLastRect();
-            float logListTop  = previousRect.yMax;
-            var   mouse       = currentEvent.mousePosition;
+            Rect  previousRect = GUILayoutUtility.GetLastRect();
+            float logListTop   = previousRect.yMax;
+            var   mouse        = currentEvent.mousePosition;
 
             bool isInsideLogListArea = mouse.x >= 0f &&
                                        mouse.x <= _windowRect.width &&
@@ -1484,7 +1494,7 @@ namespace _3rdBy.ByFunc.DebugHelper
         /// </summary>
         private void DisableAutoScrollByUserScroll(string statusMessage, bool wasAtBottomBeforeInteraction)
         {
-            _requestScrollToBottom = false;
+            _requestScrollToBottom                  = false;
             _waitLeaveBottomBeforeRestoreAutoScroll = wasAtBottomBeforeInteraction;
 
             if (!_autoScroll)
@@ -1527,7 +1537,7 @@ namespace _3rdBy.ByFunc.DebugHelper
                 return;
             }
 
-            _autoScroll = true;
+            _autoScroll            = true;
             _requestScrollToBottom = true;
             ShowStatus("已滚动到最底部，自动滚动已开启。");
         }
@@ -1551,7 +1561,7 @@ namespace _3rdBy.ByFunc.DebugHelper
             }
 
             float maxScrollY = Mathf.Max(0f, _lastLogListContentHeight - _lastLogListViewportHeight);
-            return scrollPositionY >= maxScrollY - AutoScrollBottomTolerance;
+            return scrollPositionY >= maxScrollY - AUTO_SCROLL_BOTTOM_TOLERANCE;
         }
 
         /// <summary>

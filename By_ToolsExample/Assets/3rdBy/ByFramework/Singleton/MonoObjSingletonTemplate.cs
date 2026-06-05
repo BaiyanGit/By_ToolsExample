@@ -12,16 +12,26 @@
             {
                 if (_instance != null) return _instance;
 
-                _instance = new GameObject().AddComponent<T>();
-                _instance.name = $"[Single_{typeof(T).Name}]";
-                DontDestroyOnLoad(_instance);
+                _instance = FindObjectOfType<T>();
+                if (_instance != null)
+                {
+                    DontDestroyOnLoad(_instance.gameObject);
+                    return _instance;
+                }
+
+                var container = new GameObject($"[Single_{typeof(T).Name}]");
+                _instance = container.AddComponent<T>();
+                DontDestroyOnLoad(container);
                 return _instance;
             }
         }
 
         protected virtual void OnDestroy()
         {
-            _instance = null;
+            if (_instance == this)
+            {
+                _instance = null;
+            }
         }
     }
 }

@@ -33,6 +33,10 @@
         protected override void Awake()
         {
             base.Awake();
+            if (Instance != this)
+            {
+                return;
+            }
 
             // CreateUIRoot();
             FindUILayer();

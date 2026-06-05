@@ -13,6 +13,7 @@ ByFramework 是一个面向 Unity 项目的轻量框架集合，用于沉淀通�
 * Guide：引导系统。
 * Extension：通用扩展与辅助组件。
 * SoundManager：声音管理相关能力。
+* Core：FrameworkEntry 统一启动入口与 FrameworkConfig 配置基础设施。
 
 ## 使用方式
 
@@ -20,6 +21,14 @@ ByFramework 是一个面向 Unity 项目的轻量框架集合，用于沉淀通�
 2. 业务代码按需引用 ByFramework 中的模块。
 3. UI 当前通过 `Resources/Prefab/UI` 加载，后续会引入 `IUILoader` 抽象。
 4. 新增或修改框架能力前，请先确认已有模块是否已经提供同类能力。
+
+## 配置系统
+
+Runtime 配置通过 `FrameworkConfigProvider.Config` 统一访问，默认配置资源位于 `Core/Config/Resources/FrameworkConfig.asset`。
+
+Editor 工具配置使用独立的 `Editor/Config/FrameworkEditorConfig.asset`。第一阶段仅建立配置基础设施，现有模块与 Editor 工具仍保持原有配置读取行为。
+
+配置结构与后续接入规划参见 [Core/Config/README.md](Core/Config/README.md)。
 
 ## 文档入口
 

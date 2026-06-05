@@ -12,7 +12,27 @@ namespace _3rdBy.ByFramework.Http.DownLoad.DownloadSystem.Core
 
         private void Awake()
         {
-            if (Instance == null) Instance = this;
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticState()
+        {
+            Instance = null;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
 
         public void Enqueue(DownloadTask task)

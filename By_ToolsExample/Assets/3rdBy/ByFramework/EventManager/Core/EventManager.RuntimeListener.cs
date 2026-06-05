@@ -33,6 +33,12 @@ namespace _3rdBy.ByFramework.EventManager.Core
 
             var container = new GameObject("[Event]");
             Instance = container.AddComponent<EventManager>();
+            
+            var parentGo = GameObject.Find("[ByFramework]");
+            if (parentGo != null)
+            {
+                container.transform.SetParent(parentGo.transform);
+            }
             Instance.LoadAll();
             DontDestroyOnLoad(container);
         }

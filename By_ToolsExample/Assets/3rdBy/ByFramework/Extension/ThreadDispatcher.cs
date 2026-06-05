@@ -17,24 +17,59 @@ namespace _3rdBy.ByFramework.Extension
     /// </summary>
     public class ThreadDispatcher : MonoBehaviour
     {
-        public static int maxThreads = 6; // 最大允许的并发线程数
-        public static ThreadDispatcher Current { get; private set; } // 当前的Loom实例（单例模式）
+        public static int maxThreads = 6;                            // 最大允许的并发线程数
+        public static ThreadDispatcher Current { get; private set; } // 当前的ThreadDispatcher实例（单例模式）
 
-        // 在场景加载前初始化Loom
+        // 在场景加载前初始化ThreadDispatcher
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Init()
         {
-            maxThreads = Environment.ProcessorCount; // 设置最大线程数为处理器核心数
-            Debug.Log($"Loom 线程数量, {maxThreads}");
-
-            // 创建一个新的GameObject来承载Loom脚本
-            var go = new GameObject
+            if (Current != null)
             {
-                name = "Loom"
+                return;
+            }
+
+            maxThreads = Environment.ProcessorCount; // 设置最大线程数为处理器核心数
+            Debug.Log($"ThreadDispatcher 线程数量, {maxThreads}");
+
+            ThreadDispatcher existingDispatcher = FindObjectOfType<ThreadDispatcher>();
+            if (existingDispatcher != null)
+            {
+                Current = existingDispatcher;
+                DontDestroyOnLoad(existingDispatcher.gameObject);
+                return;
+            }
+
+            // 创建一个新的GameObject来承载ThreadDispatcher脚本
+            var container = new GameObject
+            {
+                name = "ThreadDispatcher"
             };
-            Current = go.AddComponent<ThreadDispatcher>();
+            Current = container.AddComponent<ThreadDispatcher>();
+
+            var parentGo = GameObject.Find("[ByFramework]");
+            if (parentGo != null)
+            {
+                container.transform.SetParent(parentGo.transform);
+            }
+
             // 确保该对象在场景切换时不会被销毁
-            DontDestroyOnLoad(go);
+            DontDestroyOnLoad(container);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticState()
+        {
+            Current     = null;
+            _numThreads = 0;
+        }
+
+        private void OnDestroy()
+        {
+            if (Current == this)
+            {
+                Current = null;
+            }
         }
 
         /// <summary>
@@ -42,16 +77,16 @@ namespace _3rdBy.ByFramework.Extension
         /// </summary>
         public struct DelayedQueueItem
         {
-            public float time; // 任务执行时间
+            public float time;    // 任务执行时间
             public Action action; // 任务操作
         }
 
-        private readonly List<DelayedQueueItem> _delayed = new(); // 延迟任务列表
-        private readonly List<Action> _actions = new(); // 主线程任务列表
-        private readonly List<Action> _curActions = new(); // 临时列表，保存当前要执行的主线程任务
+        private readonly List<DelayedQueueItem> _delayed = new();     // 延迟任务列表
+        private readonly List<Action> _actions = new();               // 主线程任务列表
+        private readonly List<Action> _curActions = new();            // 临时列表，保存当前要执行的主线程任务
         private readonly List<DelayedQueueItem> _curDelayeds = new(); // 临时列表，保存当前要执行的延迟任务
-        private static int _numThreads; // 当前活动的线程数
-        private int _count; // 用于在Update中执行的主线程任务计数
+        private static int _numThreads;                               // 当前活动的线程数
+        private int _count;                                           // 用于在Update中执行的主线程任务计数
 
         /// <summary>
         /// 将任务加入主线程队列中执行
@@ -117,7 +152,7 @@ namespace _3rdBy.ByFramework.Extension
                 Thread.Sleep(1);
             }
 
-            Interlocked.Increment(ref _numThreads); // 增加活动线程计数
+            Interlocked.Increment(ref _numThreads);     // 增加活动线程计数
             ThreadPool.QueueUserWorkItem(RunAction, a); // 将任务加入线程池
             return null;
         }

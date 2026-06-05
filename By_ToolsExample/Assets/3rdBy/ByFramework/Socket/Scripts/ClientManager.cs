@@ -48,6 +48,11 @@ namespace _3rdBy.ByFramework.Socket.Scripts
         protected override void Awake()
         {
             base.Awake();
+            if (Instance != this)
+            {
+                return;
+            }
+
             Init();
         }
 

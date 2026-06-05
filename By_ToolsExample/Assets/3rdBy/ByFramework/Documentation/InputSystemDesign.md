@@ -70,6 +70,7 @@ Physical Input
 ├─ Gamepad
 ├─ VRController
 ├─ HardwareButton
+├─ IndustrialControlPanel
 └─ CustomDevice
         │
         ▼
@@ -123,6 +124,8 @@ DigitalTwin.SelectDevice
 ```
 
 这些业务动作属于对应 FeatureModule，不属于框架核心。
+
+建议动作标识由稳定作用域与稳定名称组成，例如 `UI.Confirm` 或 `VehicleSimulation.Throttle`。显示名称、翻译文本和当前 Binding 不得参与动作标识；动作重命名必须通过显式别名或迁移规则处理，避免用户 Binding 静默失效。
 
 本文中的 `InputAction` 是 ByFramework 的概念模型，不预先绑定 Unity Input System 包中的同名类型。后续实现阶段需单独决定底层输入后端。
 
@@ -181,7 +184,10 @@ InputDevice 表示输入来源及其能力。建议规划：
 * Gamepad
 * VRController
 * HardwareButton
+* IndustrialControlPanel
 * CustomDevice
+
+`HardwareButton` 表示单个或少量离散硬件按钮输入；`IndustrialControlPanel` 表示包含多个按钮、旋钮、轴、指示状态或厂商协议的复合控制面板。二者可以共享底层传输方式，但应暴露不同的设备能力描述，避免将复杂控制面板退化为无语义通道集合。
 
 InputDevice Adapter 负责：
 
@@ -235,6 +241,10 @@ Context 应支持：
 
 例如打开模态确认框时，`Confirm` 与 `Cancel` 应由 Modal UI 消费，不应继续触发 Gameplay 动作。
 
+Context 的激活必须具有明确所有者和生命周期。创建者负责释放 Context；场景卸载、模块停用或异常退出后，系统必须能够识别并清理失效 Context，避免输入永久被高优先级 Context 拦截。
+
+框架级 Context 只定义通用语义。FeatureModule 可以声明业务 Context，例如 `VehicleSimulation.Driving`，但不得修改 `UI`、`Debug` 或 `Tool` 的通用规则。
+
 ## 输入处理流程
 
 推荐流程：
@@ -249,6 +259,8 @@ Device Raw Input
 ```
 
 同一个物理输入可以在不同 Context 中映射到不同 Action，但冲突规则必须明确且可诊断。
+
+处理顺序必须保持确定性。相同 Profile、Context 优先级和 Binding 条件下，不允许依赖注册先后顺序产生随机结果；无法自动解决的冲突应输出诊断并使用明确回退策略。
 
 输入事件至少应区分：
 
@@ -279,6 +291,7 @@ Device Raw Input
 * 业务动作与模块逻辑的绑定。
 * 具体车辆、设备、训练流程或项目专属键位。
 * 业务 Context 和业务输入冲突规则。
+* 工业控制面板的业务语义映射与厂商专属 Profile。
 
 FeatureModule 可以注册动作、Binding 和 Profile，但 InputSystem 不应引用具体 FeatureModule 类型。
 
@@ -291,7 +304,7 @@ FrameworkConfig 后续可以保存轻量启动配置：
 * InputSystem 是否启用。
 * 默认 Input Profile 标识。
 * 默认启用的基础 InputContext。
-* 默认设备选择策略，例如自动、键鼠优先或手柄优先。
+* 默认设备选择策略，例如自动、键鼠优先、手柄优先或外部设备优先。
 * 是否允许加载用户 Binding 覆盖。
 * 输入配置资源的引用或标识。
 
@@ -328,6 +341,8 @@ SaveSystem 还需要为输入配置提供：
 * 恢复默认配置。
 
 InputSystem 消费 SaveSystem 提供的持久化能力，但 SaveSystem 不应理解 InputAction 的具体业务语义。
+
+用户覆盖数据应引用稳定 Action 标识与 Binding 标识。项目或模块升级后，InputSystem 负责判断覆盖是否仍有效；SaveSystem 只负责版本化保存、读取和迁移载荷，不负责决定输入冲突。
 
 ## Localization 与输入提示
 
@@ -411,6 +426,8 @@ Keyboard.Enter ────────────> UI.Confirm
 两种 Binding 产生同一个 InputAction，UISystem 与业务模块不需要区分输入来源。
 
 运行阶段切换为外部硬件时，只替换或启用对应 InputDevice Adapter 与 InputProfile，不修改消费逻辑。
+
+工业控制面板或自定义设备的串口、网络或厂商 SDK 连接细节只能存在于对应 Adapter 或 Provider 中。消费者不得通过判断设备型号改变 UI 或业务输入流程。
 
 ## 当前代码迁移边界
 

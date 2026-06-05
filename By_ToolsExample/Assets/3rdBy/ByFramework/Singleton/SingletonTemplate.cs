@@ -1,3 +1,9 @@
+//=====================================================
+// 文件名称: MonoObjSingletonTemplate.cs
+// 创 建 者: wangbaiyan
+// 创建日期: 2026-06-05
+// 描    述: 
+//=====================================================
 namespace _3rdBy.ByFramework.Singleton
 {
     public abstract class SingletonTemplate<T> where T : class, new()

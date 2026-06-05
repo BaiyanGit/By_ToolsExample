@@ -1,9 +1,10 @@
-﻿/*
- * 作用：线程之间调度任务，将任务从子线程调度回主线程。
- * 作者：王柏雁
- * 日期：2024/8/20
- * Tips: 最大允许的并发线程数可以设置为 CPU 核心数的 2 倍左右
- */
+﻿//=====================================================
+// 文件名称: DispatcherThread.cs
+// 创 建 者: wangbaiyan
+// 创建日期: 2026-06-05
+// 描    述: 线程之间调度任务，将任务从子线程调度回主线程。
+//          最大允许的并发线程数可以设置为 CPU 核心数的 2 倍左右
+//=====================================================
 
 namespace _3rdBy.ByFramework.Extension
 {
@@ -20,12 +21,25 @@ namespace _3rdBy.ByFramework.Extension
         public static int maxThreads = 6;                            // 最大允许的并发线程数
         public static DispatcherThread Current { get; private set; } // 当前的ThreadDispatcher实例（单例模式）
 
-        // 在场景加载前初始化ThreadDispatcher
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void Init()
+        private static bool _isRegistered;
+        private static bool _isInitialized;
+        private static bool _isStarted;
+
+        internal static void RegisterForFrameworkEntry()
         {
-            if (Current != null)
+            _isRegistered = true;
+        }
+
+        internal static void InitializeForFrameworkEntry(Transform frameworkRoot)
+        {
+            if (_isInitialized)
             {
+                return;
+            }
+
+            if (!_isRegistered)
+            {
+                Debug.LogError("[ByFramework][ThreadDispatcher] Initialize requires Register.");
                 return;
             }
 
@@ -37,6 +51,7 @@ namespace _3rdBy.ByFramework.Extension
             {
                 Current = existing;
                 DontDestroyOnLoad(existing.gameObject);
+                _isInitialized = true;
                 return;
             }
 
@@ -44,14 +59,63 @@ namespace _3rdBy.ByFramework.Extension
             var container = new GameObject("[DspThread]");
             Current = container.AddComponent<DispatcherThread>();
 
-            var parentGo = GameObject.Find("[ByFramework]");
-            if (parentGo != null)
+            if (frameworkRoot != null)
             {
-                container.transform.SetParent(parentGo.transform);
+                container.transform.SetParent(frameworkRoot);
+            }
+            else
+            {
+                // FrameworkEntry 不可用时仍保持旧有的跨场景存活行为。
+                DontDestroyOnLoad(container);
             }
 
-            // 确保该对象在场景切换时不会被销毁
-            DontDestroyOnLoad(container);
+            _isInitialized = true;
+        }
+
+        internal static void StartForFrameworkEntry()
+        {
+            if (!_isInitialized || _isStarted)
+            {
+                return;
+            }
+
+            Current.enabled = true;
+            _isStarted = true;
+        }
+
+        internal static void StopForFrameworkEntry()
+        {
+            if (!_isStarted)
+            {
+                return;
+            }
+
+            if (Current != null)
+            {
+                Current.enabled = false;
+            }
+
+            _isStarted = false;
+        }
+
+        internal static void ShutdownForFrameworkEntry()
+        {
+            if (!_isInitialized)
+            {
+                _isRegistered = false;
+                return;
+            }
+
+            StopForFrameworkEntry();
+
+            if (Current != null)
+            {
+                Current.ClearPendingActions();
+                Current = null;
+            }
+
+            _isInitialized = false;
+            _isRegistered = false;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -59,6 +123,9 @@ namespace _3rdBy.ByFramework.Extension
         {
             Current     = null;
             _numThreads = 0;
+            _isRegistered = false;
+            _isInitialized = false;
+            _isStarted = false;
         }
 
         private void OnDestroy()
@@ -66,7 +133,26 @@ namespace _3rdBy.ByFramework.Extension
             if (Current == this)
             {
                 Current = null;
+                _isRegistered = false;
+                _isInitialized = false;
+                _isStarted = false;
             }
+        }
+
+        private void ClearPendingActions()
+        {
+            lock (_actions)
+            {
+                _actions.Clear();
+            }
+
+            lock (_delayed)
+            {
+                _delayed.Clear();
+            }
+
+            _curActions.Clear();
+            _curDelayeds.Clear();
         }
 
         /// <summary>

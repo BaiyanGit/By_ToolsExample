@@ -2,16 +2,17 @@
 // 文件名称: FrameworkEntry.cs
 // 创 建 者: wangbaiyan
 // 创建日期: 2026-06-05
-// 描    述: ByFramework 统一启动入口，负责创建持久化框架根节点并预留初始化阶段。
+// 描    述: ByFramework 统一启动入口，负责编排框架根节点与渐进接入模块的生命周期。
 //=====================================================
 
 namespace _3rdBy.ByFramework.Core
 {
+    using _3rdBy.ByFramework.Extension;
     using UnityEngine;
 
     /// <summary>
     /// ByFramework 统一启动入口。
-    /// 第一阶段仅负责创建持久化框架根节点，并预留后续模块的分阶段初始化入口。
+    /// 负责创建持久化框架根节点，并编排已完成接入验证的模块生命周期。
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class FrameworkEntry : MonoBehaviour
@@ -23,6 +24,9 @@ namespace _3rdBy.ByFramework.Core
 
         [Header("FrameworkEntry 是否已完成第一阶段初始化")]
         private bool _isInitialized;
+
+        [Header("FrameworkEntry 是否已完成关闭编排")]
+        private bool _isShutdown;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
@@ -51,6 +55,17 @@ namespace _3rdBy.ByFramework.Core
             Instance = null;
         }
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void StartCoreEarlyModules()
+        {
+            if (Instance == null)
+            {
+                return;
+            }
+
+            Instance.StartThreadDispatcher();
+        }
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -68,6 +83,7 @@ namespace _3rdBy.ByFramework.Core
         {
             if (Instance == this)
             {
+                Shutdown();
                 Instance = null;
             }
         }
@@ -91,6 +107,7 @@ namespace _3rdBy.ByFramework.Core
 
         private void InitializeCoreModules()
         {
+            DispatcherThread.RegisterForFrameworkEntry();
             Debug.Log("[ByFramework][FrameworkEntry] Core module initialization phase ready.");
         }
 
@@ -102,6 +119,25 @@ namespace _3rdBy.ByFramework.Core
         private void InitializeSceneModules()
         {
             Debug.Log("[ByFramework][FrameworkEntry] Scene module initialization phase ready.");
+        }
+
+        private void StartThreadDispatcher()
+        {
+            DispatcherThread.InitializeForFrameworkEntry(transform);
+            DispatcherThread.StartForFrameworkEntry();
+        }
+
+        private void Shutdown()
+        {
+            if (_isShutdown)
+            {
+                return;
+            }
+
+            _isShutdown = true;
+            DispatcherThread.StopForFrameworkEntry();
+            DispatcherThread.ShutdownForFrameworkEntry();
+            Debug.Log("[ByFramework][FrameworkEntry] Shutdown completed.");
         }
     }
 }

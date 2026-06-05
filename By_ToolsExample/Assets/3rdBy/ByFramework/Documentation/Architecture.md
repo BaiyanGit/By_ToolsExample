@@ -26,6 +26,29 @@ ByFramework 是基于 Unity 的跨平台、模块化、可配置、可扩展的�
 * Core 不应依赖 Platform 或 FeatureModule。
 * 当前目录结构与该长期分层不完全一致，后续应逐步迁移，禁止一次性大范围搬迁。
 
+## 模块化与低耦合约束
+
+ByFramework 所有现有系统与未来系统必须遵守模块化、低耦合和可替换原则：
+
+* Core 不依赖 Platform，也不依赖 FeatureModule。
+* Platform 可以依赖 Core，但 Platform 子系统之间禁止随意双向依赖或形成循环依赖。
+* FeatureModule 可以依赖 Core 与 Platform，但 Core 和 Platform 禁止反向依赖 FeatureModule。
+* 模块之间优先通过接口、事件、配置和服务注册访问，避免直接 `new` 其它模块实现或硬编码具体类型。
+* 跨模块通知优先使用 EventManager；需要同步调用或能力替换时优先使用接口抽象。
+* 业务模块不得污染框架核心，不得因单个项目需求将具体业务类型写入 Core 或 Platform。
+* FrameworkConfig 只保存轻量启动配置，不承载业务数据、运行时状态、用户配置或资源清单。
+* InputSystem、UISystem、DisplaySystem 与 LocalizationSystem 必须保持明确的单向依赖关系。
+* 每个系统必须具备清晰职责、依赖边界和可替换扩展点，不应成为集中式全能管理器。
+
+后续每个系统设计文档必须包含：
+
+* 系统职责。
+* 不负责什么。
+* 可依赖模块。
+* 禁止依赖模块。
+* 可扩展点。
+* 与 FrameworkConfig 的关系。
+
 ## 架构分层
 
 ```text
@@ -69,6 +92,19 @@ Core 必须保持业务无关，不包含行业规则、具体设备逻辑或项
 Platform 是可复用的平台能力层，为不同类型 Unity 应用提供显示、资源、本地化、授权、构建、网络与存档能力。
 
 Platform 系统应支持按项目配置和按需启用，不应假设某一种业务场景。
+
+Platform 内部按职责分为：
+
+* Foundation：ResourceSystem、SaveSystem。
+* Environment：DisplaySystem、InputSystem。
+* Experience：LocalizationSystem、UISystem。
+* Operations：NetworkSystem、LicenseSystem、BuildProfileSystem。
+
+Platform 系统可以依赖 Core，但不得依赖 FeatureModule。Platform 内部依赖必须保持单向，避免系统之间形成循环依赖。
+
+FrameworkConfig 只保存 Platform 启动所需的轻量默认值、开关和 Profile 标识，不保存语言包内容、资源清单、用户数据、授权状态或构建过程数据。
+
+Platform 整体职责、依赖与配置边界见 `PlatformArchitectureDesign.md`。
 
 ### FeatureModule
 
@@ -193,7 +229,17 @@ InputSystem 是 Platform 层的通用输入抽象。UI 与业务模块不直接�
 * SwitchTabLeft
 * SwitchTabRight
 
-输入来源可以是键盘、鼠标、手柄、单片机按钮、控制面板按钮或其它外部设备，所有来源统一映射为框架输入指令。
+输入来源可以是键盘、鼠标、手柄、VR 控制器、单片机按钮、控制面板按钮或其它外部设备，所有来源统一映射为框架输入指令。
+
+InputSystem 的核心模型包括：
+
+* InputAction：稳定的设备无关动作语义。
+* InputBinding：Action 与具体设备输入之间的映射。
+* InputProfile：默认、项目、业务模块与用户覆盖配置的组合。
+* InputDevice：设备发现、能力描述与底层适配边界。
+* InputContext：UI、Gameplay、Debug、Tool 等上下文的优先级与消费规则。
+
+InputSystem 负责产生语义动作，不负责执行 UI 焦点规则或业务行为。UISystem 和 FeatureModule 消费 InputSystem，InputSystem 不依赖它们。
 
 #### Input Profile
 
@@ -206,7 +252,11 @@ ByFramework 长期提供业务无关的通用输入配置能力：
 
 框架不定义具体业务键位。不同车辆、设备或项目的键值配置必须由 FeatureModule 提供，例如 `VehicleSimulationInputProfile`，并在业务模块内维护设备或业务动作映射。
 
-当前阶段不实现 UISystem、InputSystem 或 Input Profile，也不修改现有 UI 代码。
+FrameworkConfig 后续只保存默认 Input Profile 标识、基础 Context 和设备选择策略。用户 Binding、设备校准和机器特定配置由 SaveSystem 持久化，不写入 FrameworkConfig。
+
+LocalizationSystem 负责 Binding 显示名称与输入提示模板的本地化；UISystem 只消费 UI 语义动作，不直接读取具体设备。
+
+详细设计见 `InputSystemDesign.md`。当前阶段不实现 UISystem、InputSystem 或 Input Profile，也不修改现有输入与 UI 代码。
 
 ### BuildProfileSystem
 
@@ -292,3 +342,5 @@ Localization
 * SaveSystem：提供跨平台、可扩展的数据持久化能力。
 
 以上系统均处于长期规划阶段，尚未形成最终 API。
+
+Platform 系统必须独立设计与实施。当前不实现任何 Platform 系统，不开始 ResourceSystem 重构，不引入 Addressables，也不由 FrameworkEntry 接管尚未完成生命周期设计的 Platform 模块。

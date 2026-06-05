@@ -23,6 +23,8 @@
 以下系统均为长期规划，不代表已经开始实现：
 
 * [x] FrameworkEntry Phase2 Design
+* [x] P2.1 Platform Architecture Design
+* [x] P2.2 InputSystem Design
 * [ ] FrameworkEntry Phase2A：ThreadDispatcher 渐进接管
 * [ ] FrameworkEntry Phase2B：EventManager 渐进接管
 * [ ] FrameworkEntry Phase2C：FSMManager 渐进接管
@@ -44,6 +46,19 @@
 * [ ] Localization Runtime Language Switching
 * [ ] NetworkSystem
 * [ ] SaveSystem
+* [ ] ResourceSystem Contract Design
+* [ ] SaveSystem Contract Design
+* [ ] InputAction 标识与值类型设计
+* [ ] InputContext 优先级与消费规则设计
+* [ ] InputProfile 合并与版本策略设计
+* [ ] InputDevice Adapter 接口设计
+* [ ] 现有直接输入调用迁移审计
+* [ ] DisplaySystem Design
+* [ ] LocalizationSystem Design
+* [ ] UISystem Design
+* [ ] NetworkSystem Design
+* [ ] LicenseSystem Design
+* [ ] BuildProfileSystem Design
 * [ ] 模块热插拔
 
 ## P3 FeatureModule 与生态

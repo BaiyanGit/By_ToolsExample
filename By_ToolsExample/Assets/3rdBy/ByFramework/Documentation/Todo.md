@@ -28,11 +28,28 @@
 * 当前目录结构尚未完全按 Core、Platform、FeatureModule 分层，后续迁移必须分模块实施并保持 API 稳定
 * UI 当前缺少面向单屏、分屏、多联屏、融屏、特殊比例、多分辨率、VR 与 Non-VR 的统一适配方案
 * UISystem 尚未建立统一主题、UIInputNavigationSystem 与 UIFocusSystem，当前不应将 UGUI Navigation 固化为未来核心方案
-* InputSystem 尚未建立，键盘、鼠标、手柄与外部硬件输入缺少统一指令映射边界
-* InputAction、InputBinding、InputProfile 与 InputDevice 尚处于长期规划阶段；框架不得定义具体业务键位，业务键值配置应归属 FeatureModule
+* InputSystem Design 已完成，但 InputAction 标识、值类型、事件阶段和最终 API 尚未设计或实现
+* InputContext 的优先级、独占、透传、消费与异常恢复规则需要独立设计
+* InputProfile 的默认、项目、FeatureModule 与用户覆盖合并规则，以及冲突诊断和版本迁移策略尚未设计
+* InputDevice Adapter 需要隔离键盘、鼠标、手柄、VR 控制器、工业按钮和自定义外部设备协议差异
+* 框架不得定义具体业务键位；VehicleSimulationInputProfile 等业务输入配置必须归属对应 FeatureModule
+* 当前 Guide、Extension、UI 与 Samples 中仍存在 `Input.GetAxis`、`Input.GetMouseButton`、`Input.GetKeyDown`、`KeyCode` 和 `StandaloneInputModule` 等直接输入依赖，后续需要独立迁移审计
+* 用户 InputBinding、设备偏好和校准数据需要通过 SaveSystem 差异化持久化，不应写入 FrameworkConfig
+* InputSystem、LocalizationSystem 与 UISystem 之间尚未建立 Binding Display Token 和动态输入提示刷新契约
 * LocalizationSystem 尚未建立语言管理、运行时切换、默认语言和模块语言包扩展机制
 * 本地化翻译内容尚未按 Core、Platform 与 FeatureModule 建立独立维护边界
 * DisplaySystem、UISystem、InputSystem、BuildProfileSystem、LicenseSystem、ResourceSystem、LocalizationSystem、NetworkSystem 与 SaveSystem 尚处于架构规划阶段
 * 当前业务扩展模块与通用框架能力之间缺少明确的 FeatureModule 边界规范
 * ResourceSystem 尚未建立；当前阶段继续保留 Resources，不开始资源系统重构或 Addressables 接入
 * Platform 长期规划尚未进入实现阶段，后续启动任何系统前需要单独设计、确认范围并更新 Roadmap
+* Platform Architecture Design 已完成，但九个 Platform 系统均未开始实现；后续必须按独立设计任务逐项确认职责与 API
+* Platform 内部需要建立单向依赖契约，避免 UISystem、ResourceSystem、LocalizationSystem 与 InputSystem 形成循环依赖
+* FrameworkConfig 后续只能增加轻量启动配置、开关与 Profile 标识，不应承载语言包、资源清单、用户绑定、授权状态或构建过程数据
+* ResourceSystem 需要先完成 Contract Design；当前继续保留 Resources，不开始 AssetBundle 实现或 Addressables 接入
+* SaveSystem 需要定义用户配置、授权状态和 FeatureModule 存档的隔离、版本与迁移边界
+* 多联屏现场校准、用户 InputBinding、授权状态等机器或用户特定数据需要独立持久化方案，不应写入 FrameworkConfig
+* BuildProfileSystem 必须保持构建期编排与 Runtime 配置分离，Runtime 只消费只读 Profile 元数据
+* 后续每个系统设计文档必须补齐职责、不负责范围、可依赖模块、禁止依赖模块、可扩展点与 FrameworkConfig 关系六项契约
+* 当前模块尚未建立统一服务注册机制；跨模块同步能力调用需要先设计可替换的接口注册边界
+* Platform 子系统后续实现时需要持续审计循环依赖、直接构造其它模块实现和 FeatureModule 反向污染风险
+* InputSystem 后续实现必须保持对 UISystem、DisplaySystem、LocalizationSystem 与 FeatureModule 具体实现零依赖

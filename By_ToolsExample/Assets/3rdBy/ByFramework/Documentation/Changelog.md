@@ -21,6 +21,25 @@
 * 明确框架负责语言管理机制，各模块独立维护具体翻译内容
 * 将 InputSystem 纳入 Platform 分层，并统一 UIFocusSystem 与 UIInputNavigationSystem 长期规划命名
 * 明确 Core 与 Platform 不得写死具体车辆或设备类型，业务键值配置由 FeatureModule 的 InputProfile 维护
+* 完成 P2.1 Platform Architecture Design，明确 Foundation、Environment、Experience 与 Operations 职责分组
+* 明确 DisplaySystem、UISystem、InputSystem、LocalizationSystem、ResourceSystem、LicenseSystem、BuildProfileSystem、NetworkSystem 与 SaveSystem 的职责边界
+* 建立 Platform 单向依赖原则，并明确 UISystem 对 Display、Input、Localization 与 Resource 能力的消费边界
+* 明确 FrameworkConfig 只承载轻量启动配置、开关与 Profile 标识，不承载语言包、资源清单、用户状态或授权数据
+* 明确 BuildProfileSystem 构建期职责与 FrameworkConfig Runtime 配置职责的边界
+* 新增 Documentation/PlatformArchitectureDesign.md，记录 Platform 依赖关系、配置边界、风险与实现优先级
+* 完成 P2.2 InputSystem Design，明确 InputAction、InputBinding、InputProfile、InputDevice 与 InputContext 的职责边界
+* 明确开发期键鼠模拟与运行期外部硬件输入共享同一设备无关 Action 消费路径
+* 建立 Framework Default、Project、FeatureModule 与 User Override Profile 配置层级
+* 明确 FrameworkConfig 只保存默认 Profile 标识与设备选择策略，用户 Binding 和校准数据由 SaveSystem 持久化
+* 明确 LocalizationSystem 负责 Binding 显示名称和输入提示模板本地化，UISystem 只消费 UI 语义动作
+* 记录现有直接使用 Unity 输入 API 的调用为未来独立迁移审计范围
+* 新增 Documentation/InputSystemDesign.md，记录输入上下文、依赖关系、配置边界与后续设计任务
+* 补充 ByFramework 全局低耦合、模块化与可替换架构约束
+* 明确 Core、Platform 与 FeatureModule 的单向依赖规则，以及跨模块优先使用接口、EventManager、配置和服务注册
+* 建立后续系统设计文档的六项必需契约：职责、不负责范围、可依赖、禁止依赖、可扩展点与 FrameworkConfig 关系
+* 明确 InputSystem 不反向依赖 UISystem、DisplaySystem、LocalizationSystem 或 FeatureModule 具体实现
+* 明确 FrameworkConfig 不作为模块通信总线或运行时状态容器
+* 新增 Documentation/ByFramework_Current_Context.md，汇总当前项目定位、架构、完成状态、约束与新窗口启动说明
 
 ### 事件系统
 

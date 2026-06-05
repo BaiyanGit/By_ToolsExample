@@ -196,7 +196,7 @@ namespace _3rdBy.ByFramework.Extension
             {
                 if (_instance == null)
                 {
-                    _instance = FindObjectOfType<ReferenceCollector>();
+                    _instance = FindFirstObjectByType<ReferenceCollector>();
                 }
 
                 return _instance;

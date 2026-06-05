@@ -48,7 +48,7 @@
         public static HighlightManager instance {
             get {
                 if (_instance == null) {
-                    _instance = FindObjectOfType<HighlightManager>();
+                    _instance = FindFirstObjectByType<HighlightManager>();
                 }
                 return _instance;
             }
@@ -273,7 +273,7 @@
         public static Camera GetCamera() {
             Camera raycastCamera = Camera.main;
             if (raycastCamera == null) {
-                raycastCamera = FindObjectOfType<Camera>();
+                raycastCamera = FindFirstObjectByType<Camera>();
             }
             return raycastCamera;
         }

@@ -31,7 +31,7 @@ namespace _3rdBy.ByFramework.EventManager.Core
         private List<Type> _allEventTypes;
 
         [Header("声明式事件处理器表，Key 为事件数据类型")]
-        private Dictionary<Type, List<object>> _allEvents = new();
+        private readonly Dictionary<Type, List<object>> _allEvents = new();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Init()

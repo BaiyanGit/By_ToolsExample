@@ -700,7 +700,7 @@ namespace Demos.RecorderSdk.Editor
 
         private static void EnsureEventSystem()
         {
-            if (Object.FindObjectOfType<EventSystem>() != null) return;
+            if (Object.FindFirstObjectByType<EventSystem>() != null) return;
             var go = new GameObject("EventSystem", typeof(EventSystem));
             AddInputModuleByProjectSettings(go);
             Undo.RegisterCreatedObjectUndo(go, "Create EventSystem");

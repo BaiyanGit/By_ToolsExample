@@ -32,7 +32,7 @@ namespace _3rdBy.ByFramework.Core
                 return;
             }
 
-            FrameworkEntry existingEntry = FindObjectOfType<FrameworkEntry>();
+            FrameworkEntry existingEntry = FindFirstObjectByType<FrameworkEntry>();
             if (existingEntry != null)
             {
                 Instance = existingEntry;

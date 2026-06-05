@@ -16,7 +16,7 @@ namespace _3rdBy.ByFramework.FSM
                 return;
             }
 
-            FSMManager existingManager = FindObjectOfType<FSMManager>();
+            FSMManager existingManager = FindFirstObjectByType<FSMManager>();
             if (existingManager != null)
             {
                 Instance = existingManager;

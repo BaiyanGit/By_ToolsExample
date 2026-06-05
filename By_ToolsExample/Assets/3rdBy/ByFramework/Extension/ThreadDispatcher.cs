@@ -32,7 +32,7 @@ namespace _3rdBy.ByFramework.Extension
             maxThreads = Environment.ProcessorCount; // 设置最大线程数为处理器核心数
             Debug.Log($"ThreadDispatcher 线程数量, {maxThreads}");
 
-            ThreadDispatcher existingDispatcher = FindObjectOfType<ThreadDispatcher>();
+            ThreadDispatcher existingDispatcher = FindFirstObjectByType<ThreadDispatcher>();
             if (existingDispatcher != null)
             {
                 Current = existingDispatcher;

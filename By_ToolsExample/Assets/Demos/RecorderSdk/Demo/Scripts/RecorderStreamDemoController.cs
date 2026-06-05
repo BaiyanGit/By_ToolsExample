@@ -358,7 +358,7 @@ namespace Demos.RecorderSdk.Demo.Scripts
                 cameraGo.GetComponent<Camera>().clearFlags = CameraClearFlags.Skybox;
             }
 
-            if (FindObjectOfType<Light>() == null)
+            if (FindFirstObjectByType<Light>() == null)
             {
                 var lightGo = new GameObject("Directional Light", typeof(Light));
                 lightGo.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
@@ -371,7 +371,7 @@ namespace Demos.RecorderSdk.Demo.Scripts
         {
             if (ifStreamUrl != null && drConfigId != null && btnStartStream != null && btnStopStream != null && txtCurrentState != null && txtLastWarningOrError != null) return;
 
-            var canvas = FindObjectOfType<Canvas>();
+            var canvas = FindFirstObjectByType<Canvas>();
             if (canvas == null)
             {
                 var canvasGo = new GameObject("StreamDemoCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
@@ -406,7 +406,7 @@ namespace Demos.RecorderSdk.Demo.Scripts
 
         private static void EnsureEventSystem()
         {
-            if (FindObjectOfType<EventSystem>() != null) return;
+            if (FindFirstObjectByType<EventSystem>() != null) return;
             var go = new GameObject("EventSystem", typeof(EventSystem));
 #if ENABLE_INPUT_SYSTEM
             go.AddComponent<InputSystemUIInputModule>();

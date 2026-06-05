@@ -53,7 +53,7 @@
 
         [MenuItem("GameObject/Effects/Highlight Plus/Create Manager", false, 10)]
         static void CreateManager(MenuCommand menuCommand) {
-            HighlightManager manager = FindObjectOfType<HighlightManager>();
+            HighlightManager manager = FindFirstObjectByType<HighlightManager>();
             if (manager == null) {
                 GameObject managerGO = new GameObject("HighlightPlusManager");
                 manager = managerGO.AddComponent<HighlightManager>();

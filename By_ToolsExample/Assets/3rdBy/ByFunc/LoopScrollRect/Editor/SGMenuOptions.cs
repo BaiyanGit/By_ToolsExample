@@ -125,7 +125,7 @@
                 return canvas.gameObject;
 
             // No canvas in selection or its parents? Then use just any canvas..
-            canvas = Object.FindObjectOfType(typeof(Canvas)) as Canvas;
+            canvas = Object.FindFirstObjectByType(typeof(Canvas)) as Canvas;
             if (canvas != null && canvas.gameObject.activeInHierarchy)
                 return canvas.gameObject;
 

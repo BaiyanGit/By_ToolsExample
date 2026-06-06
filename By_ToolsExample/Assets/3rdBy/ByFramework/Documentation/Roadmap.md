@@ -39,7 +39,7 @@
 * [x] P2 阶段统一项目上下文快照
 * [x] FrameworkEntry Phase2A：ThreadDispatcher 渐进接管实现（代码完成，待 Unity 专项验证）
 * [x] FrameworkEntry Phase2B：EventManager 渐进接管（代码完成，待 Unity 专项验证）
-* [ ] FrameworkEntry Phase2C：FSMManager 渐进接管
+* [x] FrameworkEntry Phase2C：FSMManager 渐进接管（代码完成，待 Unity 专项验证）
 * [ ] FrameworkConfig Phase2 实现
 * [ ] FrameworkConfig 当前字段归属与迁移审计
 * [ ] FrameworkConfig Schema、校验、缺失与兼容策略详细设计
@@ -166,7 +166,11 @@
 * [x] P3.4B EventManager Integration Review
 * [x] P3.4C EventManager Narrow Implementation（代码完成，待 Unity 专项验证）
 * [x] P3.4D FSMManager Integration Review
-* [ ] P3.4E FSMManager Narrow Implementation
+* [x] P3.4E FSMManager Narrow Implementation（代码完成，待 Unity 专项验证）
+* [x] P3.4F FrameworkEntry Phase2A Closure Review
+* [ ] P3.5A Core Early Lifecycle Unity Verification（Manual Verification Required，受 Unity License 阻塞）
+* [x] ByFramework 中文化规范整改（Editor UI、验证工具、Debug 日志与 Console 输出安全文案整改）
+* [ ] P3.5B Platform Service Registration Runtime API Freeze
 * [ ] P3.5 InputSystem Implementation
 * [ ] P3.6 UISystem Foundation
 * [ ] FeatureModule 边界规范

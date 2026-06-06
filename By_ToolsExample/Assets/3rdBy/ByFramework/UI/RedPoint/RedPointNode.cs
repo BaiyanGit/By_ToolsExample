@@ -60,7 +60,7 @@
             //红点数量只能设置叶子节点  
             if (dicChilds.Count > 0)
             {
-                Debug.LogError("Only Can Set Leaf Node!");
+                Debug.LogError("[RedPointNode] 只能设置叶子节点的红点数量。");
                 return;
             }
 

@@ -309,14 +309,25 @@
         /// </summary>
         internal void OnDestroy()
         {
+            CurrentState?.OnExit();
+            CurrentState = null;
+
             //执行状态机内所有状态的状态终止事件，并置空
             for (int i = states.Count - 1; i >= 0; i--)
             {
-                states[i].OnTermination();
-                states.Remove(states[i]);
+                State state = states[i];
+                state.OnTermination();
+                state.machine = null;
+                state.onInitialization = null;
+                state.onEnter = null;
+                state.onStay = null;
+                state.onExit = null;
+                state.onTermination = null;
+                states.RemoveAt(i);
             }
 
             states.Clear();
+            conditions.Clear();
         }
 
         /// <summary>

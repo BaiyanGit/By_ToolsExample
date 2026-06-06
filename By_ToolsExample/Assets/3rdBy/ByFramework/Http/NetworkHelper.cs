@@ -68,7 +68,7 @@
             }
             else
             {
-                Debug.LogError(url + "\n" + unityWebRequest.error);
+                Debug.LogError("[NetworkHelper] Web JSON 请求失败：" + unityWebRequest.error + "\n" + url);
                 result.code = -1;
                 result.msg = unityWebRequest.error;
             }
@@ -114,12 +114,12 @@
 
             if (string.IsNullOrEmpty(unityWebRequest.error) && unityWebRequest.downloadHandler != null)
             {
-                Debug.LogWarning($"Web Texture：”{url}“ Downloaded");
+                Debug.LogWarning($"[NetworkHelper] Web Texture 下载完成：{url}");
                 result = DownloadHandlerTexture.GetContent(unityWebRequest);
             }
             else
             {
-                Debug.LogError("Get Texture Error ：" + unityWebRequest.error + "\n" + url);
+                Debug.LogError("[NetworkHelper] 获取 Texture 失败：" + unityWebRequest.error + "\n" + url);
             }
 
             // 取消任务
@@ -176,12 +176,12 @@
 
             if (string.IsNullOrEmpty(unityWebRequest.error) && unityWebRequest.downloadHandler != null)
             {
-                Debug.LogWarning($"Web AudioClip：”{url}“ Downloaded");
+                Debug.LogWarning($"[NetworkHelper] Web AudioClip 下载完成：{url}");
                 result = DownloadHandlerAudioClip.GetContent(unityWebRequest);
             }
             else
             {
-                Debug.LogError("Get AudioClip Error ：" + unityWebRequest.error + "\n" + url);
+                Debug.LogError("[NetworkHelper] 获取 AudioClip 失败：" + unityWebRequest.error + "\n" + url);
             }
 
             // 取消任务
@@ -270,7 +270,7 @@
             }
             else
             {
-                Debug.LogError(url + "\n" + unityWebRequest.error);
+                Debug.LogError("[NetworkHelper] Web JSON 请求失败：" + unityWebRequest.error + "\n" + url);
                 result.code = -1;
                 result.msg = unityWebRequest.error;
             }
@@ -333,7 +333,7 @@
             }
             else
             {
-                Debug.LogError(url + "\n" + unityWebRequest.error);
+                Debug.LogError("[NetworkHelper] Web 表单请求失败：" + unityWebRequest.error + "\n" + url);
                 result.code = -1;
                 result.msg = unityWebRequest.error;
             }
@@ -398,7 +398,7 @@
             }
             else
             {
-                Debug.LogError(url + "\n" + unityWebRequest.error);
+                Debug.LogError("[NetworkHelper] Web DELETE 请求失败：" + unityWebRequest.error + "\n" + url);
                 result.code = -1;
                 result.msg = unityWebRequest.error;
             }

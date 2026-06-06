@@ -61,7 +61,7 @@ namespace _3rdBy.ByFramework.EventManager.Core
 
             if (!_isRegistered)
             {
-                Debug.LogError("[ByFramework][EventManager] Initialize requires Register.");
+                Debug.LogError("[ByFramework][EventManager] Initialize 前必须先执行 Register。");
                 return;
             }
 
@@ -199,7 +199,7 @@ namespace _3rdBy.ByFramework.EventManager.Core
                 object obj = iEvents[i];
                 if (obj is not AEventAsync<T> aEvent)
                 {
-                    Debug.LogError($"event error: {obj.GetType().Name}");
+                    Debug.LogError($"[EventManager] 事件处理器类型不匹配：{obj.GetType().Name}");
                     continue;
                 }
 
@@ -233,7 +233,7 @@ namespace _3rdBy.ByFramework.EventManager.Core
                 object obj = iEvents[i];
                 if (obj is not AEvent<T> aEvent)
                 {
-                    Debug.LogError($"event error: {obj.GetType().Name}");
+                    Debug.LogError($"[EventManager] 事件处理器类型不匹配：{obj.GetType().Name}");
                     continue;
                 }
 

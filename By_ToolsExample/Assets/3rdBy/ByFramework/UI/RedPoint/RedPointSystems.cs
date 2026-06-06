@@ -44,7 +44,7 @@
             var node = FindNode(nodeName);
             if (node == null)
             {
-                Debug.LogError("register failed! can not find the node:" + nodeName);
+                Debug.LogError("[RedPointSystems] 注册失败，未找到节点：" + nodeName);
                 return;
             }
 
@@ -61,7 +61,7 @@
             var node = FindNode(nodeName);
             if (node == null)
             {
-                Debug.LogError("register failed! can not find the node:" + nodeName);
+                Debug.LogError("[RedPointSystems] 派发失败，未找到节点：" + nodeName);
                 return;
             }
 

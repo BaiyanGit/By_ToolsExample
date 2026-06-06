@@ -66,7 +66,7 @@ namespace _3rdBy.ByFramework.UI
 
         public IUIBase Get(string uiName)
         {
-            //Debug.LogError("can not find the ui from cache:" + uiName);
+            //Debug.LogError("[UIManager] 未在缓存中找到 UI：" + uiName);
             return _uiCacheDic.GetValueOrDefault(uiName);
         }
 
@@ -128,7 +128,7 @@ namespace _3rdBy.ByFramework.UI
 
             if (ui == null)
             {
-                Debug.LogWarning("can not find the ui:" + uiName);
+                Debug.LogWarning("[UIManager] 未找到 UI：" + uiName);
                 return;
             }
 

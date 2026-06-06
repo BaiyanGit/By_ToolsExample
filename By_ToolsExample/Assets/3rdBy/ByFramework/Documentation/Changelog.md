@@ -181,6 +181,29 @@
 * 明确 FSMManager 接管顺序建议为 ThreadDispatcher、EventManager、FSMManager，销毁顺序严格逆序
 * 明确 FSMManager Shutdown 必须清理状态机列表、StateMachine 状态、条件委托和当前状态，避免 Domain Reload 关闭时状态残留
 * 新增 Documentation/FSMManagerIntegrationReview.md，记录当前状态、生命周期映射、依赖关系、风险和 P3.4E 实施边界
+* 完成 P3.4E FSMManager Narrow Implementation，FrameworkEntry 开始在 EventManager 之后窄范围编排 FSMManager 生命周期
+* 移除 FSMManager 旧 AfterSceneLoad 自动初始化入口，避免与 FrameworkEntry 形成双重生命周期权威
+* FSMManager 新增 Register、Initialize、Start、Stop、Shutdown 内部生命周期入口，保留 Instance 与状态机公开 API
+* FSMManager Stop 阶段停止 Update 驱动，Shutdown 阶段逆序销毁 `_machines` 并清理静态引用
+* StateMachine Shutdown 清理补齐 CurrentState 退出、conditions 清空、状态委托缓存释放与 State 反向引用清理
+* 新增 Documentation/FrameworkEntryPhase2AFSMManagerImplementation.md，记录生命周期映射、双权威处理、风险、回滚方案与 Unity 验证步骤
+* 完成 P3.4F FrameworkEntry Phase2A Closure Review，确认 Phase2A 可以正式关闭
+* 冻结 Core Early 生命周期链为 ThreadDispatcher、EventManager、FSMManager，Shutdown 严格逆序
+* 确认 Singleton / Instance 在 Phase2A 中仅作为兼容访问方式，FrameworkEntry 为生命周期编排权威
+* 记录 Phase2A 关闭后的遗留风险：Unity PlayMode、Domain Reload、EventManager.EnsureInstance 兼容路径、重复预放置实例与缺少自动化验证
+* 新增 Documentation/FrameworkEntryPhase2AClosureReview.md，记录完成度评估、风险清单、遗留问题、关闭结论与 P3.5 推荐路线
+* 开始 P3.5A Core Early Lifecycle Unity Verification，完成当前环境可执行的静态入口、生命周期顺序和预放置实例扫描
+* 确认 FrameworkEntry 仍为唯一 Core Early AfterSceneLoad 编排入口，ThreadDispatcher、EventManager 与 FSMManager 未发现独立 AfterSceneLoad Init 残留
+* 尝试使用 Unity 6000.0.48f1 batchmode 加载项目，但受本机 Unity Editor License 阻塞，未能进入有效项目加载、编译或 PlayMode 验证阶段
+* 明确 P3.5A 当前未通过完整验收，不建议进入 P3.5B
+* 继续 P3.5A：因当前环境 Unity Editor License 不可用，不再尝试运行 Unity，由本地手动执行实机验证
+* 新增 Core Early 生命周期 Editor 验证窗口，菜单为 `ByFramework/验证/Core Early 生命周期验证`
+* 补充 P3.5A 手动验证步骤、验证结果记录模板，并将状态保持为 Manual Verification Required
+* 新增 Editor 工具中文优先规则，后续 MenuItem、EditorWindow、Button、Label、HelpBox、Validation Report、Console Log、Build Tool、Verification Tool 与 Config Tool 默认使用中文 UI
+* 新增日志中文优先规则，后续 Debug.Log、Debug.LogWarning、Debug.LogError、Debug.Assert、Console 输出和验证报告默认使用中文说明，技术对象名保留英文
+* 完成 ByFramework 中文化规范第一轮安全整改，中文化 FrameworkEntry、ThreadDispatcher、EventManager、FSMManager、Core Early 验证窗口、UI 自动生成器、网络/下载、Socket、Guide、RedPoint 与 UILineRenderer 的明显英文提示
+* 补充 Editor UI Language Convention 与 Debug Log Language Convention，明确不得为了中文化修改 API、路径、Key、Protobuf 生成代码或协议字段
+* 新增 Documentation/CoreEarlyLifecycleUnityVerification.md，记录验证场景、已执行结果、阻塞问题、修复建议和 P3.5B 前置条件
 
 ### 事件系统
 

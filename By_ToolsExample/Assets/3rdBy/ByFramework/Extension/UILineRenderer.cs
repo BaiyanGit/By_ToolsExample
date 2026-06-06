@@ -392,8 +392,8 @@
                 return CreateLineSegment(end, capEnd, SegmentType.End);
             }
  
-            Debug.LogError("Bad SegmentType passed in to CreateLineCap. Must be "
-                + "SegmentType.Start or SegmentType.End");
+            Debug.LogError("[UILineRenderer] CreateLineCap 收到非法 SegmentType，必须是 "
+                + "SegmentType.Start 或 SegmentType.End。");
  
             return null;
         }

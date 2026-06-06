@@ -9,6 +9,7 @@ namespace _3rdBy.ByFramework.Core
 {
     using _3rdBy.ByFramework.EventManager.Core;
     using _3rdBy.ByFramework.Extension;
+    using _3rdBy.ByFramework.FSM;
     using UnityEngine;
 
     /// <summary>
@@ -97,30 +98,31 @@ namespace _3rdBy.ByFramework.Core
             }
 
             _isInitialized = true;
-            Debug.Log("[ByFramework][FrameworkEntry] Initialization started.");
+            Debug.Log("[ByFramework][FrameworkEntry] 初始化开始。");
 
             InitializeCoreModules();
             InitializeServiceModules();
             InitializeSceneModules();
 
-            Debug.Log("[ByFramework][FrameworkEntry] Initialization completed.");
+            Debug.Log("[ByFramework][FrameworkEntry] 初始化完成。");
         }
 
         private void InitializeCoreModules()
         {
             DispatcherThread.RegisterForFrameworkEntry();
             EventManager.RegisterForFrameworkEntry();
-            Debug.Log("[ByFramework][FrameworkEntry] Core module initialization phase ready.");
+            FSMManager.RegisterForFrameworkEntry();
+            Debug.Log("[ByFramework][FrameworkEntry] Core 模块初始化阶段已就绪。");
         }
 
         private void InitializeServiceModules()
         {
-            Debug.Log("[ByFramework][FrameworkEntry] Service module initialization phase ready.");
+            Debug.Log("[ByFramework][FrameworkEntry] Service 模块初始化阶段已就绪。");
         }
 
         private void InitializeSceneModules()
         {
-            Debug.Log("[ByFramework][FrameworkEntry] Scene module initialization phase ready.");
+            Debug.Log("[ByFramework][FrameworkEntry] Scene 模块初始化阶段已就绪。");
         }
 
         private void StartCoreModules()
@@ -129,6 +131,8 @@ namespace _3rdBy.ByFramework.Core
             DispatcherThread.StartForFrameworkEntry();
             EventManager.InitializeForFrameworkEntry(transform);
             EventManager.StartForFrameworkEntry();
+            FSMManager.InitializeForFrameworkEntry(transform);
+            FSMManager.StartForFrameworkEntry();
         }
 
         private void Shutdown()
@@ -139,11 +143,13 @@ namespace _3rdBy.ByFramework.Core
             }
 
             _isShutdown = true;
+            FSMManager.StopForFrameworkEntry();
+            FSMManager.ShutdownForFrameworkEntry();
             EventManager.StopForFrameworkEntry();
             EventManager.ShutdownForFrameworkEntry();
             DispatcherThread.StopForFrameworkEntry();
             DispatcherThread.ShutdownForFrameworkEntry();
-            Debug.Log("[ByFramework][FrameworkEntry] Shutdown completed.");
+            Debug.Log("[ByFramework][FrameworkEntry] Shutdown 完成。");
         }
     }
 }

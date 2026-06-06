@@ -134,7 +134,7 @@
                 OnSpaceChanged();
             }
  
-            if (GUILayout.Button("Refresh"))
+            if (GUILayout.Button("刷新"))
             {
                 lineRender.OnRebuildRequested();
             }
@@ -145,7 +145,7 @@
         //---------------------------------------------------------------------------
         private void OnDrawHeader(Rect rect)
         {
-            EditorGUI.LabelField(rect, new GUIContent("Points"));
+            EditorGUI.LabelField(rect, new GUIContent("点列表"));
         }
  
         //---------------------------------------------------------------------------

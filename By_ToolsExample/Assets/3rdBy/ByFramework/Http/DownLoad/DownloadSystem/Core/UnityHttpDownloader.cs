@@ -23,24 +23,24 @@ namespace _3rdBy.ByFramework.Http.DownLoad.DownloadSystem.Core
             {
                 if (gbSize > 0)
                 {
-                    Debug.Log($"Downloaded: {gbSize} GB / {mbPart} MB / {kbPart} KB / {bPart} B");
+                    Debug.Log($"[DownloadSystem] 已下载：{gbSize} GB / {mbPart} MB / {kbPart} KB / {bPart} B");
                 }
                 else if (mbPart > 0)
                 {
-                    Debug.Log($"Downloaded: {mbPart} MB / {kbPart} KB / {bPart} B");
+                    Debug.Log($"[DownloadSystem] 已下载：{mbPart} MB / {kbPart} KB / {bPart} B");
                 }
                 else if (kbPart > 0)
                 {
-                    Debug.Log($"Downloaded: {kbPart} KB / {bPart} B");
+                    Debug.Log($"[DownloadSystem] 已下载：{kbPart} KB / {bPart} B");
                 }
                 else
                 {
-                    Debug.Log($"Downloaded: {bPart} B");
+                    Debug.Log($"[DownloadSystem] 已下载：{bPart} B");
                 }
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Error in calculating downloaded size: {ex.Message}");
+                Debug.LogError($"[DownloadSystem] 计算已下载大小失败：{ex.Message}");
             }
         }
 
@@ -59,7 +59,7 @@ namespace _3rdBy.ByFramework.Http.DownLoad.DownloadSystem.Core
             var finalPath = Path.Combine(downloadsDir, info.FileName);
 
             long existingLength = 0;
-            Debug.Log($"[Download URL]={info.Url}\n[TempPath]={tempPath}\n[SavePath]={finalPath}");
+            Debug.Log($"[DownloadSystem] 下载地址：{info.Url}\n临时路径：{tempPath}\n保存路径：{finalPath}");
 
             // 确保临时文件目录存在
             var tempDir = Path.GetDirectoryName(tempPath);
@@ -79,7 +79,7 @@ namespace _3rdBy.ByFramework.Http.DownLoad.DownloadSystem.Core
             if (File.Exists(tempPath))
             {
                 existingLength = new FileInfo(tempPath).Length;
-                Debug.Log($"Existing file size: {existingLength}");
+                Debug.Log($"[DownloadSystem] 已存在临时文件大小：{existingLength}");
             }
 
             using var request = UnityWebRequest.Get(info.Url);
@@ -90,7 +90,7 @@ namespace _3rdBy.ByFramework.Http.DownLoad.DownloadSystem.Core
             }
             else
             {
-                Debug.Log("Start downloading");
+                Debug.Log("[DownloadSystem] 开始下载。");
             }
 
             request.downloadHandler = new DownloadHandlerFile(tempPath, true);
@@ -121,7 +121,7 @@ namespace _3rdBy.ByFramework.Http.DownLoad.DownloadSystem.Core
                         lastDownloadedBytes = downloadedSize;
                         lastUpdateTime = now;
 
-                        Debug.Log($"Progress: {request.downloadProgress:P2}, Speed: {speed / 1024f:F2} KB/s");
+                        Debug.Log($"[DownloadSystem] 下载进度：{request.downloadProgress:P2}，速度：{speed / 1024f:F2} KB/s");
                     }
                 }
 
@@ -130,7 +130,7 @@ namespace _3rdBy.ByFramework.Http.DownLoad.DownloadSystem.Core
 
             if (request.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"Download failed: {request.error}");
+                Debug.LogError($"[DownloadSystem] 下载失败：{request.error}");
                 listener?.OnError(info, request.error);
                 return;
             }
@@ -144,12 +144,12 @@ namespace _3rdBy.ByFramework.Http.DownLoad.DownloadSystem.Core
                 }
 
                 File.Move(tempPath, finalPath);
-                Debug.Log($"Download completed: {finalPath}");
+                Debug.Log($"[DownloadSystem] 下载完成：{finalPath}");
                 listener?.OnCompleted(info);
             }
             catch (Exception ex)
             {
-                Debug.LogError($"File save failed: {ex.Message}");
+                Debug.LogError($"[DownloadSystem] 文件保存失败：{ex.Message}");
                 listener?.OnError(info, ex.Message);
 
                 // 删除临时文件避免残留
@@ -161,7 +161,7 @@ namespace _3rdBy.ByFramework.Http.DownLoad.DownloadSystem.Core
                     }
                     catch (Exception deleteEx)
                     {
-                        Debug.LogError($"Delete temp file failed: {deleteEx.Message}");
+                        Debug.LogError($"[DownloadSystem] 删除临时文件失败：{deleteEx.Message}");
                     }
                 }
             }

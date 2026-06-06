@@ -24,7 +24,7 @@ namespace _3rdBy.ByFramework.Socket.Example
         /// </summary>
         public void InitHeartBeat()
         {
-            Debug.Log("InitHeartBeat");
+            Debug.Log("[Heartbeat] 初始化心跳。");
             _receiveHeartTime = 0;
         }
 

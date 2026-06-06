@@ -30,7 +30,7 @@ namespace _3rdBy.ByFramework.UI.Editor.UIAutoCreate
         private static readonly Color successColor = new(0.30f, 0.78f, 0.45f, 1f);
         private static readonly Color warningColor = new(1.00f, 0.70f, 0.25f, 1f);
 
-        [MenuItem("ByTools/🧩 UI自动生成器 #&%U", false, 999)]
+        [MenuItem("ByFramework/工具/UI 自动生成器 #&%U", false, 999)]
         private static void ShowEditor()
         {
             var window = GetWindow<UIScriptAutoCreateEditorWindow>();
@@ -87,7 +87,7 @@ namespace _3rdBy.ByFramework.UI.Editor.UIAutoCreate
             GUILayout.Label("快速生成 UI 预制体、View 代码与 MVC 代码", SubTitleStyle());
             GUILayout.EndVertical();
             GUILayout.FlexibleSpace();
-            GUILayout.Label("Editor Tool", MiniTagStyle(), GUILayout.Height(24));
+            GUILayout.Label("Editor 工具", MiniTagStyle(), GUILayout.Height(24));
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
         }
@@ -105,7 +105,7 @@ namespace _3rdBy.ByFramework.UI.Editor.UIAutoCreate
             EditorGUILayout.LabelField("新 UI 名字", GUILayout.Width(92));
             _newUIName          = EditorGUILayout.TextField(_newUIName, GUILayout.Height(22));
             GUI.backgroundColor = successColor;
-            if (GUILayout.Button("Create", GUILayout.Width(96), GUILayout.Height(24)))
+            if (GUILayout.Button("创建", GUILayout.Width(96), GUILayout.Height(24)))
             {
                 CreateUIPrefab();
             }
@@ -361,7 +361,7 @@ namespace _3rdBy.ByFramework.UI.Editor.UIAutoCreate
 
             if (result)
             {
-                Debug.Log("UI创建成功: " + newPrefabFullPath);
+            Debug.Log("[UI自动生成器] UI 创建成功：" + newPrefabFullPath);
                 AssetDatabase.Refresh();
 
                 _uiRootGo = AssetDatabase.LoadAssetAtPath<GameObject>(newPrefabEditorPath);

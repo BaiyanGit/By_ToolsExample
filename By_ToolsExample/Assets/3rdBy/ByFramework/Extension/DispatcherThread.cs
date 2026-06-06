@@ -39,12 +39,12 @@ namespace _3rdBy.ByFramework.Extension
 
             if (!_isRegistered)
             {
-                Debug.LogError("[ByFramework][ThreadDispatcher] Initialize requires Register.");
+                Debug.LogError("[ByFramework][ThreadDispatcher] Initialize 前必须先执行 Register。");
                 return;
             }
 
             maxThreads = Environment.ProcessorCount; // 设置最大线程数为处理器核心数
-            Debug.Log($"ThreadDispatcher 线程数量, {maxThreads}");
+            Debug.Log($"[ThreadDispatcher] 线程数量：{maxThreads}");
 
             var existing = FindFirstObjectByType<DispatcherThread>();
             if (existing != null)

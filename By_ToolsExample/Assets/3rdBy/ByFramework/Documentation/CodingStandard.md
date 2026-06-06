@@ -162,3 +162,85 @@ public void OpenWindow()
 * 给字段补充 `[Header]`
 * 不为了注释大范围重构逻辑
 * 不破坏现有 API
+
+## 10. 中文优先规则
+
+ByFramework 默认面向中文开发团队。文档语言、Editor UI、Console 日志、验证报告和新增 Runtime 日志均默认中文优先，目标用户主要为国内开发人员、实施人员和测试人员。
+
+### 10.1 Editor UI Language Convention
+
+Editor 工具默认使用中文的范围包括：
+
+* `MenuItem`
+* `EditorWindow` 标题
+* Button
+* Label
+* HelpBox
+* Validation Report
+* Console Log
+* Build Tool
+* Verification Tool
+* Config Tool
+
+菜单路径优先使用中文分组：
+
+```text
+ByFramework/工具/xxx
+ByFramework/验证/xxx
+ByFramework/配置/xxx
+```
+
+已有菜单较多或可能被团队习惯依赖时，可以先只修改新增工具与明显英文菜单，避免破坏使用习惯。
+
+### 10.2 Debug Log Language Convention
+
+新增日志默认使用中文的范围包括：
+
+* `Debug.Log`
+* `Debug.LogWarning`
+* `Debug.LogError`
+* `Debug.Assert`
+* EditorWindow 日志
+* Verification Tool 日志
+* Build Tool 日志
+* Config Tool 日志
+* Console 输出
+* 验证报告输出
+
+Runtime 面向开发者的日志采用“中文说明 + 英文对象名”：
+
+```csharp
+Debug.Log("[EventManager] 初始化完成");
+Debug.LogWarning("[FSMManager] 检测到重复状态机");
+Debug.LogError("[ResourceSystem] 未找到资源：UI.Common.ButtonConfirm");
+```
+
+避免新增纯英文提示：
+
+```csharp
+Debug.Log("Initialization Completed");
+Debug.LogWarning("Duplicate FSM Found");
+Debug.LogError("FrameworkEntry Not Found");
+```
+
+必要技术对象名可以保留英文，例如 FSM、EventManager、FSMManager、ThreadDispatcher、ResourceKey、InputAction、BuildProfile、Protobuf、TCP、UDP、WebSocket、AssetBundle、Domain Reload、Play Mode。
+
+禁止为了中文化强行翻译稳定技术对象名；提示信息与说明文字使用中文。新增 Editor 工具默认采用中文 UI，新增 Runtime 日志默认采用中文提示。
+
+### 10.3 暂缓中文化范围
+
+以下内容不得为了中文化而破坏兼容性：
+
+* API 名称
+* 类名
+* 方法名
+* 字段名
+* 命名空间
+* 文件名
+* 资源路径
+* 配置 Key
+* EventKey
+* ResourceKey
+* Protobuf 生成代码
+* 原始协议字段名
+* 仅用于调试的数值、路径或对象名直出

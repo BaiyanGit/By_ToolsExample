@@ -117,7 +117,7 @@
 
             _curGuideData.GCallBack = (result, msg) =>
             {
-                Debug.Log($"guide complete with {msg}");
+                Debug.Log($"[GuideManager] 引导完成，消息：{msg}");
                 _curGuideData.End();
                 _curGuideData = null;
                 EndGuide(result, msg);

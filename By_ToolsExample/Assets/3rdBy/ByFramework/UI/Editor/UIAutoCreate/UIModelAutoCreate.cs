@@ -52,7 +52,7 @@ namespace _3rdBy.ByFramework.UI.Editor.UIAutoCreate
                 }
             }
 
-            Debug.Log("创建成功: " + filePath);
+            Debug.Log("[UI自动生成器] Model 代码创建成功：" + filePath);
             AssetDatabase.Refresh();
         }
     }

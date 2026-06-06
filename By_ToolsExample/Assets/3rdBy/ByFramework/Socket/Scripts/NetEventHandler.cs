@@ -26,7 +26,7 @@ namespace _3rdBy.ByFramework.Socket.Scripts
         {
             if (_netEventPool.ContainsKey(type))
             {
-                Debug.Log("Event : " + type);
+                Debug.Log("[NetEventHandler] 追加监听事件：" + type);
                 _netEventPool[type] += msgHandler;
             }
             else

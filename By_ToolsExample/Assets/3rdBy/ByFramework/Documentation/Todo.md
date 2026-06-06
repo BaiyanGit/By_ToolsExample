@@ -12,7 +12,10 @@
 * P3.4B EventManager Integration Review 已完成，仅完成文档评审，未修改 Runtime、Editor 或 API
 * P3.4C EventManager Narrow Implementation 已完成代码接管，待 Unity 专项验证
 * P3.4D FSMManager Integration Review 已完成，仅完成文档评审，未修改 Runtime、Editor 或 API
-* 下一推荐任务为 P3.4E FSMManager Narrow Implementation，前提是继续保持窄范围并先确认允许修改文件
+* P3.4E FSMManager Narrow Implementation 已完成代码接管，待 Unity 专项验证
+* P3.4F FrameworkEntry Phase2A Closure Review 已完成，仅更新文档；Phase2A 允许正式关闭
+* P3.5A Core Early Lifecycle Unity Verification 已完成静态检查、Unity batchmode 启动尝试与 Editor 验证窗口补充，但受 Unity License 阻塞，状态保持 Manual Verification Required
+* 下一推荐任务仍为本地手动完成 P3.5A Unity 实机验证，不建议进入 P3.5B
 * P3 推荐顺序：Platform Service Registration、ResourceSystem Contract、SaveSystem Contract、FrameworkEntry Phase2A、InputSystem Implementation、UISystem Foundation
 
 ## 当前已知技术债
@@ -50,6 +53,26 @@
 * P3.4D 已确认 FSMManager Shutdown 边界必须覆盖 `_machines`、StateMachine states、conditions、CurrentState 和状态委托引用
 * P3.4D 已确认 FSMManager 适合在 ThreadDispatcher 与 EventManager 之后由 FrameworkEntry 编排
 * P3.4D 已确认 FSMManager Stop 阶段必须停止 Update 驱动，避免 Shutdown 期间状态继续 OnStay 或条件切换
+* P3.4E 已移除 FSMManager 旧 AfterSceneLoad 自动初始化入口，改由 FrameworkEntry 统一编排 Register、Initialize、Start、Stop、Shutdown
+* P3.4E 已保留 FSMManager.Instance 与状态机创建、销毁、查询公开 API，不新增 EnsureInstance 或 Service Registry
+* P3.4E 已补齐 FSMManager Shutdown 对 `_machines` 的逆序销毁，以及 StateMachine 对 CurrentState、conditions、状态委托和反向引用的清理
+* P3.4E 待 Unity 验证项包括 Domain Reload 开关、多次进入退出 Play Mode、场景切换、预放置 FSMManager 与运行时访问 FSMManager.Instance
+* P3.4F 已确认 Phase2A 的 Core Early 生命周期链冻结为 ThreadDispatcher -> EventManager -> FSMManager
+* P3.4F 已确认 Shutdown 严格逆序冻结为 FSMManager -> EventManager -> ThreadDispatcher
+* P3.4F 已确认 Singleton / Instance 仅作为兼容访问方式，生命周期权威收敛到 FrameworkEntry
+* P3.4F 已确认双权威风险在三个试点模块的代码路径上已消除，但 EventManager.EnsureInstance 兼容路径仍需审计
+* P3.4F 已确认 Phase2A 关闭不等于 Unity 实机验收完成，也不等于 Platform Service Registration 已实现
+* P3.5A 静态检查确认 ThreadDispatcher、EventManager 与 FSMManager 不再保留独立 AfterSceneLoad Init 自动入口
+* P3.5A 静态检查确认 FrameworkEntry 生命周期顺序仍为 ThreadDispatcher -> EventManager -> FSMManager，Shutdown 仍为 FSMManager -> EventManager -> ThreadDispatcher
+* P3.5A 静态扫描未在 ByFramework 自身场景、Prefab 或 Asset 中发现预放置 Core Early 实例
+* P3.5A Unity batchmode 被本机 Unity Editor License 阻塞，日志显示 `No valid Unity Editor license found`
+* P3.5A 未完成 PlayMode 单次/多次进入退出、Domain Reload 开关、场景切换、预放置实例和 Shutdown 清理实机验证
+* P3.5A 新增 Editor-only 验证窗口 `ByFramework/验证/Core Early 生命周期验证`，用于手动检查 Core Early 对象数量、重复实例、静态访问状态与预放置实例
+* ByFramework 后续所有 Editor 工具默认中文优先，MenuItem、EditorWindow 标题、Button、Label、HelpBox、Validation Report 与 Console Log 均应面向国内开发、实施和测试人员
+* ByFramework 后续所有新增日志默认中文优先，Runtime 日志采用“中文说明 + 英文对象名”，技术对象名如 EventManager、FSMManager、ThreadDispatcher、ResourceKey、Protobuf、TCP、UDP 保留英文
+* ByFramework 中文化规范整改已完成第一轮安全扫描与文案整改，覆盖 FrameworkEntry、ThreadDispatcher、EventManager、FSMManager、Core Early 验证窗口、UI 自动生成器、网络/下载日志、Socket/Guide/RedPoint/UILineRenderer 明显英文输出
+* 中文化暂缓范围包括 Protobuf 生成代码、协议字段、资源路径、配置 Key、EventKey、ResourceKey、API 名称、类名、方法名、字段名、命名空间、文件名和仅用于调试的原始数值/路径直出
+* P3.5A 当前状态保持 Manual Verification Required；只有本地 Unity 实机验证完成并确认后，才允许进入 P3.5B
 * FrameworkEntry 接管单个模块时，必须同步消除该模块原有自动初始化与入口初始化并存造成的双重初始化风险
 * ThreadDispatcher、EventManager 与 FSMManager 当前初始化时机不同，迁移时需要分别验证 BeforeSceneLoad 与 AfterSceneLoad 行为兼容性
 * Guide Dispatcher 在接入 FrameworkEntry 前缺少显式初始化、宿主重建、静态清理和退出生命周期接口

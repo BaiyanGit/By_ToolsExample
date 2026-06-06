@@ -108,7 +108,7 @@ namespace _3rdBy.ByFramework.Socket.Scripts
             buffer.WriteShort(length); //Protobuf消息的包体长度
             buffer.WriteShort((ushort)protoId); //协议号
             buffer.WriteBytes(result); //包体数据
-            Debug.Log($"<color=yellow>SendMsg Id:{protoId} length:{length}</color>");
+            Debug.Log($"<color=yellow>[ClientManager] 发送消息 Id:{protoId} 长度:{length}</color>");
             SendMessage(buffer);
         }
 
@@ -145,12 +145,12 @@ namespace _3rdBy.ByFramework.Socket.Scripts
             {
                 var msgParser = ProtoDictionary.GetMessageParser(protoType.TypeHandle);
                 object toc = msgParser.ParseFrom(buff);
-                Debug.Log($"<color=green>Receive Id: {protoId},  Type: {protoType}</color>");
+                Debug.Log($"<color=green>[ClientManager] 接收消息 Id:{protoId}, Type:{protoType}</color>");
                 _msgEvents.Enqueue(new KeyValuePair<Type, object>(protoType, toc)); //消息进入队列，等待广播
             }
             catch
             {
-                Debug.LogError($"DispatchProto Error: {protoType}");
+                Debug.LogError($"[ClientManager] DispatchProto 派发失败：{protoType}");
             }
         }
 

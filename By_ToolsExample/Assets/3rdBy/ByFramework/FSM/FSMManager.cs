@@ -8,46 +8,121 @@ namespace _3rdBy.ByFramework.FSM
     {
         public static FSMManager Instance { get; private set; }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void Init()
+        private static bool _isRegistered;
+        private static bool _isInitialized;
+        private static bool _isStarted;
+
+        internal static void RegisterForFrameworkEntry()
         {
-            if (Instance != null)
+            _isRegistered = true;
+        }
+
+        internal static void InitializeForFrameworkEntry(Transform frameworkRoot)
+        {
+            if (_isInitialized)
             {
                 return;
             }
 
-            var existingManager = FindFirstObjectByType<FSMManager>();
+            if (!_isRegistered)
+            {
+                Debug.LogError("[ByFramework][FSMManager] Initialize 前必须先执行 Register。");
+                return;
+            }
+
+            FSMManager existingManager = FindFirstObjectByType<FSMManager>();
             if (existingManager != null)
             {
                 Instance = existingManager;
                 DontDestroyOnLoad(existingManager.gameObject);
+                _isInitialized = true;
                 return;
             }
 
-            var container = new GameObject("[FSM]");
+            GameObject container = new("[FSM]");
             Instance = container.AddComponent<FSMManager>();
 
-            var parentGo = GameObject.Find("[ByFramework]");
-            if (parentGo != null)
+            if (frameworkRoot != null)
             {
-                container.transform.SetParent(parentGo.transform);
+                container.transform.SetParent(frameworkRoot);
+            }
+            else
+            {
+                DontDestroyOnLoad(container);
             }
 
+            _isInitialized = true;
+        }
 
-            DontDestroyOnLoad(container);
+        internal static void StartForFrameworkEntry()
+        {
+            if (!_isInitialized || _isStarted)
+            {
+                return;
+            }
+
+            if (Instance != null)
+            {
+                Instance.enabled = true;
+            }
+
+            _isStarted = true;
+        }
+
+        internal static void StopForFrameworkEntry()
+        {
+            if (!_isStarted)
+            {
+                return;
+            }
+
+            if (Instance != null)
+            {
+                Instance.enabled = false;
+            }
+
+            _isStarted = false;
+        }
+
+        internal static void ShutdownForFrameworkEntry()
+        {
+            if (!_isInitialized)
+            {
+                _isRegistered = false;
+                return;
+            }
+
+            StopForFrameworkEntry();
+
+            if (Instance != null)
+            {
+                Instance.ClearAllMachines();
+                Instance = null;
+            }
+
+            _isInitialized = false;
+            _isRegistered = false;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStaticState()
         {
+            if (Instance != null)
+            {
+                Instance.ClearAllMachines();
+            }
+
             Instance = null;
+            _isRegistered = false;
+            _isInitialized = false;
+            _isStarted = false;
         }
 
         private void OnDestroy()
         {
             if (Instance == this)
             {
-                Instance = null;
+                ShutdownForFrameworkEntry();
             }
         }
 
@@ -56,6 +131,11 @@ namespace _3rdBy.ByFramework.FSM
 
         private void Update()
         {
+            if (!_isStarted)
+            {
+                return;
+            }
+
             for (int i = 0; i < _machines.Count; i++)
             {
                 //更新状态机
@@ -130,6 +210,16 @@ namespace _3rdBy.ByFramework.FSM
         public T GetMachine<T>(string stateMachineName) where T : StateMachine
         {
             return (T)_machines.Find(m => m.Name == stateMachineName);
+        }
+
+        private void ClearAllMachines()
+        {
+            for (int i = _machines.Count - 1; i >= 0; i--)
+            {
+                _machines[i]?.OnDestroy();
+            }
+
+            _machines.Clear();
         }
     }
 }

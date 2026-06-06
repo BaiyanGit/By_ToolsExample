@@ -126,6 +126,10 @@ P3.4C 已完成 EventManager 窄范围代码接管：FrameworkEntry 在 ThreadDi
 
 P3.4D FSMManager Integration Review 已确认 FSMManager 适合进入 FrameworkEntry 窄范围生命周期编排，但必须处理旧 `AfterSceneLoad` 自动入口、`_machines` 状态机列表、StateMachine 条件委托、当前状态退出和 Shutdown 清理边界。详细审查见 `FSMManagerIntegrationReview.md`。
 
+P3.4E 已完成 FSMManager 窄范围代码接管：FrameworkEntry 在 EventManager 之后编排 FSMManager，并在 Shutdown 时先关闭 FSMManager 再关闭 EventManager 与 ThreadDispatcher。`FSMManager.Instance` 与状态机公开 API 保持兼容，Shutdown 覆盖 `_machines`、StateMachine 当前状态、条件委托、状态委托缓存和静态引用。实施记录见 `FrameworkEntryPhase2AFSMManagerImplementation.md`。
+
+P3.4F FrameworkEntry Phase2A Closure Review 已确认 Phase2A 可以正式关闭。ThreadDispatcher、EventManager 与 FSMManager 已形成稳定 Core Early 生命周期链；后续不得继续向 Phase2A 追加模块。Unity PlayMode 与 Domain Reload 专项验证、Platform Service Registration 最终 Runtime API、P3.5 窄范围实施仍作为后续前置门槛。收口评审见 `FrameworkEntryPhase2AClosureReview.md`。
+
 ### FeatureModule
 
 FeatureModule 是业务模块扩展层，不绑定具体行业。它可用于仿真、培训、数字孪生、机器人项目及其它 Unity 应用。
@@ -140,7 +144,7 @@ SimulationSync、SimulationServer、VehicleSimulation 与其它业务模块必�
 
 * FrameworkEntry 作为统一启动入口。
 * 第一阶段负责创建持久化框架根节点并预留初始化阶段。
-* P3.4A 已窄范围接管 ThreadDispatcher，P3.4C 已窄范围接管 EventManager；其它模块仍必须逐个迁移并独立验证。
+* P3.4A 已窄范围接管 ThreadDispatcher，P3.4C 已窄范围接管 EventManager，P3.4E 已窄范围接管 FSMManager；其它模块仍必须逐个迁移并独立验证。
 * 第二阶段采用渐进式接管策略，FrameworkEntry 作为生命周期编排入口，不强制统一所有模块的单例形式。
 * 第一优先级候选为 ThreadDispatcher、EventManager、FSMManager，必须逐个迁移、验证和保留回滚能力。
 * Guide Dispatcher 与 SoundManager 为第二优先级候选，接入前必须先明确各自生命周期与资源边界。
@@ -148,8 +152,8 @@ SimulationSync、SimulationServer、VehicleSimulation 与其它业务模块必�
 * FrameworkEntry 不应直接依赖场景数据、业务模块或尚未完成生命周期设计的 Platform 模块。
 * FrameworkEntry 未来只通过 Core 可见 `IServiceRegistry` 编排已注册 Platform Service，不扫描程序集、不引用 Platform 类型，也不直接构造 Platform 实现。
 * FrameworkEntry 只驱动 Register、Initialize、Start、Stop 与 Shutdown 阶段；具体 Service 顺序、实例和状态由 Registry 管理。
-* Phase2A 已渐进接管 ThreadDispatcher 与 EventManager，未实现 Registry、未启动 Platform Service，也未顺带接管 FSMManager。
-* P3.4D 已完成 FSMManager 接入评审；P3.4E 仅允许窄范围接管 FSMManager，不接管其它模块、不修改业务状态机逻辑、不引入 Registry。
+* Phase2A 已渐进接管 ThreadDispatcher、EventManager 与 FSMManager，未实现 Registry、未启动 Platform Service，也未接管其它模块。
+* P3.4F 已允许关闭 Phase2A；后续不得继续向 Phase2A 追加模块，任何新模块接管必须重新走 Integration Review 与 Narrow Implementation。
 * 详细设计与迁移门槛见 `FrameworkEntryPhase2Design.md`。
 
 ### FrameworkConfig
@@ -192,9 +196,9 @@ SimulationSync、SimulationServer、VehicleSimulation 与其它业务模块必�
 ### FSM
 
 * FSM 是 Core 层通用状态机基础能力，不内置 Platform 状态模型或具体业务流程。
-* FSMManager 当前通过 `Instance` 提供状态机创建、销毁和查询能力。
-* P3.4D 已确认 FSMManager 适合进入 FrameworkEntry 编排，建议顺序为 ThreadDispatcher、EventManager、FSMManager。
-* FSMManager 接管前必须明确 Stop 停止 Update 驱动，Shutdown 逆序销毁所有 StateMachine 并清理状态、条件和当前状态。
+* FSMManager 当前通过 `Instance` 提供状态机创建、销毁和查询能力，该兼容访问方式在 P3.4E 后继续保留。
+* P3.4E 已将 FSMManager 纳入 FrameworkEntry 编排，顺序为 ThreadDispatcher、EventManager、FSMManager。
+* FSMManager Stop 阶段停止 Update 驱动，Shutdown 逆序销毁所有 StateMachine 并清理状态、条件、当前状态、状态委托缓存和静态引用。
 * FSMManager 不应反向依赖 ThreadDispatcher 或 EventManager；如业务状态需要事件通知，应由业务状态显式调用公开事件 API。
 
 ### Singleton
@@ -507,3 +511,21 @@ P3.3 Runtime 契约确认：
 以上系统均处于长期规划阶段，尚未形成最终 API。
 
 Platform 系统必须独立设计与实施。当前不实现任何 Platform 系统，不开始 ResourceSystem 重构，不引入 Addressables，也不由 FrameworkEntry 接管尚未完成生命周期设计的 Platform 模块。
+
+## Editor UI 与日志语言规范
+
+ByFramework 默认面向中文开发团队。框架文档、Editor UI、验证报告、Console 输出与新增 Runtime 日志均采用中文优先策略。
+
+Editor 工具语言边界：
+
+* `MenuItem`、`EditorWindow` 标题、Button、Label、HelpBox 默认使用中文。
+* Verification Tool、Build Tool、Config Tool 的报告、提示和 Console 输出默认使用中文。
+* 菜单路径优先使用 `ByFramework/工具/xxx`、`ByFramework/验证/xxx`、`ByFramework/配置/xxx`。
+
+Debug 日志语言边界：
+
+* 新增 `Debug.Log`、`Debug.LogWarning`、`Debug.LogError`、`Debug.Assert` 默认使用中文提示。
+* Runtime 面向开发者的日志采用“中文说明 + 英文对象名”。
+* FrameworkEntry、ThreadDispatcher、EventManager、FSMManager、ResourceSystem、ResourceKey、Protobuf、TCP、UDP、WebSocket、AssetBundle、MonoBehaviour、GameObject、ScriptableObject、Resources、AssetDatabase 等稳定技术对象名保留英文。
+
+禁止为了中文化修改 API 名称、类名、方法名、字段名、命名空间、文件名、资源路径、配置 Key、EventKey 或 ResourceKey。Protobuf 生成代码、协议字段、原始路径和原始数值调试输出不纳入批量中文化整改。

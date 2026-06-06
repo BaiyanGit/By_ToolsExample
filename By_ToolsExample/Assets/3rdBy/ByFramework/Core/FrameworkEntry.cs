@@ -64,7 +64,7 @@ namespace _3rdBy.ByFramework.Core
                 return;
             }
 
-            Instance.StartThreadDispatcher();
+            Instance.StartCoreModules();
         }
 
         private void Awake()
@@ -123,7 +123,7 @@ namespace _3rdBy.ByFramework.Core
             Debug.Log("[ByFramework][FrameworkEntry] Scene module initialization phase ready.");
         }
 
-        private void StartThreadDispatcher()
+        private void StartCoreModules()
         {
             DispatcherThread.InitializeForFrameworkEntry(transform);
             DispatcherThread.StartForFrameworkEntry();

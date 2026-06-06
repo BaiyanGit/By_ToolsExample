@@ -38,7 +38,7 @@
 * [x] P2.12 Platform Integration Review
 * [x] P2 阶段统一项目上下文快照
 * [x] FrameworkEntry Phase2A：ThreadDispatcher 渐进接管实现（代码完成，待 Unity 专项验证）
-* [ ] FrameworkEntry Phase2B：EventManager 渐进接管
+* [x] FrameworkEntry Phase2B：EventManager 渐进接管（代码完成，待 Unity 专项验证）
 * [ ] FrameworkEntry Phase2C：FSMManager 渐进接管
 * [ ] FrameworkConfig Phase2 实现
 * [ ] FrameworkConfig 当前字段归属与迁移审计
@@ -163,6 +163,10 @@
 * [x] P3.3 SaveSystem Contract Design
 * [x] P3.4 FrameworkEntry Phase2A Design Review
 * [x] P3.4A FrameworkEntry Phase2A：ThreadDispatcher 窄范围实现（代码完成，待 Unity 专项验证）
+* [x] P3.4B EventManager Integration Review
+* [x] P3.4C EventManager Narrow Implementation（代码完成，待 Unity 专项验证）
+* [x] P3.4D FSMManager Integration Review
+* [ ] P3.4E FSMManager Narrow Implementation
 * [ ] P3.5 InputSystem Implementation
 * [ ] P3.6 UISystem Foundation
 * [ ] FeatureModule 边界规范

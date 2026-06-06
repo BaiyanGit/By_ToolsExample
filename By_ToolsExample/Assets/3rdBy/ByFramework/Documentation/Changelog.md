@@ -169,6 +169,18 @@
 * 保持 ThreadDispatcher 实际 AfterSceneLoad 初始化时点，由 FrameworkEntry 回调触发，以继续支持首场景预放置实例复用
 * 保持 DispatcherThread.Current、QueueOnMainThread 与 RunAsync 公开 API，并由 DispatcherThread 内部继续负责实例复用与创建细节
 * 新增 Documentation/FrameworkEntryPhase2AThreadDispatcherImplementation.md，记录生命周期映射、风险、回滚与 Unity 验证步骤
+* 完成 P3.4B EventManager Integration Review，确认 EventManager 可进入 FrameworkEntry 窄范围生命周期接管
+* 完成 P3.4C EventManager Narrow Implementation，FrameworkEntry 开始在 ThreadDispatcher 之后窄范围编排 EventManager 生命周期
+* 移除 EventManager 原有 AfterSceneLoad 独立自动初始化入口，避免与 FrameworkEntry 形成双重生命周期权威
+* 保留 EventManager.Instance 与 EnsureInstance 兼容 API，EnsureInstance 改为进入同一套内部生命周期入口
+* EventManager Shutdown 新增运行时监听表、声明式事件表、EventTypePool 与 Instance 清理
+* 新增 Documentation/EventManagerIntegrationReview.md，记录当前状态、生命周期映射、依赖关系、风险和 P3.4C 实施边界
+* 新增 Documentation/FrameworkEntryPhase2AEventManagerImplementation.md，记录生命周期映射、双权威处理、Shutdown 清理、风险、回滚与 Unity 验证步骤
+* 完成 P3.4D FSMManager Integration Review，确认 FSMManager 可进入 FrameworkEntry 窄范围生命周期接管评审
+* 明确 FSMManager 当前存在 AfterSceneLoad 自动初始化入口，P3.4E 必须消除双重生命周期权威
+* 明确 FSMManager 接管顺序建议为 ThreadDispatcher、EventManager、FSMManager，销毁顺序严格逆序
+* 明确 FSMManager Shutdown 必须清理状态机列表、StateMachine 状态、条件委托和当前状态，避免 Domain Reload 关闭时状态残留
+* 新增 Documentation/FSMManagerIntegrationReview.md，记录当前状态、生命周期映射、依赖关系、风险和 P3.4E 实施边界
 
 ### 事件系统
 

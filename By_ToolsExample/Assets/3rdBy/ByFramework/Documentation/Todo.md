@@ -9,7 +9,10 @@
 * P3.3 SaveSystem Contract Design 已完成，仅冻结 Runtime 契约，未修改 Runtime、Editor 或 API
 * P3.4 FrameworkEntry Phase2A Design Review 已完成，仅完成最终设计冻结，未修改 Runtime、Editor 或 API
 * P3.4A FrameworkEntry Phase2A：ThreadDispatcher 窄范围实现已完成代码接管，待 Unity 专项验证
-* 下一推荐任务为完成 P3.4A Unity 专项验证并记录结果；验证通过前不接管下一模块
+* P3.4B EventManager Integration Review 已完成，仅完成文档评审，未修改 Runtime、Editor 或 API
+* P3.4C EventManager Narrow Implementation 已完成代码接管，待 Unity 专项验证
+* P3.4D FSMManager Integration Review 已完成，仅完成文档评审，未修改 Runtime、Editor 或 API
+* 下一推荐任务为 P3.4E FSMManager Narrow Implementation，前提是继续保持窄范围并先确认允许修改文件
 * P3 推荐顺序：Platform Service Registration、ResourceSystem Contract、SaveSystem Contract、FrameworkEntry Phase2A、InputSystem Implementation、UISystem Foundation
 
 ## 当前已知技术债
@@ -37,6 +40,16 @@
 * P3.4A 已移除 ThreadDispatcher 原有 AfterSceneLoad 自动初始化入口，由 FrameworkEntry 作为唯一生命周期编排权威
 * P3.4A 保留 DispatcherThread.Current、QueueOnMainThread 与 RunAsync 公开 API；FrameworkEntry 不直接创建 DispatcherThread 实例
 * P3.4A Unity 待验证项包括 Domain Reload 开关、重复进入退出、场景切换、场景预放置实例复用、队列执行和 Shutdown
+* P3.4B 已确认 EventManager 当前存在 AfterSceneLoad 自动初始化入口和 EnsureInstance 兼容创建入口；P3.4C 必须消除双重生命周期权威
+* P3.4C 已移除 EventManager 原有 AfterSceneLoad 独立初始化入口，由 FrameworkEntry 在 ThreadDispatcher 之后编排 EventManager
+* P3.4C 已保留 EventManager.Instance、EnsureInstance、Publish、PublishAsync、PublishClass、AddListener、Broadcast、RemoveListener 公开 API
+* P3.4C 已将 EnsureInstance 调整为兼容路径，进入同一套 Register、Initialize、Start 内部生命周期，不再维护独立创建逻辑
+* P3.4C 已在 Shutdown 中清理 `_runtimeEventTable`、`_allEvents`、`_allEventTypes` 与 `EventTypePool.Instance`
+* P3.4C 待验证项包括 Domain Reload 开关、多次进入退出 Play Mode、场景切换、预放置 EventManager、运行时访问 EventManager.Instance 和 Samples 行为
+* P3.4D 已确认 FSMManager 当前存在 AfterSceneLoad 自动初始化入口；P3.4E 必须消除双重生命周期权威
+* P3.4D 已确认 FSMManager Shutdown 边界必须覆盖 `_machines`、StateMachine states、conditions、CurrentState 和状态委托引用
+* P3.4D 已确认 FSMManager 适合在 ThreadDispatcher 与 EventManager 之后由 FrameworkEntry 编排
+* P3.4D 已确认 FSMManager Stop 阶段必须停止 Update 驱动，避免 Shutdown 期间状态继续 OnStay 或条件切换
 * FrameworkEntry 接管单个模块时，必须同步消除该模块原有自动初始化与入口初始化并存造成的双重初始化风险
 * ThreadDispatcher、EventManager 与 FSMManager 当前初始化时机不同，迁移时需要分别验证 BeforeSceneLoad 与 AfterSceneLoad 行为兼容性
 * Guide Dispatcher 在接入 FrameworkEntry 前缺少显式初始化、宿主重建、静态清理和退出生命周期接口

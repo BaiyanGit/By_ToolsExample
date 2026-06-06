@@ -31,16 +31,10 @@ namespace _3rdBy.ByFramework.EventManager.Core
                 return;
             }
 
-            var container = new GameObject("[Event]");
-            Instance = container.AddComponent<EventManager>();
-            
             var parentGo = GameObject.Find("[ByFramework]");
-            if (parentGo != null)
-            {
-                container.transform.SetParent(parentGo.transform);
-            }
-            Instance.LoadAll();
-            DontDestroyOnLoad(container);
+            RegisterForFrameworkEntry();
+            InitializeForFrameworkEntry(parentGo != null ? parentGo.transform : null);
+            StartForFrameworkEntry();
         }
 
         /// <summary>
@@ -562,6 +556,11 @@ namespace _3rdBy.ByFramework.EventManager.Core
             {
                 invokeAction(callBack);
             }
+        }
+
+        private void ClearRuntimeEventTable()
+        {
+            _runtimeEventTable.Clear();
         }
     }
     

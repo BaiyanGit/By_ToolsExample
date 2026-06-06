@@ -72,5 +72,11 @@ namespace _3rdBy.ByFramework.EventManager.Core
         {
             _pool.Clear();
         }
+
+        internal static void ResetForFrameworkEntry()
+        {
+            Instance.Dispose();
+            Instance = new EventTypePool();
+        }
     }
 }

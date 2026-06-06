@@ -33,23 +33,110 @@ namespace _3rdBy.ByFramework.EventManager.Core
         [Header("声明式事件处理器表，Key 为事件数据类型")]
         private readonly Dictionary<Type, List<object>> _allEvents = new();
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void Init()
-        {
-            EnsureInstance();
-        }
+        private static bool _isRegistered;
+        private static bool _isInitialized;
+        private static bool _isStarted;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStaticState()
         {
             Instance = null;
+            _isRegistered = false;
+            _isInitialized = false;
+            _isStarted = false;
+            EventTypePool.ResetForFrameworkEntry();
+        }
+
+        internal static void RegisterForFrameworkEntry()
+        {
+            _isRegistered = true;
+        }
+
+        internal static void InitializeForFrameworkEntry(Transform frameworkRoot)
+        {
+            if (_isInitialized)
+            {
+                return;
+            }
+
+            if (!_isRegistered)
+            {
+                Debug.LogError("[ByFramework][EventManager] Initialize requires Register.");
+                return;
+            }
+
+            EventManager existing = FindFirstObjectByType<EventManager>();
+            if (existing != null)
+            {
+                Instance = existing;
+                DontDestroyOnLoad(existing.gameObject);
+                Instance.LoadAll();
+                _isInitialized = true;
+                return;
+            }
+
+            GameObject container = new("[Event]");
+            Instance = container.AddComponent<EventManager>();
+
+            if (frameworkRoot != null)
+            {
+                container.transform.SetParent(frameworkRoot);
+            }
+            else
+            {
+                DontDestroyOnLoad(container);
+            }
+
+            Instance.LoadAll();
+            _isInitialized = true;
+        }
+
+        internal static void StartForFrameworkEntry()
+        {
+            if (!_isInitialized || _isStarted)
+            {
+                return;
+            }
+
+            _isStarted = true;
+        }
+
+        internal static void StopForFrameworkEntry()
+        {
+            if (!_isStarted)
+            {
+                return;
+            }
+
+            _isStarted = false;
+        }
+
+        internal static void ShutdownForFrameworkEntry()
+        {
+            if (!_isInitialized)
+            {
+                _isRegistered = false;
+                return;
+            }
+
+            StopForFrameworkEntry();
+
+            if (Instance != null)
+            {
+                Instance.ClearAllEvents();
+                Instance = null;
+            }
+
+            EventTypePool.ResetForFrameworkEntry();
+            _isInitialized = false;
+            _isRegistered = false;
         }
 
         private void OnDestroy()
         {
             if (Instance == this)
             {
-                Instance = null;
+                ShutdownForFrameworkEntry();
             }
         }
 
@@ -69,6 +156,7 @@ namespace _3rdBy.ByFramework.EventManager.Core
 
         private void LoadAll()
         {
+            _allEvents.Clear();
             _allEventTypes = GetAllAttributeTypes();
             foreach (Type type in _allEventTypes)
             {
@@ -83,6 +171,13 @@ namespace _3rdBy.ByFramework.EventManager.Core
                     _allEvents[eventType].Add(iEvent);
                 }
             }
+        }
+
+        private void ClearAllEvents()
+        {
+            _allEventTypes?.Clear();
+            _allEvents.Clear();
+            ClearRuntimeEventTable();
         }
 
         /// <summary>

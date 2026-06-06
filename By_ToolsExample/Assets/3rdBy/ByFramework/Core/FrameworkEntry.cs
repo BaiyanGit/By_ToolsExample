@@ -7,6 +7,7 @@
 
 namespace _3rdBy.ByFramework.Core
 {
+    using _3rdBy.ByFramework.EventManager.Core;
     using _3rdBy.ByFramework.Extension;
     using UnityEngine;
 
@@ -108,6 +109,7 @@ namespace _3rdBy.ByFramework.Core
         private void InitializeCoreModules()
         {
             DispatcherThread.RegisterForFrameworkEntry();
+            EventManager.RegisterForFrameworkEntry();
             Debug.Log("[ByFramework][FrameworkEntry] Core module initialization phase ready.");
         }
 
@@ -125,6 +127,8 @@ namespace _3rdBy.ByFramework.Core
         {
             DispatcherThread.InitializeForFrameworkEntry(transform);
             DispatcherThread.StartForFrameworkEntry();
+            EventManager.InitializeForFrameworkEntry(transform);
+            EventManager.StartForFrameworkEntry();
         }
 
         private void Shutdown()
@@ -135,6 +139,8 @@ namespace _3rdBy.ByFramework.Core
             }
 
             _isShutdown = true;
+            EventManager.StopForFrameworkEntry();
+            EventManager.ShutdownForFrameworkEntry();
             DispatcherThread.StopForFrameworkEntry();
             DispatcherThread.ShutdownForFrameworkEntry();
             Debug.Log("[ByFramework][FrameworkEntry] Shutdown completed.");

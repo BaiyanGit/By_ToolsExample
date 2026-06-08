@@ -1,35 +1,75 @@
 # FrameworkEntry
 
-`FrameworkEntry` 是 ByFramework 的统一启动入口。P3.4A 已完成 ThreadDispatcher 窄范围生命周期接管，其它模块仍保持原有初始化逻辑。
+`FrameworkEntry` 是 ByFramework 的统一启动入口。当前已完成 `ThreadDispatcher`、`EventManager`、`FSMManager` 三个 Core Early 模块的窄范围生命周期接管。
 
 ## 当前职责
 
 * 在场景加载前创建 `[ByFramework]` 根节点
 * 使用 `DontDestroyOnLoad` 保持根节点跨场景存在
 * 防止重复创建 `FrameworkEntry`
-* 在 Core Early 阶段注册 ThreadDispatcher，并在 `AfterSceneLoad` 保持原有时点完成 Initialize 与 Start
-* 预留其它核心模块、服务模块与场景模块初始化阶段
-* 在入口销毁时编排 ThreadDispatcher Stop 与 Shutdown
-* 向 Unity Console 输出初始化日志
+* 在 Core Early 阶段编排 `ThreadDispatcher`、`EventManager`、`FSMManager`
+* 为后续 Platform Service Registration 保留统一生命周期入口
 
-## 初始化阶段
+## 当前冻结生命周期链
 
-FrameworkEntry 当前按以下顺序调用初始化阶段：
+初始化顺序：
 
-1. `InitializeCoreModules`
-2. `InitializeServiceModules`
-3. `InitializeSceneModules`
+```text
+ThreadDispatcher -> EventManager -> FSMManager
+```
 
-`InitializeCoreModules` 当前只编排 ThreadDispatcher 的 Register；FrameworkEntry 的 `AfterSceneLoad` 回调继续编排其 Initialize 与 Start。其它阶段仍仅作为后续模块逐步接入的位置。
+Shutdown 顺序：
 
-## 当前未接管模块
+```text
+FSMManager -> EventManager -> ThreadDispatcher
+```
 
-EventManager、FSMManager、UIRoot、SoundManager、Guide、Network 与 Socket 仍保持原有初始化方式和行为。
+生命周期阶段：
 
-## Unity 验证
+```text
+Register -> Initialize -> Start -> Stop -> Shutdown
+```
 
-进入 Play Mode 后，在 Hierarchy 中应只存在一个 `[ByFramework]` 根节点和一个 ThreadDispatcher 实例，并且切换场景后不会重复创建。无预放置实例时，自动创建节点名为 `[DspThread]`。
+## 兼容性原则
 
-Unity Console 应按顺序输出 FrameworkEntry 初始化开始、三个初始化阶段就绪和初始化完成日志。
+* `FrameworkEntry` 是当前 Core Early 生命周期的唯一编排权威
+* `DispatcherThread.Current`
+* `EventManager.Instance`
+* `EventManager.EnsureInstance()`
+* `FSMManager.Instance`
 
-完整 P3.4A 生命周期映射、风险、回滚与验证步骤见 `Documentation/FrameworkEntryPhase2AThreadDispatcherImplementation.md`。
+以上访问方式仅保留为兼容入口，不再独立拥有生命周期权威。
+
+## 当前未接管范围
+
+以下模块仍不在本阶段接管范围内：
+
+* Guide Dispatcher
+* SoundManager
+* UIRoot / UIManager
+* ResourceSystem
+* SaveSystem
+* InputSystem
+* LocalizationSystem
+* DisplaySystem
+* LicenseSystem
+* NetworkSystem
+
+## Unity 验证结论
+
+项目维护者已在本地 Unity 完成 P3.5A Core Early Lifecycle Unity Verification，结论如下：
+
+```text
+FrameworkEntry = 1
+ThreadDispatcher = 1
+EventManager = 1
+FSMManager = 1
+```
+
+并已确认：
+
+* 静态访问正常
+* 重复实例检查正常
+* Core 生命周期链验证通过
+
+详细记录见 `Documentation/18_CoreEarlyLifecycleUnityVerification.md`。

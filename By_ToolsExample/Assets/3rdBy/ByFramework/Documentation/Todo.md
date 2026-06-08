@@ -14,9 +14,11 @@
 * P3.4D FSMManager Integration Review 已完成，仅完成文档评审，未修改 Runtime、Editor 或 API
 * P3.4E FSMManager Narrow Implementation 已完成代码接管，待 Unity 专项验证
 * P3.4F FrameworkEntry Phase2A Closure Review 已完成，仅更新文档；Phase2A 允许正式关闭
-* P3.5A Core Early Lifecycle Unity Verification 已完成静态检查、Unity batchmode 启动尝试与 Editor 验证窗口补充，但受 Unity License 阻塞，状态保持 Manual Verification Required
-* 下一推荐任务仍为本地手动完成 P3.5A Unity 实机验证，不建议进入 P3.5B
-* P3 推荐顺序：Platform Service Registration、ResourceSystem Contract、SaveSystem Contract、FrameworkEntry Phase2A、InputSystem Implementation、UISystem Foundation
+* P3.5A Core Early Lifecycle Unity Verification 已由项目维护者完成本地 Unity 实机验证，结果通过
+* P3.5B Platform Service Registration Runtime API Freeze 已完成，当前已冻结 Runtime API 与注册贡献入口设计
+* P3.6 InputSystem Foundation 已完成 Foundation 冻结，当前未进入 Runtime Implementation
+* 下一推荐任务为 P3.7 UISystem Foundation
+* P3 推荐顺序：Platform Service Registration、ResourceSystem Contract、SaveSystem Contract、FrameworkEntry Phase2A、Platform Service Registration Runtime API Freeze、InputSystem Foundation、UISystem Foundation
 
 ## 当前已知技术债
 
@@ -65,14 +67,15 @@
 * P3.5A 静态检查确认 ThreadDispatcher、EventManager 与 FSMManager 不再保留独立 AfterSceneLoad Init 自动入口
 * P3.5A 静态检查确认 FrameworkEntry 生命周期顺序仍为 ThreadDispatcher -> EventManager -> FSMManager，Shutdown 仍为 FSMManager -> EventManager -> ThreadDispatcher
 * P3.5A 静态扫描未在 ByFramework 自身场景、Prefab 或 Asset 中发现预放置 Core Early 实例
-* P3.5A Unity batchmode 被本机 Unity Editor License 阻塞，日志显示 `No valid Unity Editor license found`
-* P3.5A 未完成 PlayMode 单次/多次进入退出、Domain Reload 开关、场景切换、预放置实例和 Shutdown 清理实机验证
-* P3.5A 新增 Editor-only 验证窗口 `ByFramework/验证/Core Early 生命周期验证`，用于手动检查 Core Early 对象数量、重复实例、静态访问状态与预放置实例
+* P3.5A 早期批处理验证曾受 Unity Editor License 影响，但该阻塞已由项目维护者本地实机验证关闭
+* P3.5A 已确认 FrameworkEntry、ThreadDispatcher、EventManager、FSMManager 单实例状态分别为 1
+* P3.5A 已确认静态访问正常、重复实例检查正常、Core 生命周期链验证通过
+* P3.5A 新增的 Editor-only 验证窗口 `ByFramework/验证/Core Early 生命周期验证` 继续保留，用于后续回归验证
 * ByFramework 后续所有 Editor 工具默认中文优先，MenuItem、EditorWindow 标题、Button、Label、HelpBox、Validation Report 与 Console Log 均应面向国内开发、实施和测试人员
 * ByFramework 后续所有新增日志默认中文优先，Runtime 日志采用“中文说明 + 英文对象名”，技术对象名如 EventManager、FSMManager、ThreadDispatcher、ResourceKey、Protobuf、TCP、UDP 保留英文
 * ByFramework 中文化规范整改已完成第一轮安全扫描与文案整改，覆盖 FrameworkEntry、ThreadDispatcher、EventManager、FSMManager、Core Early 验证窗口、UI 自动生成器、网络/下载日志、Socket/Guide/RedPoint/UILineRenderer 明显英文输出
 * 中文化暂缓范围包括 Protobuf 生成代码、协议字段、资源路径、配置 Key、EventKey、ResourceKey、API 名称、类名、方法名、字段名、命名空间、文件名和仅用于调试的原始数值/路径直出
-* P3.5A 当前状态保持 Manual Verification Required；只有本地 Unity 实机验证完成并确认后，才允许进入 P3.5B
+* P3.5A 当前状态已关闭，P3.5B 已完成，后续不再保留 Manual Verification Required / Not allowed yet 状态
 * FrameworkEntry 接管单个模块时，必须同步消除该模块原有自动初始化与入口初始化并存造成的双重初始化风险
 * ThreadDispatcher、EventManager 与 FSMManager 当前初始化时机不同，迁移时需要分别验证 BeforeSceneLoad 与 AfterSceneLoad 行为兼容性
 * Guide Dispatcher 在接入 FrameworkEntry 前缺少显式初始化、宿主重建、静态清理和退出生命周期接口
@@ -95,10 +98,10 @@
 * UILayerSystem 需要继续定义 Background、Normal、Popup、Overlay、Debug 的展示顺序、输入阻断和多显示目标规则
 * UIThemeSystem 需要继续定义 Theme Token、资源覆盖、语言字体回退与运行时刷新契约
 * 当前 UIRoot、UIManager、UIAutoCreate、UGUI Navigation、Resources 加载和业务窗口属于未来独立迁移审计范围，禁止一次性 UI 重构
-* InputSystem Design 已完成总体架构与作用域标识原则，但 InputAction 标识格式、别名迁移、值类型、事件阶段和最终 API 尚未详细设计或实现
-* InputContext 已明确所有权与生命周期原则，但优先级、独占、透传、消费、冲突确定性与异常恢复规则仍需要独立详细设计
-* InputProfile 的默认、项目、FeatureModule 与用户覆盖合并规则，以及冲突诊断和版本迁移策略尚未设计
-* InputDevice Adapter 需要隔离键盘、鼠标、手柄、VR 控制器、硬件按钮、工业控制面板和自定义外部设备协议差异
+* P3.6 已冻结 InputAction 标识格式、别名迁移、InputValueKind、InputStage 与后续 Runtime API 设计边界
+* P3.6 已冻结 InputContext 的所有权、生命周期、优先级、独占、透传、消费、冲突确定性与恢复规则
+* P3.6 已冻结 InputProfile 的 Framework Default、Project、FeatureModule、User Override 分层与合并策略
+* P3.6 已冻结 InputDevice / InputAdapter Foundation 边界，覆盖键盘、鼠标、手柄、VR 控制器、硬件按钮、工业控制面板与自定义外部设备
 * IndustrialControlPanel 需要以复合设备能力建模，不能仅退化为无语义 HardwareButton 通道集合
 * 框架不得定义具体业务键位；VehicleSimulationInputProfile 等业务输入配置必须归属对应 FeatureModule
 * 当前 Guide、Extension、UI 与 Samples 中仍存在 `Input.GetAxis`、`Input.GetMouseButton`、`Input.GetKeyDown`、`KeyCode` 和 `StandaloneInputModule` 等直接输入依赖，后续需要独立迁移审计
@@ -167,7 +170,7 @@
 * P3.4 已确定 Registry 是已注册 Service 的唯一生命周期权威；Singleton 只能作为迁移期兼容访问方式
 * Service Registry 不是 Service Locator、FrameworkConfig、EventManager 或业务状态容器
 * Service Registry 与现有 Singleton 必须保持单一生命周期权威；现有自动初始化模块接入前必须消除双重初始化路径
-* 继续设计 Platform Service Registration 最终 API、异步、取消、结果类型、Runtime 注册贡献入口、应用组合层和 Scoped Registry
+* 已完成 Platform Service Registration 最终 API、异步、取消、结果类型、Runtime 注册贡献入口、应用组合层和 Scoped Registry 冻结设计
 * 实现 Core、Platform、FeatureModule 依赖方向架构守卫和跨系统契约测试模板
 * 实现前审计 FrameworkConfig 当前字段与 Platform 强类型引用风险
 * ResourceSystem Runtime 契约已在 P3.2 冻结，SaveSystem Runtime 契约已在 P3.3 冻结
@@ -197,7 +200,7 @@
 * 当前 JSaver、PlayerPrefs、文件读写、配置资源与模块专属持久化代码属于未来独立迁移审计范围
 * P3.4 实施准备度审查确认：ResourceSystem 与 SaveSystem 只可进入最终 API / 实现设计，尚不可直接进入 Runtime 实现
 * P3.4 实施准备度审查确认：InputSystem、LocalizationSystem、DisplaySystem、NetworkSystem 与 LicenseSystem 尚未准备进入 Runtime 实现
-* P3.5 InputSystem Implementation 前必须先完成 Phase2A ThreadDispatcher 实施、Service Registration 最终 API 与 Runtime 注册入口、架构守卫、InputSystem 最终契约和 SaveSystem 具体持久化契约
+* P3.6 InputSystem Foundation 已完成：前置条件已满足且 Foundation 契约已冻结；后续应进入 P3.7 UISystem Foundation，而不是直接进入 InputSystem Implementation
 * 多联屏现场校准、用户 InputBinding、授权状态等机器或用户特定数据需要独立持久化方案，不应写入 FrameworkConfig
 * 多联屏、融屏、投影和工业显示现场校准必须作为机器覆盖持久化，不能写入 FrameworkConfig 或通用 Project DisplayProfile
 * SaveSystem 必须为用户 InputBinding、用户语言偏好、显示偏好与机器校准提供不同 SubjectScope，禁止互相覆盖
@@ -253,3 +256,5 @@
 * 当前模块尚未实现统一服务注册机制；后续实现必须遵守 P3.1 已确定的可替换接口注册与生命周期边界
 * Platform 子系统后续实现时需要持续审计循环依赖、直接构造其它模块实现和 FeatureModule 反向污染风险
 * InputSystem 后续实现必须保持对 UISystem、DisplaySystem、LocalizationSystem 与 FeatureModule 具体实现零依赖
+
+* FrameworkConfig 当前仍存在早期 `Core/Config/FrameworkConfig.cs`、`FrameworkConfigProvider.cs` 与 `Resources/FrameworkConfig.asset` 兼容代码；后续不得继续扩展为万能配置中心，需要在 Platform/FrameworkConfig 阶段迁移为 EditorConfig、RuntimeConfig、ExternalConfig 与 RuntimeConfigUI 体系。

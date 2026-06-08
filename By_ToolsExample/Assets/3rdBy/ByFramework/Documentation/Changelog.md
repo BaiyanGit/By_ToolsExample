@@ -1,3 +1,12 @@
+
+## 2026-06-08 架构文档补充
+
+* 补充 NetworkCore 独立性原则，明确 NetworkCore 必须保持纯 C#、低依赖、可独立抽离。
+* 明确 NetworkSystem Adapter 才负责接入 PlatformServiceRegistry、FrameworkConfig、ThreadDispatcher 与 EventManager。
+* 明确当前旧 Socket 与 Http/DownLoad 代码仅作为迁移参考，不得直接视为最终 NetworkCore 实现。
+* 补充 FrameworkConfig 外部配置、StreamingAssets、PersistentDataPath 与 RuntimeConfigUI 边界。
+* 补充 AssetBundle 与 ResourceSystem、Downloader、BuildProfileSystem 的归属关系。
+
 # ByFramework Changelog
 
 ## 2026-06
@@ -204,6 +213,14 @@
 * 完成 ByFramework 中文化规范第一轮安全整改，中文化 FrameworkEntry、ThreadDispatcher、EventManager、FSMManager、Core Early 验证窗口、UI 自动生成器、网络/下载、Socket、Guide、RedPoint 与 UILineRenderer 的明显英文提示
 * 补充 Editor UI Language Convention 与 Debug Log Language Convention，明确不得为了中文化修改 API、路径、Key、Protobuf 生成代码或协议字段
 * 新增 Documentation/CoreEarlyLifecycleUnityVerification.md，记录验证场景、已执行结果、阻塞问题、修复建议和 P3.5B 前置条件
+* 项目维护者已完成 P3.5A 本地 Unity 实机验证，确认 FrameworkEntry、ThreadDispatcher、EventManager、FSMManager 单实例状态均为 1，静态访问正常，重复实例检查正常，Core 生命周期链验证通过
+* 关闭 P3.5A `Manual Verification Required` 与 `P3.5B Not allowed yet` 过期状态，允许直接进入并完成 P3.5B Platform Service Registration Runtime API Freeze
+* 新增 Documentation/PlatformServiceRegistrationRuntimeAPIFreeze.md，冻结 Platform Service Registration 的 Runtime API、注册贡献入口、Scoped Registry 边界、异步/取消与错误聚合规则
+* 更新 Documentation/ByFramework_Current_Context.md、Roadmap.md、Todo.md、Architecture.md、FrameworkEntryPhase2AClosureReview.md 与 Core/README.md，同步当前真实阶段状态
+* 明确 P3.5B 完成后下一阶段为 P3.6 InputSystem Foundation，而不是 InputSystem Implementation 或 UISystem Foundation
+* 完成 P3.6 InputSystem Foundation，冻结 InputAction 标识格式、Alias / Migration、InputValueKind、InputStage、InputContext 规则、InputProfile 分层合并策略与 InputDevice / InputAdapter Foundation 边界
+* 新增 Documentation/InputSystemFoundation.md，记录 P3.6 Foundation 冻结范围、跨系统边界、非目标与后续实现前置条件
+* 更新 Documentation/ByFramework_Current_Context.md、Roadmap.md、Todo.md 与 Architecture.md，同步 P3.6 已完成、下一阶段为 P3.7 UISystem Foundation，且当前仍未进入 InputSystem Implementation
 
 ### 事件系统
 

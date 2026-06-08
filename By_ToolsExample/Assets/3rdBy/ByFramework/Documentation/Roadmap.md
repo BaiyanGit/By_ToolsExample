@@ -48,8 +48,8 @@
 * [x] Platform 服务注册、接口发现、生命周期与错误模型设计
 * [x] Core、Platform、FeatureModule 依赖方向架构守卫设计
 * [x] FrameworkConfig Core / Platform 强类型依赖风险设计处理
-* [ ] Platform Service Registration 最终 API、异步、取消与结果类型设计
-* [ ] Platform Service Registration Runtime 注册贡献入口与应用组合层设计
+* [x] Platform Service Registration 最终 API、异步、取消与结果类型设计
+* [x] Platform Service Registration Runtime 注册贡献入口与应用组合层设计
 * [ ] Platform Service Registration 实现与 FrameworkEntry 编排接入
 * [x] FrameworkEntry Phase2A Design Review
 * [x] Platform Service Register、Initialize、Start、Stop、Shutdown 阶段设计冻结
@@ -105,10 +105,10 @@
 * [ ] SaveMigration Registry、迁移链验证与幂等实现设计
 * [ ] 平台安全存储与 LicenseSystem 敏感数据边界设计
 * [ ] 现有存储系统迁移审计
-* [ ] InputAction 标识、别名迁移与值类型详细设计
-* [ ] InputContext 优先级、消费、所有权与恢复规则详细设计
-* [ ] InputProfile 合并与版本策略设计
-* [ ] InputDevice Adapter 接口设计
+* [x] InputAction 标识、别名迁移与值类型详细设计
+* [x] InputContext 优先级、消费、所有权与恢复规则详细设计
+* [x] InputProfile 合并与版本策略设计
+* [x] InputDevice Adapter 接口设计
 * [ ] 现有直接输入调用迁移审计
 * [ ] DisplayMode 可组合模型详细设计
 * [ ] DisplayProfile 合并与机器校准覆盖详细设计
@@ -168,11 +168,11 @@
 * [x] P3.4D FSMManager Integration Review
 * [x] P3.4E FSMManager Narrow Implementation（代码完成，待 Unity 专项验证）
 * [x] P3.4F FrameworkEntry Phase2A Closure Review
-* [ ] P3.5A Core Early Lifecycle Unity Verification（Manual Verification Required，受 Unity License 阻塞）
+* [x] P3.5A Core Early Lifecycle Unity Verification
 * [x] ByFramework 中文化规范整改（Editor UI、验证工具、Debug 日志与 Console 输出安全文案整改）
-* [ ] P3.5B Platform Service Registration Runtime API Freeze
-* [ ] P3.5 InputSystem Implementation
-* [ ] P3.6 UISystem Foundation
+* [x] P3.5B Platform Service Registration Runtime API Freeze
+* [x] P3.6 InputSystem Foundation
+* [ ] P3.7 UISystem Foundation
 * [ ] FeatureModule 边界规范
 * [ ] FeatureModule 注册、配置、资源、存储、协议与卸载规范
 * [ ] SimulationSync 独立模块设计

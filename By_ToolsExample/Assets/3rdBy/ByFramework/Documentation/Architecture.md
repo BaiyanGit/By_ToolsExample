@@ -112,6 +112,10 @@ P2.12 Platform Integration Review 已确认 Platform 总体设计依赖方向成
 
 P3.1 Platform Service Registration Design 已冻结服务组合方向：`IService`、`IServiceRegistry`、`ServiceDescriptor`、`ServiceLifetime` 与 `ServiceContext` 的中立契约归属 Core；Platform、FeatureModule 与应用组合层显式提交 Descriptor、Factory 和实现。FrameworkEntry 只编排 Core 可见 Registry，不扫描、不引用或直接构造 Platform 类型。详细设计见 `PlatformServiceRegistrationDesign.md`。
 
+P3.5B Platform Service Registration Runtime API Freeze 已进一步冻结 `IServiceRegistrationProvider`、`ServiceDependency`、`ServiceStage`、`ServiceResult`、`ServiceBatchResult`、Scoped Registry 边界，以及异步、取消、错误聚合与 Runtime 注册贡献入口规则。详细设计见 `PlatformServiceRegistrationRuntimeAPIFreeze.md`。
+
+P3.6 InputSystem Foundation 已进一步冻结 `InputAction` 标识格式、Alias / Migration、`InputValueKind`、`InputStage`、`InputContext` 生命周期与消费规则、`InputProfile` 分层合并策略，以及 `InputDevice / InputAdapter` Foundation 边界。详细设计见 `InputSystemFoundation.md`。
+
 P3.2 ResourceSystem Runtime Contract Design 已冻结 `IResourceService`、`IResourceProvider`、`IResourceCatalog`、`IResourceHandle`、`ResourceRequest` 与 `ResourceResult` 的 Runtime 边界。ResourceKey 与路径、文件名和 Provider 解耦；Catalog 使用不可变版本化 Snapshot；每个成功消费者获得独立 Handle，底层资源可以共享；Runtime 禁止依赖 AssetDatabase 或 Editor。详细设计见 `ResourceSystemContractDesign.md`。
 
 P3.3 SaveSystem Runtime Contract Design 已冻结 `ISaveService`、`ISaveProvider`、`SaveScope`、`SaveProfile`、`SaveEntry`、`SaveTransaction` 与 `SaveMigration` 的 Runtime 边界。Scope 使用 Owner 与 Subject 组合隔离；Profile 是不可变策略 Snapshot；事务原子性只在单一 Provider 明确能力边界内保证；迁移失败不得覆盖最后一个可恢复版本。详细设计见 `SaveSystemContractDesign.md`。
@@ -128,7 +132,9 @@ P3.4D FSMManager Integration Review 已确认 FSMManager 适合进入 FrameworkE
 
 P3.4E 已完成 FSMManager 窄范围代码接管：FrameworkEntry 在 EventManager 之后编排 FSMManager，并在 Shutdown 时先关闭 FSMManager 再关闭 EventManager 与 ThreadDispatcher。`FSMManager.Instance` 与状态机公开 API 保持兼容，Shutdown 覆盖 `_machines`、StateMachine 当前状态、条件委托、状态委托缓存和静态引用。实施记录见 `FrameworkEntryPhase2AFSMManagerImplementation.md`。
 
-P3.4F FrameworkEntry Phase2A Closure Review 已确认 Phase2A 可以正式关闭。ThreadDispatcher、EventManager 与 FSMManager 已形成稳定 Core Early 生命周期链；后续不得继续向 Phase2A 追加模块。Unity PlayMode 与 Domain Reload 专项验证、Platform Service Registration 最终 Runtime API、P3.5 窄范围实施仍作为后续前置门槛。收口评审见 `FrameworkEntryPhase2AClosureReview.md`。
+P3.4F FrameworkEntry Phase2A Closure Review 已确认 Phase2A 可以正式关闭。ThreadDispatcher、EventManager 与 FSMManager 已形成稳定 Core Early 生命周期链；后续不得继续向 Phase2A 追加模块。收口评审见 `FrameworkEntryPhase2AClosureReview.md`。
+
+P3.5A Core Early Lifecycle Unity Verification 已由项目维护者完成本地 Unity 实机验证，已确认 `FrameworkEntry = 1`、`ThreadDispatcher = 1`、`EventManager = 1`、`FSMManager = 1`，静态访问正常、重复实例检查正常、Core 生命周期链验证通过。
 
 ### FeatureModule
 
@@ -180,7 +186,7 @@ SimulationSync、SimulationServer、VehicleSimulation 与其它业务模块必�
 * 对已注册 Service，Registry 是唯一生命周期权威；Singleton 只能作为迁移期兼容访问方式，不得创建、启动或销毁 Service。
 * Service 生命周期为 Register、Initialize、Start、Stop、Shutdown；依赖图决定 Initialize 与 Start 顺序，手工优先级只用于无依赖同层稳定排序。
 * Stop 严格逆实际 Start 顺序，Shutdown 严格逆实际创建或 Initialize 顺序；异常隔离并聚合，允许有界异步排空，禁止 Shutdown 完成后的后台释放。
-* 详细设计见 `PlatformServiceRegistrationDesign.md`。当前阶段不实现 Registry 或接入任何 Platform Service。
+* 详细设计见 `PlatformServiceRegistrationDesign.md` 与 `PlatformServiceRegistrationRuntimeAPIFreeze.md`。当前阶段完成的是 Runtime API 冻结，不等于已实现完整 Registry 或已接入 Platform Service。
 
 ### EventManager
 
@@ -529,3 +535,412 @@ Debug 日志语言边界：
 * FrameworkEntry、ThreadDispatcher、EventManager、FSMManager、ResourceSystem、ResourceKey、Protobuf、TCP、UDP、WebSocket、AssetBundle、MonoBehaviour、GameObject、ScriptableObject、Resources、AssetDatabase 等稳定技术对象名保留英文。
 
 禁止为了中文化修改 API 名称、类名、方法名、字段名、命名空间、文件名、资源路径、配置 Key、EventKey 或 ResourceKey。Protobuf 生成代码、协议字段、原始路径和原始数值调试输出不纳入批量中文化整改。
+
+
+## 当前补充架构约束（2026-06）
+
+本节用于补齐当前阶段已经确认但旧版 Architecture 文档未完整展开的架构边界。后续 Codex 或其它自动化协作者必须以本节作为当前阶段约束。
+
+### Platform 当前主模块
+
+Platform 当前以以下模块作为长期基线：
+
+```text
+Platform
+├─ PlatformServiceRegistry
+├─ FrameworkConfig
+├─ InputSystem
+├─ UISystem
+├─ UIThemeSystem
+├─ DisplaySystem
+├─ LocalizationSystem
+├─ ResourceSystem
+├─ SaveSystem
+├─ BuildProfileSystem
+├─ LicenseSystem
+└─ NetworkSystem
+```
+
+说明：
+
+* `UIThemeSystem` 是 `UISystem` 的主题子系统，可在目录上独立成模块，但归属仍是 UI 表现能力。
+* `AssetBundle` 归属 `ResourceSystem`。
+* `Http` 与 `LargeFileDownloader` 归属 `NetworkSystem`。
+* `DOF` 暂时不进入主架构，未来如需要，归入硬件接入相关模块或 DeviceIntegration 方向。
+* `RuntimeConfigUI` 属于 `FrameworkConfig` 的运行时配置消费边界，不进入 Core 生命周期链。
+
+### FrameworkConfig 配置体系
+
+FrameworkConfig 不再只是 Resources 下的单个 ScriptableObject。最终应支持：
+
+```text
+Editor 配置
+Runtime 配置
+外部配置
+现场配置工具
+```
+
+配置来源建议分层：
+
+```text
+默认内置配置
+↓
+Editor 生成配置
+↓
+StreamingAssets 外部部署配置
+↓
+PersistentDataPath 现场用户配置
+↓
+命令行参数
+```
+
+优先级：
+
+```text
+命令行参数 > PersistentDataPath 现场配置 > StreamingAssets 部署配置 > Editor 生成配置 > 默认内置配置
+```
+
+职责包括：
+
+```text
+框架配置
+Platform 模块配置
+运行时配置
+现场部署配置
+配置校验
+配置合并
+配置导入导出
+配置热重载
+```
+
+FrameworkConfig 允许提供：
+
+```text
+EditorWindow 配置
+ScriptableObject 默认配置
+StreamingAssets 外部 JSON / INI / XML 配置
+PersistentDataPath 现场修改配置
+RuntimeConfigUI 可视化配置界面
+```
+
+FrameworkConfig 不允许重新退化为万能配置中心。它不得保存：
+
+```text
+ServiceDescriptor
+Factory
+运行时已解析服务实例
+Platform 强类型实现对象
+业务运行状态
+资源清单实体
+用户业务数据
+授权运行状态
+```
+
+现场配置界面只负责配置项查看、编辑、校验、保存、导入、导出和恢复默认。具体功能执行仍由对应 Platform 模块负责。
+
+
+### 当前旧 FrameworkConfig 代码处理原则
+
+当前仓库中存在：
+
+```text
+Core/Config/FrameworkConfig.cs
+Core/Config/FrameworkConfigProvider.cs
+Core/Config/Resources/FrameworkConfig.asset
+```
+
+这些属于早期 P0 / P1 阶段保留的兼容配置基础设施，不代表 FrameworkConfig 的最终架构归属。
+
+最终架构中：
+
+```text
+FrameworkConfig 属于 Platform 通用能力
+Core 不应长期持有 Platform 强类型配置
+Core 不应直接承载 UI、Network、Download 等 Platform 配置字段
+```
+
+因此后续实现时必须遵守：
+
+```text
+不要继续扩展 Core/Config/FrameworkConfig.cs 作为万能配置中心
+不要向 Core/Config/FrameworkConfig.cs 增加新的 Platform 强类型配置字段
+不要把 ServiceDescriptor、Factory、Provider、业务状态或运行时服务实例写入 FrameworkConfig
+不要让 Core 通过 FrameworkConfig 反向理解 Platform 模块
+```
+
+当前旧代码允许作为迁移期兼容入口继续存在，但新增配置体系应逐步收敛到：
+
+```text
+Platform/FrameworkConfig
+├─ EditorConfig
+├─ RuntimeConfig
+├─ ExternalConfig
+└─ RuntimeConfigUI
+```
+
+迁移策略：
+
+```text
+短期：保留旧 Core/Config 代码，避免破坏现有项目
+中期：新增 Platform/FrameworkConfig 配置加载、合并、校验与外部配置能力
+长期：Core/Config 只保留极少量 Core 中立启动配置，或完全迁移为兼容适配层
+```
+
+Codex 不得以当前 `Core/Config/FrameworkConfig.cs` 的位置和字段作为后续架构实现模板。
+
+### ResourceSystem 与 AssetBundle
+
+AssetBundle 是 ResourceSystem 的重要资源来源。ResourceSystem 负责统一资源访问，AssetBundle 子系统负责 AB 的打包与加载闭环。
+
+Runtime 位置建议：
+
+```text
+Platform/ResourceSystem/Runtime/AssetBundle
+```
+
+Runtime 职责：
+
+```text
+加载本地 AssetBundle
+加载远程缓存 AssetBundle
+异步加载 AssetBundle
+加载 AssetBundle 内资源
+加载依赖包
+卸载 AssetBundle
+引用计数
+Manifest 查询
+Hash 校验
+版本校验
+加载失败回调
+```
+
+Editor 位置建议：
+
+```text
+Platform/ResourceSystem/Editor/AssetBundle
+```
+
+Editor 职责：
+
+```text
+AssetBundle 标记工具
+AssetBundle 打包工具
+AssetBundle 构建配置
+AssetBundle Manifest 生成
+AssetBundle Hash 生成
+AssetBundle 依赖分析
+AssetBundle 清理工具
+AssetBundle 构建报告
+```
+
+AssetBundle 与 Downloader 的关系：
+
+```text
+ResourceSystem
+↓
+AssetBundleProvider
+↓
+需要远程 AB
+↓
+NetworkSystem.Http.LargeFileDownloader
+↓
+下载到本地缓存
+↓
+AssetBundleProvider 加载本地缓存
+```
+
+Downloader 负责下载文件。AssetBundleProvider 负责加载 AB。ResourceSystem 负责统一访问。三者不得混为一个模块。
+
+### NetworkSystem 与 NetworkCore 独立性原则
+
+NetworkSystem 是统一网络平台，但其网络通信核心必须保持可独立抽离。
+
+NetworkSystem 内部应明确拆分为：
+
+```text
+NetworkCore
+NetworkSystem Adapter
+```
+
+其中：
+
+```text
+NetworkCore 是纯 C# 网络核心库
+NetworkSystem Adapter 是 ByFramework 的适配层
+```
+
+NetworkCore 应可脱离 ByFramework 单独使用，适用于：
+
+```text
+其它 Unity 项目
+WPF 项目
+WinForm 项目
+Console 工具
+ASP.NET 工具
+独立服务器程序
+设备调试工具
+```
+
+NetworkCore 可以包含：
+
+```text
+TCP
+UDP
+WebSocket
+HTTP
+Client
+Server
+Session
+Protocol
+Serialization
+Connectivity
+Downloader
+```
+
+NetworkCore 只允许依赖：
+
+```text
+System
+System.IO
+System.Net
+System.Net.Sockets
+System.Threading
+System.Threading.Tasks
+System.Collections.Generic
+基础序列化接口
+基础日志接口
+```
+
+基础日志接口必须是抽象接口，不能直接依赖 ByFramework 的 Log 或 Unity 的 Debug.Log。
+
+NetworkCore 禁止依赖：
+
+```text
+FrameworkEntry
+PlatformServiceRegistry
+FrameworkConfig
+ThreadDispatcher
+EventManager
+FSMManager
+ResourceSystem
+SaveSystem
+UISystem
+UnityEngine
+MonoBehaviour
+ScriptableObject
+GameObject
+Scene
+Unity 协程
+```
+
+正确依赖关系：
+
+```text
+NetworkCore
+        ↑
+NetworkSystem Adapter
+        ↑
+PlatformServiceRegistry / FrameworkConfig / ThreadDispatcher / EventManager
+        ↑
+FeatureModule
+```
+
+也就是：
+
+```text
+ByFramework 依赖 NetworkCore
+NetworkCore 不依赖 ByFramework
+```
+
+NetworkSystem Adapter 位于：
+
+```text
+Platform/NetworkSystem
+```
+
+Adapter 职责：
+
+```text
+读取 FrameworkConfig 中的网络配置
+注册 INetworkService 到 PlatformServiceRegistry
+把 NetworkCore 的回调派发到 ThreadDispatcher
+把连接事件转换为 EventManager 事件
+统一参与 Platform 生命周期
+向 FeatureModule 暴露框架侧网络服务接口
+```
+
+Socket 通信部分应优先保持可抽离。Socket 核心只负责：
+
+```text
+连接
+监听
+断开
+发送
+接收
+心跳
+重连
+会话
+协议头
+消息包
+序列化
+反序列化
+```
+
+Socket 核心不理解：
+
+```text
+车辆同步
+机械臂同步
+训练数据
+场景状态
+业务状态
+```
+
+业务消息由 FeatureModule 解释，NetworkCore 只负责传输。
+
+### 当前旧 Socket / Http / Downloader 代码处理原则
+
+当前仓库中已有 `Socket` 与 `Http/DownLoad` 代码可作为迁移参考，但不能直接视为最终 NetworkCore 实现。
+
+原因：
+
+```text
+当前 Socket 代码仍依赖 UnityEngine、MonoBehaviour、MonoSingletonTemplate、Debug.Log 和示例协议
+当前 Downloader 代码仍依赖 UnityEngine、MonoBehaviour、UniTask 和 UI 展示
+```
+
+因此后续实现 NetworkCore 时必须先拆分：
+
+```text
+纯 C# 网络核心
+Unity 适配层
+ByFramework Platform 适配层
+示例 / UI 展示层
+```
+
+不得把现有旧代码直接搬入 NetworkCore 作为最终实现。
+
+### 当前阶段推进顺序
+
+当前状态：
+
+```text
+P3.5A Core Early Lifecycle Unity Verification 已完成
+P3.5B Platform Service Registration Runtime API Freeze 已完成
+P3.6 InputSystem Foundation 已完成
+```
+
+下一阶段：
+
+```text
+P3.7 UISystem Foundation
+```
+
+不是：
+
+```text
+InputSystem Implementation
+NetworkSystem Implementation
+```
+
+在进入具体模块实现前，必须先保持当前阶段的 API、边界和依赖关系冻结。

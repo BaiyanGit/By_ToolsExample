@@ -150,7 +150,7 @@ namespace _3rdBy.ByFramework.Editor
                 return architectureRootPath;
             }
 
-            throw new DirectoryNotFoundException("无法定位 ByFramework 根目录，请确认 AGENTS.md、README.md 与 Documentation/Architecture.md 位于框架根目录结构中。");
+            throw new DirectoryNotFoundException("无法定位 ByFramework 根目录，请确认 AGENTS.md、README.md 与 Documentation/01_Architecture.md 位于框架根目录结构中。");
         }
 
         private static bool TryFindByAgentFile(out string rootPath)
@@ -200,7 +200,7 @@ namespace _3rdBy.ByFramework.Editor
             foreach (var path in FindAssetPaths("Architecture"))
             {
                 var normalizedPath = NormalizeAssetPath(path);
-                if (normalizedPath.EndsWith("/Documentation/Architecture.md", StringComparison.Ordinal) == false)
+                if (normalizedPath.EndsWith("/Documentation/01_Architecture.md", StringComparison.Ordinal) == false)
                 {
                     continue;
                 }
@@ -234,7 +234,7 @@ namespace _3rdBy.ByFramework.Editor
         {
             return File.Exists(ToFullPath(CombineAssetPath(rootPath, "AGENTS.md")))
                    && File.Exists(ToFullPath(CombineAssetPath(rootPath, "README.md")))
-                   && File.Exists(ToFullPath(CombineAssetPath(rootPath, "Documentation/Architecture.md")));
+                   && File.Exists(ToFullPath(CombineAssetPath(rootPath, "Documentation/01_Architecture.md")));
         }
 
         private static string NormalizeAssetPath(string path)

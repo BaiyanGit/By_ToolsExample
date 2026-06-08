@@ -1,36 +1,54 @@
-# FrameworkConfig
+# Core/Config 兼容说明
 
-FrameworkConfig 是 ByFramework 的 Runtime 统一配置中心。第一阶段仅建立配置结构、默认配置资源与全局访问入口，不改变现有模块行为。
+> 本目录属于早期兼容配置基础设施，不是 ByFramework 最终配置中心。
 
-## Runtime 配置
+---
 
-默认资源位于 `Core/Config/Resources/FrameworkConfig.asset`。
+# 当前定位
 
-通过以下入口读取：
+以下文件暂时保留兼容：
 
-```csharp
-FrameworkConfig config = FrameworkConfigProvider.Config;
+```text
+Core/Config/FrameworkConfig.cs
+Core/Config/FrameworkConfigProvider.cs
+Core/Config/Resources/FrameworkConfig.asset
 ```
 
-当前包含：
+它们用于维持旧模块可运行，不得继续扩展为万能配置中心。
 
-* `ModuleSettings`：Guide 模块启用开关
-* `UISettings`：UI 预制体 Resources 路径
-* `NetworkSettings`：Socket 地址与端口
-* `DownloadSettings`：下载目录名称
+---
 
-配置资源加载失败时，FrameworkConfigProvider 会创建仅供本次运行使用的默认配置并输出警告。
+# 禁止事项
 
-## Editor 配置
+禁止继续向 `Core/Config/FrameworkConfig.cs` 添加：
 
-FrameworkEditorConfig 是独立的 Editor 配置资源，位于 `Editor/Config/FrameworkEditorConfig.asset`，不会进入 Runtime 配置加载流程。
+```text
+UI 配置
+Network 配置
+Download 配置
+Display 配置
+Resource 配置
+Save 配置
+License 配置
+BuildProfile 配置
+FeatureModule 配置
+Device 配置
+```
 
-当前包含：
+---
 
-* UI 预制体输出路径
-* UI 脚本输出路径
-* UIViewAutoCreateConfig 引用
+# 最终方向
 
-## 后续接入规划
+最终配置中心属于：
 
-后续按模块逐步将现有硬编码默认值迁移到配置中心。模块接入前应保留现有 API 与默认行为，并分别完成 Unity 验证。
+```text
+Platform/FrameworkConfig
+```
+
+配置规则已冻结在：
+
+```text
+Documentation/26_FrameworkConfigFoundation.md
+```
+
+后续 Runtime 实现阶段应逐步迁移旧配置，而不是继续扩展 Core/Config。

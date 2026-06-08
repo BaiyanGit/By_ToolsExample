@@ -75,6 +75,20 @@ FeatureModule Implementation
 
 ---
 
+# 文档命名规则
+
+Documentation 中正式架构文档必须使用数字前缀排序，例如：
+
+```text
+00_ByFramework_Current_Context.md
+20_InputSystemFoundation.md
+50_PlatformServiceRegistryRuntimeAPIFreeze.md
+```
+
+Codex 不应读取或恢复未编号旧文档。
+
+---
+
 # 工作前
 
 * 修改代码前先阅读 `Documentation/05_CodingStandard.md`。

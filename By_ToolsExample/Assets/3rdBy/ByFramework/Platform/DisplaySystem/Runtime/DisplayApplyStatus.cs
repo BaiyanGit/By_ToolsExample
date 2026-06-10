@@ -1,0 +1,19 @@
+//=====================================================
+// 文件名称: DisplayApplyStatus.cs
+// 创建者: Codex
+// 创建日期: 2026-06-09
+// 描    述: 定义显示配置应用结果状态。
+//=====================================================
+
+namespace _3rdBy.ByFramework.Platform.DisplaySystem
+{
+    public enum DisplayApplyStatus
+    {
+        Success = 0,
+        ProfileNotFound = 1,
+        ModeUnsupported = 2,
+        TargetUnavailable = 3,
+        PersistenceFailure = 4,
+        ProviderFailure = 5,
+    }
+}

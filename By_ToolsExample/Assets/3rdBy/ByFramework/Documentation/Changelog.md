@@ -1,4 +1,40 @@
 
+## 2026-06-09 R7.2 InputSystem Runtime Implementation
+
+* 新增 `Platform/InputSystem/Runtime` 运行时代码，完成 `IInputService`、`InputService`、`InputActionId`、`InputActionDescriptor`、`InputActionState`、`InputActionEvent`、`InputContextHandle`、`InputContextRegistration`、`InputContextSnapshot`、`InputDeviceKind`、`InputDeviceDescriptor`、`InputBindingDescriptor`、`InputProfileSnapshot`、`InputActionResolveStatus`、`InputContextChangeStatus`、`InputStage` 与 `InputValueKind`
+* 实现基础 `MockInputBackend`，提供动作注册、设备连接状态、输入配置快照与输入事件发布能力，保持与具体 Unity Input System Package 解耦
+* 实现 `InputService` 的 Action 查询、Context 激活与释放、Action 状态解析、`ActionTriggered` 事件发布、Snapshot 构建，以及 Context 优先级、`Exclusive` / `PassThrough` 解析规则
+* 保持 `InputContextSnapshot` 为 Immutable Snapshot，保持 `InputActionId` 与具体设备实例解耦，保持 InputSystem 不持有 `UISystem` 与 `FeatureModule` 状态
+* 同步 `00_ByFramework_Current_Context.md`、`02_Roadmap.md`、`03_Todo.md` 与 `06_Documentation_Reading_Order.md`，将当前阶段切换到 `R7.2 InputSystem Runtime Implementation`
+
+## 2026-06-09 R7.1 InputSystem Runtime API Freeze
+
+* 新增 `Documentation/InputSystemRuntimeAPIFreeze.md`，正式冻结 InputSystem 的服务边界、`IInputService` 方法面、`InputAction` / `InputContext` 模型、输入设备抽象、输入映射关系以及与 `UISystem`、`FeatureModule`、`Unity Input System` 的关系
+* 明确 InputSystem 只负责输入抽象能力，不直接依赖具体业务，不持有 FeatureModule 状态，不吞并 UISystem
+* 冻结 `InputActionId`、`InputActionDescriptor`、`InputContextHandle`、`InputContextRegistration`、`InputContextSnapshot`、`InputDeviceDescriptor`、`InputBindingDescriptor` 与 `InputProfileSnapshot` 的 API 方向
+* 冻结 `InputActionResolveStatus` 与 `InputContextChangeStatus` 结果模型，明确预期运行时冲突与不可用状态使用结果模型表达
+* 明确 Unity Input System 在 R7.1 中只作为未来后端候选，不接入 Package、不绑定 Runtime API
+* 同步 `00_ByFramework_Current_Context.md`、`02_Roadmap.md`、`03_Todo.md` 与 `06_Documentation_Reading_Order.md`，将当前执行阶段切换到 `R7.1 InputSystem Runtime API Freeze` 并继续禁止进入 `R7.2`
+
+## 2026-06-09 R6.2 LocalizationSystem Runtime Implementation
+
+* 新增 `Platform/LocalizationSystem/Runtime` 运行时代码，完成 `ILocalizationService`、`LocalizationService`、`LocalizationContext`、`LocalizationArguments`、`LocalizationProviderDescriptor`、`LocalizationChangeResult`、`LanguageChangedEvent`、`LocalizationQueryStatus`、`LocalizationChangeStatus`、`LanguageCode` 与 `LocalizationKey`
+* 实现 `GetText`、`TryGetText`、`GetFormattedText`、`SetLanguage`、`GetCurrentLanguage`、`GetAvailableLanguages`、`GetCurrentContext` 与 `LanguageChanged`
+* 实现基础 `JsonLanguagePackProvider`，支持从 `StreamingAssets` 与 `PersistentDataPath` 目录扫描 JSON 语言包
+* 实现 `LocalizationContext` 不可变快照、`FallbackChain`、MissingKey 占位策略、运行时语言切换和失败保持旧语言规则
+* 实现基于 `SaveSystem` 的用户语言偏好恢复与持久化，并继续保持 `currentLanguage` 不写回 `FrameworkConfig`
+* 同步 `00_ByFramework_Current_Context.md`、`03_Todo.md` 与 `06_Documentation_Reading_Order.md`，将当前执行阶段切换到 `R6.2 LocalizationSystem Runtime Implementation`
+
+## 2026-06-09 R6.1 LocalizationSystem Runtime API Freeze
+
+* 新增 `Documentation/LocalizationSystemRuntimeAPIFreeze.md`，正式冻结 LocalizationSystem Runtime API、上下文模型、错误策略、语言切换顺序与验证方向
+* 明确 `defaultLanguage` 与 `fallbackLanguage` 归属 FrameworkConfig，明确 `currentLanguage` 的运行时真相归属 LocalizationContext、用户偏好持久化归属 SaveSystem
+* 冻结 `ILocalizationService` 方法面，包括 `GetText`、`TryGetText`、`GetFormattedText`、`SetLanguage`、`GetCurrentLanguage`、`GetAvailableLanguages`、`GetCurrentContext` 与 `LanguageChanged`
+* 冻结 `LocalizationContext` 为只读不可变快照，明确 `FallbackChain`、`AvailableLanguages`、`ProviderDescriptor` 与生命周期边界
+* 冻结 `LocalizationQueryStatus` 与 `LocalizationChangeStatus`，覆盖 MissingKey、MissingLanguage、ProviderFailure 与语言切换失败返回策略
+* 冻结 `LanguageChanged` 的切换顺序、失败恢复与“失败保持旧语言”规则，明确失败切换不得发布事件
+* 同步 `00_ByFramework_Current_Context.md`、`02_Roadmap.md`、`03_Todo.md` 与 `06_Documentation_Reading_Order.md`，将当前阶段推进到 R6.1 并继续禁止进入 R6.2
+
 ## 2026-06-08 架构文档补充
 
 * 补充 NetworkCore 独立性原则，明确 NetworkCore 必须保持纯 C#、低依赖、可独立抽离。
